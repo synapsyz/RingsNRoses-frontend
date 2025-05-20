@@ -1534,8 +1534,12 @@ export default function Home() {
             <div className="hidden md:block w-full">
               {/* <!-- Search Input --> */}
               <div className="relative w-full">
-                <input type="text" className="py-1.5 ps-4 sm:py-2.5 pe-10 block w-full bg-white border-gray-200 text-base sm:text-sm rounded-full focus:outline-hidden focus:border-emerald-600 focus:ring-emerald-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400" placeholder="Search venues, decorators, makeup artists..."/>
-                <div className="absolute inset-y-0 end-0 z-10 flex items-center pe-1 sm:pe-1.5">
+                <input
+  type="text"
+  className="py-1.5 ps-4 sm:py-2.5 pe-10 block w-full bg-white border border-gray-200 text-base sm:text-sm rounded-full focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400"
+  placeholder="Search venues, decorators, makeup artists..."
+/>
+<div className="absolute inset-y-0 end-0 z-10 flex items-center pe-1 sm:pe-1.5">
                   <button type="button" className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-hidden focus:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:focus:bg-emerald-600">
                     <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="11" cy="11" r="8" />
@@ -1881,19 +1885,19 @@ export default function Home() {
 
         <div id="countdown" className="mt-2 text-gray-800 dark:text-white font-medium flex gap-4 text-center">
           <div className="flex flex-col items-center">
-            <span id="days" className="text-xs font-bold">--</span>
+            {/* <span id="days" className="text-xs font-bold">--</span> */}
             <span className="text-xs text-gray-500 dark:text-neutral-400">{timeLeft.days} days</span>
           </div>
           <div className="flex flex-col items-center">
-            <span id="hours" className="text-xs font-bold">--</span>
+            {/* <span id="hours" className="text-xs font-bold">--</span> */}
             <span className="text-xs text-gray-500 dark:text-neutral-400">{timeLeft.hours} hours</span>
           </div>
           <div className="flex flex-col items-center">
-            <span id="minutes" className="text-xs font-bold">--</span>
+            {/* <span id="minutes" className="text-xs font-bold">--</span> */}
             <span className="text-xs text-gray-500 dark:text-neutral-400">{timeLeft.minutes} minutes</span>
           </div>
           <div className="flex flex-col items-center">
-            <span id="seconds" className="text-xs font-bold">--</span>
+            {/* <span id="seconds" className="text-xs font-bold">--</span> */}
             <span className="text-xs text-gray-500 dark:text-neutral-400">{timeLeft.seconds} seconds</span>
           </div>
         </div>
@@ -1901,7 +1905,7 @@ export default function Home() {
         <p className="text-xs text-gray-500 dark:text-neutral-400">Time left until the big day!</p>
       </div>
 
-      <div className="w-full sm:w-40">
+      <div className="w-full sm:w-40" style={{ width: '20rem'}}>
         <img src="https://plus.unsplash.com/premium_photo-1682092632793-c7d75b23718e?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aGluZHUlMjB3ZWRkaW5nfGVufDB8fDB8fHww" alt="Wedding" className="rounded-lg object-cover w-full h-24 sm:h-32"></img>
       </div>
 
@@ -1911,7 +1915,7 @@ export default function Home() {
 
   <div className="group p-4 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition dark:bg-neutral-900 dark:border-neutral-700 md:col-span-1">
     <div className="flex flex-col gap-2">
-      <img src="https://cdn-icons-png.flaticon.com/128/18252/18252191.png" alt="Customer Loyalty" width="50" height="50"></img>
+      <img src="https://cdn-icons-png.flaticon.com/128/2252/2252184.png" alt="Customer Loyalty" width="50" height="50"></img>
       <h2 className="text-xl text-gray-600 dark:text-neutral-400">Services hired</h2>
       <p className="text-xl font-semibold text-gray-800 dark:text-white">5 of 18</p>
     </div>
@@ -1919,7 +1923,7 @@ export default function Home() {
 
   <div className="group p-4 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition dark:bg-neutral-900 dark:border-neutral-700 md:col-span-1">
     <div className="flex flex-col gap-2">
-      <img src="https://cdn-icons-png.flaticon.com/128/781/781760.png" alt="Budget and Finance" width="50" height="50"></img>
+      <img src="https://cdn-icons-png.flaticon.com/128/9817/9817200.png" alt="Budget and Finance" width="50" height="50"></img>
       <h2 className="text-xl text-gray-600 dark:text-neutral-400">Budget spent</h2>
       <p className="text-l font-semibold text-gray-800 dark:text-white">41% used → ₹945,000 / ₹2,300,000</p>
     </div>
@@ -1933,11 +1937,11 @@ export default function Home() {
     <div class="py-4 w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
         <div
           data-hs-carousel='{"isInfiniteLoop": true}'
-          className="relative hs-carousel overflow-hidden rounded-xl bg-gray-100 dark:bg-neutral-800 h-96"
+          className="relative hs-carousel overflow-hidden rounded-xl bg-gray-100 dark:bg-neutral-800 h-96" style={{ height: '40rem'}}
         >
           <div className="hs-carousel-body absolute top-0 bottom-0 left-0 flex flex-nowrap transition-transform duration-700 opacity-0">
             <div className="hs-carousel-slide">
-              <a className="relative block h-96 rounded-xl" href="#">
+              <a className="relative block h-96 rounded-xl" style={{ height: '40rem'}} href="#">
                 <img
                   className="absolute inset-0 w-full h-full object-cover rounded-xl"
                   src="https://cdn0.weddingwire.in/article/4793/3_2/1280/jpg/113974-studiokellyphotography-337445578-533103172337964-9035533201119956191-n.jpeg"
@@ -1963,7 +1967,7 @@ export default function Home() {
               </a>
             </div>
              <div className="hs-carousel-slide">
-              <a className="relative block h-96 rounded-xl" href="#">
+              <a className="relative block h-96 rounded-xl" style={{ height: '40rem'}} href="#">
                 <img className="absolute inset-0 size-full object-cover rounded-xl" src="https://t4.ftcdn.net/jpg/02/71/43/75/360_F_271437574_doTjDM96i4VpYYU68nFLpjLA2rOlSh5v.jpg" alt="Hero Image"/>
 
                 <div className="relative z-10 size-full max-w-lg p-8 sm:p-16 flex flex-col">
@@ -1984,8 +1988,8 @@ export default function Home() {
               </a>
             </div>
             <div className="hs-carousel-slide">
-              <a className="h-120 lg:h-160 relative block overflow-hidden bg-linear-to-br from-emerald-500 to-emerald-900 rounded-xl focus:outline-hidden dark:bg-neutral-800" href="../../pro/shop/listing.html">
-                 <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-5" style={{ background: '#064e3b'}}>
+              <a className="h-120 lg:h-160 relative block overflow-hidden bg-linear-to-br from-emerald-500 to-emerald-900 rounded-xl focus:outline-hidden dark:bg-neutral-800" style={{ height: '40rem'}} href="../../pro/shop/listing.html">
+                 <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-5" style={{ background: '#064e3b',height: '40rem'}}>
                   <div className="p-12 sm:p-16 md:ps-20 md:pe-0 max-w-xl">
                     <span className="block font-bold uppercase text-2xl sm:text-3xl lg:text-4xl text-white">
                       Starting at 
@@ -4881,12 +4885,7 @@ export default function Home() {
   <script src="./assets/vendor/clipboard/dist/clipboard.min.js"></script>
   <script src="./assets/js/hs-copy-clipboard-helper.js"></script>
 {/* <!-- Countdown Script --> */}
-<div id="countdown" className="flex space-x-1">
-      <span className="mr-1">{timeLeft.days}d</span>
-      <span className="mr-1">{timeLeft.hours}h</span>
-      <span className="mr-1">{timeLeft.minutes}m</span>
-      <span className="mr-1">{timeLeft.seconds}s</span>
-    </div>
+
   {/* <!-- Catalog navigation --> */}
    <div>
       {/* Your HTML for tabs + select dropdown goes here */}
