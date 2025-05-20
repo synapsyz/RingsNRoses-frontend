@@ -220,7 +220,7 @@ export default function Login() {
 
             <div className="mt-6 text-center text-sm text-gray-500 dark:text-neutral-500">
               Don't have an account?
-              <Link href="/register" className="font-semibold text-blue-600 hover:underline dark:text-blue-500">
+              <Link href="/login/signup" className="font-semibold text-blue-600 hover:underline dark:text-blue-500">
                 Sign up
               </Link>
             </div>
@@ -234,7 +234,7 @@ export default function Login() {
        <footer>
                <div className="mt-auto flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-500 gap-1 gap-x-8">
   <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-    <a href="#" className="hover:underline">Register your business</a>
+    <a href="/client/signup" className="hover:underline">Register your business</a>
     <a href="#" className="hover:underline">Contact us</a>
     <a href="#" className="hover:underline">Terms & privacy</a>
     <a href="#" className="hover:underline">Your Privacy Choices</a>
