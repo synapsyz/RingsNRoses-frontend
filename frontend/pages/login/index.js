@@ -87,13 +87,13 @@ export default function Login() {
           {/* Body */}
           <div className="mt-2">
             <img
-              className="dark:hidden rounded-md shadow-lg"
-              src="https://media.istockphoto.com/id/1186214696/photo/hindu-wedding-ritual-wherein-bride-and-groom-hand.jpg?s=612x612&w=0&k=20&c=fTlNejRdY7dkvk742auNgI3j6Ve9UqqWSnb3QJ-D2gw="
+              className="dark:hidden rounded-md"
+              src="./undraw_love_qypu.svg"
               alt="Wedding Theme"
             />
             <img
-              className="hidden dark:block rounded-md shadow-lg"
-              src="https://media.istockphoto.com/id/1186214696/photo/hindu-wedding-ritual-wherein-bride-and-groom-hand.jpg?s=612x612&w=0&k=20&c=fTlNejRdY7dkvk742auNgI3j6Ve9UqqWSnb3QJ-D2gw="
+              className="hidden dark:block rounded-md"
+              src="./undraw_love_qypu.svg"
               alt="Wedding Theme Dark"
             />
             <p className="mt-4 text-sm text-gray-500 dark:text-neutral-500">
@@ -116,7 +116,7 @@ export default function Login() {
             {/* Title */}
             <div>
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-neutral-200">
-                Sign in to your RingsNRoses account
+                Sign in to your account
               </h1>
               <p className="mt-1 text-sm text-gray-500 dark:text-neutral-500">
                 Book Your Wedding with RingsNRoses.
