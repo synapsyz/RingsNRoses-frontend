@@ -55,6 +55,10 @@ export default function Login() {
 
     return (
     <>
+    <Head>
+        <title>RingsNRoses Business Login</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       {/*
         This example requires updating your template:
 
@@ -75,7 +79,7 @@ export default function Login() {
               <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900">Sign in to your Business Account</h2>
               <p className="mt-2 text-sm/6 text-gray-500">
                 Not a member?{' '}
-                <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                <a href="/client/signup" className="font-semibold text-indigo-600 hover:text-indigo-500">
                   Create your Business Account
                 </a>
               </p>
@@ -186,14 +190,15 @@ export default function Login() {
       <footer>
                <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-500 gap-1">
   <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-    <a href="#" className="hover:underline">Register your business</a>
+    <a href="/client/signup" className="hover:underline">Register your business</a>
     <a href="#" className="hover:underline">Contact us</a>
     <a href="#" className="hover:underline">Terms & privacy</a>
     <a href="#" className="hover:underline">Your Privacy Choices</a>
     <a href="#" className="hover:underline">About us</a>
   </div>
-  <p className="mt-2">© 2025 RingsNRoses</p>
+   <p className="mt-2">© {new Date().getFullYear()} RingsNRoses</p>
 </div>
+<div className="mt-4"></div>
          </footer>
     </>
   )

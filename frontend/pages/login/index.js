@@ -78,6 +78,7 @@ export default function Login() {
                 </svg>
               )}
             </button> */}
+            
           </div>
           {/* End Header */}
 
@@ -109,7 +110,16 @@ export default function Login() {
 
         {/* Content */}
         <main className="mt-2 flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          
           <div className="max-w-md w-full space-y-8">
+  <div className="mt-6 absolute top-4 right-4 z-50 flex items-center space-x-2">
+    <img src="https://cdn-icons-png.flaticon.com/128/9139/9139670.png" alt="Vendor Icon" className="w-6 h-6" />
+    <a href="/client/login" className="font-semibold text-blue-600 hover:underline dark:text-blue-500">
+      Are you a Vendor?
+    </a>
+  </div>
+
+
             {/* Title */}
             <div>
               <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-neutral-200">
@@ -231,14 +241,15 @@ export default function Login() {
        <footer>
                <div className="mt-auto flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-500 gap-1 gap-x-8">
   <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-    <a href="#" className="hover:underline">Register your business</a>
+    <a href="client/signup" className="hover:underline">Register your business</a>
     <a href="#" className="hover:underline">Contact us</a>
     <a href="#" className="hover:underline">Terms & privacy</a>
     <a href="#" className="hover:underline">Your Privacy Choices</a>
     <a href="#" className="hover:underline">About us</a>
   </div>
-  <p className="mt-2">© 2025 RingsNRoses</p>
+   <p className="mt-2">© {new Date().getFullYear()} RingsNRoses</p>
 </div>
+<div className="mt-4"></div>
          </footer>
     </>
   );

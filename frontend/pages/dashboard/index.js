@@ -49,7 +49,6 @@ export default function Dashboard() {
           </li>
         ))}
       </ul>
-
       <div className="flex justify-between mt-6">
         <button
           onClick={() => setPageUrl(prevPage)}
