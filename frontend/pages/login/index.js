@@ -10,6 +10,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [user_type, setUserType] = useState("customer");
   const [theme, setTheme] = useState("light");
   const router = useRouter();
 
@@ -32,14 +33,16 @@ export default function Login() {
       redirect: false,
       email,
       password,
+      user_type, // 👈 Add this!
     });
-
+  
     if (res?.ok) {
       router.push("/dashboard");
     } else {
       alert("Invalid credentials");
     }
   };
+  
 
   return (
     <>
@@ -165,7 +168,7 @@ export default function Login() {
                   required
                 />
               </div>
-
+              <input type="hidden" name="user_type" value="customer" />  
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <label htmlFor="password" className="block text-sm font-medium text-gray-800 dark:text-white">

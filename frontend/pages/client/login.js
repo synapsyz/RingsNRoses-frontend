@@ -5,12 +5,15 @@ import { signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import ErrorAlert from "./error"; // adjust the path
 
 export default function Login() {
   const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
    const [showPassword, setShowPassword] = useState(false);
+   const [user_type, setUserType] = useState("vendor");
    const [theme, setTheme] = useState("light");
+   const [errors, setErrors] = useState([]);
    const router = useRouter();
  
    useEffect(() => {
@@ -29,15 +32,24 @@ export default function Login() {
      const res = await signIn("credentials", {
        redirect: false,
        email,
+       user_type,
        password,
      });
  
-     if (res?.ok) {
-       router.push("/dashboard");
-     } else {
-       alert("Invalid credentials");
-     }
-   };
+     if (res.ok) {
+      router.push("/dashboard");
+    } else {
+      try {
+        const err = JSON.parse(res.error);
+        const messages = Array.isArray(err.detail)
+          ? err.detail
+          : [err.detail || "Login failed"];
+        setErrors(messages);
+      } catch {
+        setErrors([res.error]);
+      }
+    }
+  };
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -63,6 +75,7 @@ export default function Login() {
         <body class="h-full">
         
       */}
+      <ErrorAlert errors={errors} />
       <div className="flex min-h-full flex-1">
         <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
@@ -100,6 +113,9 @@ export default function Login() {
                       />
                     </div>
                   </div>
+
+                  <input type="hidden" name="user_type" value="vendor" />  
+
 
                   <div>
                     <div className="flex justify-between items-center mb-2">
