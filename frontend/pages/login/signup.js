@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useState, useEffect, useRef } from "react"; // Import useRef
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import LocationSelector from "@/components/LocationSelector";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -669,22 +670,12 @@ useEffect(() => {
 
     {/* Location Column */}
     <div className="flex flex-col flex-1"> {/* This div is the "Location" column: stacks heading and input vertically, takes equal space */}
-        <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200 mb-2"> {/* mb-2 for spacing below heading */}
-            Location
-        </h4>
-        <label htmlFor="loc" className="sr-only"> {/* Keep sr-only for accessibility */}
-            Location
-        </label>
-        <select
-            id="loc"
-            className="appearance-none py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-        >
-            <option value="">Select Location</option>
-            <option value="bangalore">Bangalore</option>
-            <option value="hyderabad">Hyderabad</option>
-            <option value="delhi">Delhi</option>
-            <option value="mumbai">Mumbai</option>
-        </select>
+        <LocationSelector
+        onCountryChange={(country) => console.log("Country:", country)}
+        onStateChange={(state) => console.log("State:", state)}
+        onLocationChange={(location) => console.log("Location:", location)}
+        />
+
     </div>
 
 </div>
