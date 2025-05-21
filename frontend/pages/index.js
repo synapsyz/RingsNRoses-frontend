@@ -1,108 +1,147 @@
-import Head from 'next/head';
-import styles from '../styles/Home.module.css';
+  "use client";
 
-export default function Home() {
-  return (
-    <div className="mt-7 bg-white border border-gray-200 rounded-xl shadow-2xs dark:bg-neutral-900 dark:border-neutral-700 w-[550px] h-[650px] relative left-[450px] overflow-y-auto">
-      <div className="p-4 sm:p-7 mt-8">
-        <div className="text-center">
-          <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
-            Sign in
-          </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-neutral-400">
-            Don't have an account yet?{' '}
-            <a
-              className="text-blue-600 decoration-2 hover:underline outline-none font-medium dark:text-blue-500"
-              href="../examples/html/signup.html"
-            >
-              Sign up here
-            </a>
-          </p>
-        </div>
+  import { useState, useEffect } from "react";
+  import Link from "next/link";
 
-        <div className="mt-5">
-          <button
-            type="button"
-            className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 outline-none disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800"
-          >
-            <svg
-              className="w-4 h-auto"
-              width="46"
-              height="47"
-              viewBox="0 0 46 47"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M46 24.0287C46 22.09 45.8533 20.68 45.5013 19.2112H23.4694V27.9356H36.4069C36.1429 30.1094 34.7347 33.37 31.5957 35.5731L31.5663 35.8669L38.5191 41.2719L38.9885 41.3306C43.4477 37.2181 46 31.1669 46 24.0287Z" fill="#4285F4" />
-              <path d="M23.4694 47C29.8061 47 35.1161 44.9144 39.0179 41.3012L31.625 35.5437C29.6301 36.9244 26.9898 37.8937 23.4987 37.8937C17.2793 37.8937 12.0281 33.7812 10.1505 28.1412L9.88649 28.1706L2.61097 33.7812L2.52296 34.0456C6.36608 41.7125 14.287 47 23.4694 47Z" fill="#34A853" />
-              <path d="M10.1212 28.1413C9.62245 26.6725 9.32908 25.1156 9.32908 23.5C9.32908 21.8844 9.62245 20.3275 10.0918 18.8588V18.5356L2.75765 12.8369L2.52296 12.9544C0.909439 16.1269 0 19.7106 0 23.5C0 27.2894 0.909439 30.8731 2.49362 34.0456L10.1212 28.1413Z" fill="#FBBC05" />
-              <path d="M23.4694 9.07688C27.8699 9.07688 30.8622 10.9863 32.5344 12.5725L39.1645 6.11C35.0867 2.32063 29.8061 0 23.4694 0C14.287 0 6.36607 5.2875 2.49362 12.9544L10.0918 18.8588C11.9987 13.1894 17.25 9.07688 23.4694 9.07688Z" fill="#EB4335" />
-            </svg>
-            Sign in with Google
-          </button>
+  export default function Login() {
+    const [showPassword, setShowPassword] = useState(false);
+    const [theme, setTheme] = useState("light");
 
-          <div className="py-3 flex items-center text-xs text-gray-400 uppercase before:flex-1 before:border-t before:border-gray-200 before:me-6 after:flex-1 after:border-t after:border-gray-200 after:ms-6 dark:text-neutral-500 dark:before:border-neutral-600 dark:after:border-neutral-600">
-            Or
+    useEffect(() => {
+      const root = window.document.documentElement;
+      if (theme === "dark") {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+    }, [theme]);
+
+    const toggleTheme = () => {
+      setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    };
+
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 flex flex-col justify-between px-4">
+        {/* Top Centered Heading */}
+        <header className="flex justify-center pt-4">
+          <div className="flex items-center space-x-4">
+            <img
+              src="https://media.istockphoto.com/id/1306231946/photo/wedding-rings-in-red-roses-stock-photo.jpg?s=612x612&w=0&k=20&c=xJAY8d833gden0ZO8YBoxMeayOyt2qW4Bj_F-UcU0rQ="
+              alt="Logo"
+              className="w-10 h-10 rounded-full object-cover"
+            />
+            <h1 className="text-3xl font-bold">Rings & Roses</h1>
           </div>
+        </header>
 
-          <form>
-            <div className="grid gap-y-4">
+        {/* Top Divider */}
+        <div className="w-full mt-4 border-t border-gray-400 dark:border-gray-600" />
+
+        {/* Login Form */}
+        <main className="flex justify-center items-center flex-grow mt-0">
+          <div className="w-full max-w-md p-8 space-y-6   rounded-xl ">
+            <h2 className="text-2xl font-bold text-center">Log In</h2>
+
+            <form className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm mb-2 dark:text-white">
-                  Email address
-                </label>
                 <input
                   type="email"
-                  id="email"
-                  name="email"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Email"
                   required
-                  className="py-2.5 sm:py-3 px-4 block w-full border border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                 />
               </div>
 
-              <div>
-                <div className="flex flex-wrap justify-between items-center gap-2">
-                  <label htmlFor="password" className="block text-sm mb-2 dark:text-white">
-                    Password
-                  </label>
-                  <a
-                    className="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline outline-none font-medium dark:text-blue-500"
-                    href="../examples/html/recover-account.html"
-                  >
-                    Forgot password?
-                  </a>
-                </div>
+              <div className="relative">
                 <input
-                  type="password"
-                  id="password"
-                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-10"
+                  placeholder="Password"
                   required
-                  className="py-2.5 sm:py-3 px-4 block w-full border border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white"
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.664.44-3.222 1.214-4.557m2.452-2.452A9.955 9.955 0 0112 3c5.523 0 10 4.477 10 10 0 1.5-.388 2.92-1.072 4.159M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
               </div>
 
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="shrink-0 mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                />
-                <label htmlFor="remember-me" className="ms-3 text-sm dark:text-white">
-                  Remember me
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+                  <span className="text-gray-600 dark:text-gray-300">Remember me</span>
                 </label>
+                <Link href="/forgot-password" className="text-indigo-600 hover:underline">
+                  Forgot password?
+                </Link>
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 outline-none disabled:opacity-50 disabled:pointer-events-none"
-              >
-                Sign in
+              <button type="submit" className="w-full px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 font-semibold">
+                Log in
               </button>
-            </div>
-          </form>
-        </div>
+            </form>
+
+            <div className="-mt-2 mb-0 p-0">
+            <Link
+              href="/register"
+              className="block w-full text-center px-4 py-2 -mt-3 mb-0 text-black dark:text-white bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-black dark:hover:border-white font-semibold"
+            >
+              Create Account
+            </Link>
+          </div>
+
+          </div>
+        </main>
+
+        {/* Footer with theme toggle */}
+        <footer className="w-full text-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-300 dark:border-gray-700 mt-10 py-4">
+          <p>© 2025 Rings & Roses.</p>
+          <div className="mt-2 flex justify-center space-x-4">
+            <a href="/terms" className="hover:underline">Terms</a>
+            <a href="/privacy" className="hover:underline">Privacy</a>
+            <a href="/privacy-choices" className="hover:underline">Your Privacy Choices</a>
+            
+        
+
+          <div className="mt-1">
+            <button
+              onClick={toggleTheme}
+              className="text-xs text-gray-500 dark:text-gray-400 hover:underline flex items-center justify-center space-x-1"
+            >
+              {theme === "dark" ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                  </svg>
+                  <span>Dark Mode</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                  </svg>
+                  <span>Light Mode</span>
+                </>
+              )}
+            </button>
+          </div>
+          </div>
+        </footer>
       </div>
-    </div>
-  );
-}
+    );
+  }
