@@ -202,7 +202,7 @@ export default function Login() {
             <div className="text-center text-l text-gray-500 dark:text-neutral-400">
               Vendors 
               <Link
-                href="/login/signup"
+                href="/vendor/login"
                 className="font-semibold hover:underline ml-1 mr-1"
                 style={{ color: '#e87fe6' }}
               >
