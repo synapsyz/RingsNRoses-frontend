@@ -6,32 +6,50 @@ export default NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "email", type: "text" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
+        user_type: { label: "User Type", type: "text" }, 
       },
       async authorize(credentials) {
-        const res = await fetch("http://localhost:8000/api/v1/token/", {
+        const { email, password, user_type } = credentials;
+        let endpoint = "";
+      
+        if (user_type === "vendor") {
+          endpoint = "http://localhost:8000/api/v1/vendor/token/";
+        } else if (user_type === "customer") {
+          endpoint = "http://localhost:8000/api/v1/customer/token/";
+        } else {
+          throw new Error("Invalid user type. Must be customer or vendor.");
+        }
+      
+        const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
+          body: JSON.stringify({ email, password }),
         });
-
-        const user = await res.json();
-
-        if (res.ok && user.access) {
+      
+        const data = await res.json();
+      
+        if (res.ok && data.access) {
           return {
-            id: user.user_id || credentials.email,
-            name: credentials.email,
-            accessToken: user.access,
-            refreshToken: user.refresh,
+            id: data.user_id || email,
+            name: data.name || email,
+            email,
+            user_type,
+            accessToken: data.access,
+            refreshToken: data.refresh,
           };
         }
-
-        return null;
-      },
+      
+        // Throw error message returned by API
+        throw new Error(
+          data.detail ||
+          data.non_field_errors?.[0] ||
+          data.message ||
+          "Login failed. Please check your credentials."
+        );
+              },
+      
     }),
   ],
 
@@ -43,17 +61,20 @@ export default NextAuth({
       if (user) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
+        token.user_type = user.user_type;
       }
       return token;
     },
+
     async session({ session, token }) {
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
+      session.user_type = token.user_type;
       return session;
     },
   },
 
   pages: {
-    signIn: "/login", // Your custom login page path
+    signIn: "/login", // Use a shared login page
   },
 });
