@@ -5,12 +5,14 @@ import Link from "next/link";
 
 export default function Signup() {
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [countries, setCountries] = useState([]);
     const [filteredCountries, setFilteredCountries] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState({ code: '+91', name: 'India', flag: '🇮🇳' }); // Default to India
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [phoneNumber, setPhoneNumber] = useState(''); // State for phone number input
+    const [theme, setTheme] = useState("light");
 
     const dropdownRef = useRef(null); // Ref for the dropdown container
     const countryInputRef = useRef(null); // Ref for the country search input
@@ -21,10 +23,17 @@ export default function Signup() {
         numbers: false,
         specialCharacters: false,
     });
+    const [visibleRules, setVisibleRules] = useState({
+        minLength: true,
+        lowercase: true,
+        uppercase: true,
+        numbers: true,
+        specialCharacters: true,
+    });
     const [acceptTerms, setAcceptTerms] = useState(false); // State for the "Terms and Conditions" checkbox
 
     const MIN_PASSWORD_LENGTH = 8;
-    const COUNTRY_DATA = [
+ const COUNTRY_DATA = [
         { name: 'United States', code: '+1', flag: '🇺🇸' },
         { name: 'Canada', code: '+1', flag: '🇨🇦' }, // Canada also uses +1
         { name: 'Russia', code: '+7', flag: '🇷🇺' },
@@ -251,6 +260,29 @@ export default function Signup() {
         { name: 'Jamaica', code: '+1-876', flag: '🇯🇲' },
         { name: 'Puerto Rico', code: '+1-939', flag: '🇵🇷' },
     ].sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+useEffect(() => {
+  const root = window.document.documentElement;
+  if (theme === "dark") {
+    root.classList.add("dark", "bg-gray-900", "text-white");
+    root.classList.remove("bg-white", "text-gray-900");
+  } else {
+    root.classList.remove("dark", "bg-gray-900", "text-white");
+    root.classList.add("bg-white", "text-gray-900");
+  }
+  localStorage.setItem("theme", theme);
+}, [theme]);
+
+    useEffect(() => {
+  const storedTheme = localStorage.getItem("theme");
+  if (storedTheme) {
+    setTheme(storedTheme);
+  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    setTheme("dark");
+  }
+}, []);
+const toggleTheme = () => {
+  setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+};
 
     useEffect(() => {
         // --- Password Strength Logic ---
@@ -262,11 +294,25 @@ export default function Signup() {
                 numbers: /\d/.test(password),
                 specialCharacters: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]/.test(password),
             };
-            setPasswordRules(newRules);
+            setPasswordRules(prevRules => {
+                const updatedVisibleRules = { ...visibleRules };
+                for (const rule in newRules) {
+                    if (newRules[rule] && !prevRules[rule]) { // If rule just became true
+                        setTimeout(() => {
+                            setVisibleRules(prevVisible => ({
+                                ...prevVisible,
+                                [rule]: false, // Hide the rule after 0.5 seconds
+                            }));
+                        }, 1000); // 0.5 seconds
+                    } else if (!newRules[rule] && prevRules[rule]) { // If rule just became false, make it visible again
+                        updatedVisibleRules[rule] = true;
+                    }
+                }
+                setVisibleRules(updatedVisibleRules); // Update visible rules state
+                return newRules;
+            });
         };
         checkPasswordStrength();
-        setCountries(COUNTRY_DATA);
-        setFilteredCountries(COUNTRY_DATA);
     }, [password]); // Re-run effect whenever password changes
  const handleCountrySearchChange = (event) => {
         const term = event.target.value;
@@ -282,7 +328,6 @@ export default function Signup() {
             setFilteredCountries(countries);
         }
     };
-    
         const handleCountrySelect = (country) => {
         setSelectedCountry(country);
         setIsDropdownOpen(false);
@@ -317,9 +362,9 @@ export default function Signup() {
             <div className="min-h-screen flex flex-col lg:flex-row">
 
                 {/* ========== MAIN CONTENT ========== */}
-                <aside className="hidden lg:flex lg:w-1/2 xl:w-2/5 flex-col justify-between p-6 dark:bg-neutral-950">
+                <aside className="hidden lg:flex lg:w-1/2 xl:w-2/5 flex-col justify-between p-6 dark:bg-gray-900">
                     {/* Sidebar */}
-                    <div className="hidden min-h-screen lg:w-100 xl:w-107.5bg-gray-100 lg:flex flex-col justify-between p-6 dark:bg-neutral-950">
+                    <div className="hidden min-h-screen lg:w-100 xl:w-107.5bg-gray-100 lg:flex flex-col justify-between p-6 dark:bg-gray-900">
                         {/* Header */}
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             {/* Logo */}
@@ -387,7 +432,7 @@ export default function Signup() {
 
                         {/* Button Group */}
                         <div className="flex flex-col sm:flex-row gap-2">
-                            <button type="button" className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
+                            <button type="button" className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-gray-900 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
                                 <svg className="shrink-0 size-4" width="33" height="32" viewBox="0 0 33 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clipPath="url(#clip0_4132_5805)">
                                         <path d="M32.2566 16.36C32.2566 15.04 32.1567 14.08 31.9171 13.08H16.9166V19.02H25.7251C25.5454 20.5 24.5866 22.72 22.4494 24.22L22.4294 24.42L27.1633 28.1L27.4828 28.14C30.5189 25.34 32.2566 21.22 32.2566 16.36Z" fill="#4285F4"/>
@@ -440,25 +485,33 @@ export default function Signup() {
 
                                         <div className="relative">
                                             <input
-                                                id="hs-pro-dappnp"
-                                                type="password"
-                                                className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                placeholder="******"
+                                                type={showPassword ? "text" : "password"}
+                                                id="hs-pro-shcafpw"
+                                                className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                                placeholder="Password"
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                             />
-                                            {/* Toggle password visibility button */}
-                                            <button type="button" data-hs-toggle-password='{
-                                                "target": ["#hs-pro-dappnp", "#hs-pro-dapprnp"]
-                                            }' className="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500">
-                                                <svg className="shrink-0 size-4" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path className="hs-password-active:hidden" d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-                                                    <path className="hs-password-active:hidden" d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
-                                                    <path className="hs-password-active:hidden" d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
-                                                    <line className="hs-password-active:hidden" x1="2" x2="22" y1="2" y2="22"/>
-                                                    <path className="hidden hs-password-active:block" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                                                    <circle className="hidden hs-password-active:block" cx="12" cy="12" r="3"/>
+                                            <button
+                                                type="button" // Important: Set type to "button" to prevent form submission
+                                                onClick={() => setShowPassword((prev) => !prev)} // Toggle showPassword state
+                                                className="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
+                                                >
+                                                {showPassword ? (
+                                                // Eye-slash icon (hide password)
+                                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                                                    <line x1="2" x2="22" y1="2" y2="22"/>
                                                 </svg>
+                                                ) : (
+                                                // Eye icon (show password)
+                                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                                    <circle cx="12" cy="12" r="3"/>
+                                                </svg>
+                                                )}
                                             </button>
                                         </div>
                                     </div>
@@ -467,65 +520,72 @@ export default function Signup() {
                                     <div id="hs-pro-dappnp-hints" className="mt-2">
                                         <ul className="space-y-2 text-xs text-gray-500 dark:text-neutral-500">
                                             {/* Min Length Rule */}
-                                            <li className={`${passwordRules.minLength ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                {passwordRules.minLength ? (
-                                                    <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                                                ) : (
-                                                    <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>
-                                                )}
-                                                <span className="text-gray-500 dark:text-neutral-200">Minimum {MIN_PASSWORD_LENGTH} characters</span>
-                                            </li>
+                                            {visibleRules.minLength && (
+                                                        <li className={`${passwordRules.minLength ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                            {passwordRules.minLength ? (
+                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                            ) : (
+                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
+                                                            )}
+                                                            <span className="text-gray-500 dark:text-neutral-200">Minimum {MIN_PASSWORD_LENGTH} characters</span>
+                                                        </li>
+                                                    )}
 
                                             {/* Lowercase Rule */}
-                                            <li className={`${passwordRules.lowercase ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                {passwordRules.lowercase ? (
-                                                    <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                                                ) : (
-                                                    <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>
-                                                )}
-                                                <span className="text-gray-500 dark:text-neutral-200">Contain lowercase</span>
-                                            </li>
+                                            {visibleRules.lowercase && (
+                                                        <li className={`${passwordRules.lowercase ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                            {passwordRules.lowercase ? (
+                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                            ) : (
+                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
+                                                            )}
+                                                            <span className="text-gray-500 dark:text-neutral-200">Contain lowercase</span>
+                                                        </li>
+                                                    )}
 
                                             {/* Uppercase Rule */}
-                                            <li className={`${passwordRules.uppercase ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                {passwordRules.uppercase ? (
-                                                    <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                                                ) : (
-                                                    <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>
-                                                )}
-                                                <span className="text-gray-500 dark:text-neutral-200">Contain uppercase</span>
-                                            </li>
+                                            {visibleRules.uppercase && (
+                                                        <li className={`${passwordRules.uppercase ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                            {passwordRules.uppercase ? (
+                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                            ) : (
+                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
+                                                            )}
+                                                            <span className="text-gray-500 dark:text-neutral-200">Contain uppercase</span>
+                                                        </li>
+                                                    )}
 
                                             {/* Numbers Rule */}
-                                            <li className={`${passwordRules.numbers ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                {passwordRules.numbers ? (
-                                                    <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                                                ) : (
-                                                    <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>
-                                                )}
-                                                <span className="text-gray-500 dark:text-neutral-200">Contain numbers</span>
-                                            </li>
+                                            {visibleRules.numbers && (
+                                                        <li className={`${passwordRules.numbers ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                            {passwordRules.numbers ? (
+                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                            ) : (
+                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
+                                                            )}
+                                                            <span className="text-gray-500 dark:text-neutral-200">Contain numbers</span>
+                                                        </li>
+                                                    )}
 
                                             {/* Special Characters Rule */}
-                                            <li className={`${passwordRules.specialCharacters ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                {passwordRules.specialCharacters ? (
-                                                    <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-                                                ) : (
-                                                    <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/></svg>
-                                                )}
-                                                <span className="text-gray-500 dark:text-neutral-200">
-                                                    Contain special characters like ~!@$%etc...
-                                                </span>
-                                            </li>
+                                            {visibleRules.specialCharacters && (
+                                                        <li className={`${passwordRules.specialCharacters ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                            {passwordRules.specialCharacters ? (
+                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                            ) : (
+                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
+                                                            )}
+                                                            <span className="text-gray-500 dark:text-neutral-200">
+                                                                Contain special characters like ~!@$%etc...
+                                                            </span>
+                                                        </li>
+                                                    )}
                                         </ul>
                                     </div>
                                 </div>
                                 {/* End Password Input and Rules */}
                                 
                                <div className="relative mt-3" ref={dropdownRef}>
-                                <label htmlFor="hs-pro-dalf" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
-                                        Phone Number
-                                    </label>
                                         <div className="flex">
                                             <button
                                                 type="button"
@@ -630,7 +690,31 @@ export default function Signup() {
                         <a href="#" className="hover:underline">Your Privacy Choices</a>
                         <a href="#" className="hover:underline">About us</a>
                     </div>
-                    <p className="mt-2">© {new Date().getFullYear()} RingsNRoses</p>
+                    <div className="flex items-center justify-center gap-x-2 mt-2">
+            <p className="text-gray-500 text-sm dark:text-gray-400">© {new Date().getFullYear()} RingsNRoses</p>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="text-xs text-gray-500 dark:text-gray-400 hover:underline flex items-center justify-center space-x-1"
+            >
+              {theme === "dark" ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                  </svg>
+                  <span>Dark Mode</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                  </svg>
+                  <span>Light Mode</span>
+                </>
+              )}
+            </button>
+          </div>
 
                 </div>
                 <div className="mt-4"></div>
