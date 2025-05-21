@@ -725,13 +725,14 @@ useEffect(() => {
                 {/* ========== END MAIN CONTENT ========== */}
 
                 {/* Adjusted width to w-3/5 (60%) and ensured it's only visible on lg screens and up */}
-                <div className="relative hidden w-3/5 flex-shrink lg:block">
-                    <img
-                        alt=""
-                        src="https://images.unsplash.com/photo-1496917756835-20cb06e75b4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1908&q=80"
-                        className="absolute inset-0 size-full object-cover"
-                    />
-                </div>
+<div className="relative flex justify-center items-center w-full h-screen">
+  <img
+    alt="Access Account Illustration"
+    src="undraw_access-account_aydp.svg"
+    className="object-contain max-w-full max-h-full"
+  />
+</div>
+
             </div>
             <footer>
                 <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-500 gap-1">
