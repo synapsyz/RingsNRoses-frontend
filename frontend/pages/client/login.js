@@ -18,12 +18,31 @@ export default function Login() {
 
   useEffect(() => {
     const root = window.document.documentElement;
+    // Apply default light/dark background to the entire page via HTML/body
     if (theme === "dark") {
-      root.classList.add("dark");
+      root.classList.add("dark", "bg-gray-900", "text-white"); // Added bg-gray-900 and text-white for global styling
+      root.classList.remove("bg-white", "text-gray-900"); // Remove light mode global styles
     } else {
-      root.classList.remove("dark");
+      root.classList.remove("dark", "bg-gray-900", "text-white");
+      root.classList.add("bg-white", "text-gray-900"); // Added bg-white and text-gray-900 for global styling
     }
   }, [theme]);
+
+  // Initialize theme from local storage or system preference on first load
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme) {
+      setTheme(storedTheme);
+    } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      setTheme("dark");
+    }
+  }, []);
+
+  // Save theme to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,9 +74,16 @@ export default function Login() {
 
   return (
     <>
+    <Head>
+        <title>Business Login</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <ErrorAlert errors={errors} />
-      <div className="flex min-h-full flex-1">
-        <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+      {/* Main container with min-h-screen to ensure it takes full height */}
+      <div className="flex min-h-screen flex-1">
+        {/* Left column - Login Form */}
+        <main>
+        <div className="flex flex-1 flex-col justify-center px-4 py-8 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
             <div>
               <img
@@ -65,10 +91,12 @@ export default function Login() {
                 src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
                 className="h-10 w-auto"
               />
-              <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900">Sign in to your Business Account</h2>
-              <p className="mt-2 text-sm/6 text-gray-500">
+              {/* Text color applied via global styling or specific dark:text-white */}
+              <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to your Business Account</h2>
+              <p className="mt-2 text-sm/6 text-gray-500 dark:text-gray-300"> {/* Use a lighter gray for dark mode for better contrast */}
                 Not a member?{' '}
-                <a href="/client/signup" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                <a href="/client/signup" className="font-semibold hover:underline"
+                style={{ color: '#e87fe6' }}>
                   Create your Business Account
                 </a>
               </p>
@@ -78,7 +106,7 @@ export default function Login() {
               <div>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
-                    <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
+                    <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900 dark:text-white">
                       Email address
                     </label>
                     <div className="mt-2">
@@ -101,22 +129,23 @@ export default function Login() {
                       <label htmlFor="password" className="block text-sm font-medium text-gray-800 dark:text-white">
                         Password
                       </label>
-                      <Link href="/forgot-password" className="inline-flex items-center gap-x-1.5 text-xs text-blue-600 hover:underline focus:outline-none focus:underline dark:text-blue-500">
+                      <Link href="/forgot-password" className="inline-flex items-center gap-x-1.5 text-xs hover:underline focus:outline-none focus:underline "
+                      style={{ color: '#e87fe6' }}>
                         I forgot my password
                       </Link>
                     </div>
-                    <div className="relative mt-2"> {/* Added relative positioning */}
+                    <div className="relative mt-2">
                       <input
                         type={showPassword ? "text" : "password"}
                         id="password"
-                        className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600 pr-10" // Added pr-10 for padding on the right
+                        className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600 pr-10"
                         placeholder="******"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                       />
                       <button
-                        type="button" // Important: set type to button to prevent form submission
+                        type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
                         className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
                       >
@@ -138,7 +167,13 @@ export default function Login() {
                   <div>
                     <button
                       type="submit"
-                      className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                      className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2"
+                      style={{
+                        backgroundColor: '#e87fe6',
+                        // focusRingColor: '#e87fe6', // This is not a direct CSS property. Use Tailwind's focus:ring-purple-500
+                      }}
+                      // Tailwind for focus ring if you want to use it
+                      // focus:ring-[#e87fe6] focus:ring-offset-2
                     >
                       Sign in
                     </button>
@@ -149,18 +184,18 @@ export default function Login() {
               <div className="mt-10">
                 <div className="relative">
                   <div aria-hidden="true" className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200" />
+                    <div className="w-full border-t border-gray-300 dark:border-white" />
                   </div>
                   <div className="relative flex justify-center text-sm/6 font-medium">
-                    <span className="bg-white px-6 text-gray-900">Or continue with</span>
+                    <span className="bg-white px-6 text-gray-900 dark:bg-gray-900 dark:text-white">Or continue with</span>
                   </div>
                 </div>
 
                 <div className="mt-6 grid grid-cols-1 gap-4">
                   <a
-                    type="button"
+                    type="button" // This should actually be a button if it's not a link, or if it is, remove type="button"
                     href="#"
-                    className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:focus:ring-neutral-600"
+                    className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-gray-700 dark:focus:ring-neutral-600"
                   >
                     <svg className="shrink-0 size-4" width="33" height="32" viewBox="0 0 33 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <g clipPath="url(#clip0_4132_5805)">
@@ -182,16 +217,18 @@ export default function Login() {
             </div>
           </div>
         </div>
-        <div className="relative hidden w-0 flex-1 lg:block">
+        </main>
+        {/* Right column - Image */}
+        <div className="relative hidden w-0 flex-1 lg:block dark:bg-gray-900 mt-6"> {/* Added background to the image container */}
           <img
             alt=""
             src="./undraw_business-decisions.svg"
-            className="absolute inset-0 size-full object-cover"
+            className="absolute inset-0 size-100 object-cover" // Applied filters here
           />
         </div>
-      </div>
-      <footer>
-        <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-500 gap-1">
+        
+<footer className="w-full py-4 px-6 bg-white dark:bg-gray-900 fixed -bottom-3 mt-8"> {/* Added background to footer */}
+        <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-400 gap-1 pb-4"> {/* Added pb-4 for some padding */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
             <a href="/client/signup" className="hover:underline">Register your business</a>
             <a href="#" className="hover:underline">Contact us</a>
@@ -199,9 +236,37 @@ export default function Login() {
             <a href="#" className="hover:underline">Your Privacy Choices</a>
             <a href="#" className="hover:underline">About us</a>
           </div>
-          <p className="mt-2">© 2025 RingsNRoses</p>
+          <div className="flex items-center gap-x-2 mt-2">
+            <p className="dark:text-gray-400">© 2025 RingsNRoses</p> {/* Ensure copyright text changes color */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+             className="text-xs text-gray-500 dark:text-gray-400 hover:underline flex items-center justify-center space-x-1"
+            >
+              {theme === "dark" ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                  </svg>
+                  <span>Dark Mode</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                  </svg>
+                  <span>Light Mode</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
+        
       </footer>
+      </div>
+      {/* Footer */}
+      
     </>
   );
 }
