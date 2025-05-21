@@ -155,60 +155,19 @@ export default function Login() {
                                         </div>
                                         {/* End Strong Password */}
                                     </div>
-
+<div>
+                                    <input type="text" className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="Name" />
+                                </div>
+                                <div>
+                                    <input type="tel"  className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="Phone Number" />
+                                </div>
                                     <div className="space-y-5">
-                                        <div className="pt-5 mt-6 border-t border-gray-200 dark:border-neutral-700">
-                                            <div className="space-y-3">
-                                                <div className="flex justify-between gap-4">
-                                                    <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                                                        Wedding Date
-                                                    </h4>
-                                                    <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                                                        Location
-                                                    </h4>
-                                                </div>
-                                                {/* Input */}
-                                                <div className="flex items-center gap-4">
-                                                    {/* Wedding Date */}
-                                                    <div className="w-1/2">
-                                                        <label htmlFor="hs-pro-shcafbr" className="sr-only">
-                                                            Wedding Date
-                                                        </label>
-                                                        <input
-                                                            id="hs-pro-shcafbr"
-                                                            type="date"
-                                                            className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                            min={minWeddingDate} // This must be YYYY-MM-DD for functionality
-                                                        />
-                                                        {/* Optional: You could display the formatted date here if needed,
-                                                            but the input's 'min' will still be YYYY-MM-DD */}
-                                                    </div>
-
-                                                    {/* Location Dropdown Without Arrow */}
-                                                    <div className="w-1/2">
-                                                        <label htmlFor="loc" className="sr-only">
-                                                            Location
-                                                        </label>
-                                                        <select
-                                                            id="loc"
-                                                            className="appearance-none py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                        >
-                                                            <option value="">Select Location</option>
-                                                            <option value="bangalore">Bangalore</option>
-                                                            <option value="hyderabad">Hyderabad</option>
-                                                            <option value="delhi">Delhi</option>
-                                                            <option value="mumbai">Mumbai</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                                {/* End Input */}
-                                            </div>
-                                        </div>
+                                       
 
                                         <div className="pt-5 mt-6 border-t border-gray-200 dark:border-neutral-700">
                                             <div className="space-y-3">
                                                 <h4 className="block mb-4 font-medium text-sm text-gray-800 dark:text-neutral-200">
-                                                    Role
+                                                   Wedding Role
                                                 </h4>
 
                                                 {/* Radio - Bride */}
@@ -277,7 +236,53 @@ export default function Login() {
                                                 </div>
                                             </div>
                                         </div>
+ <div className="pt-5 mt-6 border-t border-gray-200 dark:border-neutral-700">
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between gap-4">
+                                                    <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
+                                                        Wedding Date
+                                                    </h4>
+                                                    <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
+                                                        Location
+                                                    </h4>
+                                                </div>
+                                                {/* Input */}
+                                                <div className="flex items-center gap-4">
+                                                    {/* Wedding Date */}
+                                                    <div className="w-1/2">
+                                                        <label htmlFor="hs-pro-shcafbr" className="sr-only">
+                                                            Wedding Date
+                                                        </label>
+                                                        <input
+                                                            id="hs-pro-shcafbr"
+                                                            type="date"
+                                                            className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                                            min={minWeddingDate} // This must be YYYY-MM-DD for functionality
+                                                        />
+                                                        {/* Optional: You could display the formatted date here if needed,
+                                                            but the input's 'min' will still be YYYY-MM-DD */}
+                                                    </div>
 
+                                                    {/* Location Dropdown Without Arrow */}
+                                                    <div className="w-1/2">
+                                                        <label htmlFor="loc" className="sr-only">
+                                                            Location
+                                                        </label>
+                                                        <select
+                                                            id="loc"
+                                                            className="appearance-none py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm text-gray-700 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                                        >
+                                                            <option value="">Select Location</option>
+                                                            <option value="bangalore">Bangalore</option>
+                                                            <option value="hyderabad">Hyderabad</option>
+                                                            <option value="delhi">Delhi</option>
+                                                            <option value="mumbai">Mumbai</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                {/* End Input */}
+                                            </div>
+                                        </div>
                                         <div className="pt-5 mt-6 border-t border-gray-200 dark:border-neutral-700">
                                             {/* Checkbox */}
                                             <div className="flex gap-x-1">

@@ -233,11 +233,10 @@ export default function Signup() {
                                     </div>
                                 </div>
                                 {/* End Password Input and Rules */}
-<div>
+                                <div>
                                     <label htmlFor="hs-pro-dalfn" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
                                         Full name
                                     </label>
-
                                     <input type="text" id="hs-pro-dalfn" className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="John Doe" />
                                 </div>
                                 <div>
