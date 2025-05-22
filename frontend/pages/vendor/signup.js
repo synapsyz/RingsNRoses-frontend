@@ -2,7 +2,13 @@
 import Head from 'next/head';
 import { useState, useEffect, useRef } from "react"; // Import useRef
 import Link from "next/link";
+import axios from "axios"; // Import axios
+import AsyncSelect from "react-select/async"; // Import AsyncSelect
 
+// Axios instance for backend communication
+const api = axios.create({
+    baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
+});
 export default function Signup() {
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -313,6 +319,8 @@ const toggleTheme = () => {
             });
         };
         checkPasswordStrength();
+        setCountries(COUNTRY_DATA);
+        setFilteredCountries(COUNTRY_DATA);
     }, [password]); // Re-run effect whenever password changes
  const handleCountrySearchChange = (event) => {
         const term = event.target.value;
@@ -589,7 +597,7 @@ const toggleTheme = () => {
                                         <div className="flex">
                                             <button
                                                 type="button"
-                                                className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-400 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600"
+                                                className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-400 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-900 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600"
                                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                             >
                                                 {selectedCountry.flag} {selectedCountry.code}
