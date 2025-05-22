@@ -18,3 +18,8 @@ a {
 * {
   box-sizing: border-box;
 }
+label:has(input[type="radio"]:checked) {
+  border-color: #4f46e5; /* Example: Indigo border */
+  background-color: #e0e7ff; /* Example: Light indigo background */
+  color: #4f46e5; /* Change text color when selected */
+}

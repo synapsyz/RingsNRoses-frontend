@@ -217,7 +217,7 @@ export default function Login() {
         <footer className="w-full py-4 px-6 bg-white dark:bg-gray-900 fixed bottom-0"> 
           <div className="flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-400 gap-1 gap-x-8">
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-              <a href="/client/signup" className="hover:underline">Register your business</a>
+              <a href="/vendor/signup" className="hover:underline">Register your business</a>
               <a href="#" className="hover:underline">Contact us</a>
               <a href="#" className="hover:underline">Terms & privacy</a>
               <a href="#" className="hover:underline">Your Privacy Choices</a>

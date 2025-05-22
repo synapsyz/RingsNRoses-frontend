@@ -95,7 +95,7 @@ export default function Login() {
               <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to your Business Account</h2>
               <p className="mt-2 text-sm/6 text-gray-500 dark:text-gray-300"> {/* Use a lighter gray for dark mode for better contrast */}
                 Not a member?{' '}
-                <a href="/client/signup" className="font-semibold hover:underline"
+                <a href="/vendor/signup" className="font-semibold hover:underline"
                 style={{ color: '#e87fe6' }}>
                   Create your Business Account
                 </a>
@@ -230,7 +230,7 @@ export default function Login() {
 <footer className="w-full py-4 px-6 bg-white dark:bg-gray-900 fixed -bottom-3 mt-8"> {/* Added background to footer */}
         <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-400 gap-1 pb-4"> {/* Added pb-4 for some padding */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-            <a href="/client/signup" className="hover:underline">Register your business</a>
+            <a href="/vendor/signup" className="hover:underline">Register your business</a>
             <a href="#" className="hover:underline">Contact us</a>
             <a href="#" className="hover:underline">Terms & privacy</a>
             <a href="#" className="hover:underline">Your Privacy Choices</a>

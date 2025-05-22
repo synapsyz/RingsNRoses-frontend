@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [locations, setLocations] = useState([]);
-  const [pageUrl, setPageUrl] = useState('http://localhost:8000/api/v1/locations/');
+  const [pageUrl, setPageUrl] = useState('http://localhost:8000/api/v1/locations/countries/');
   const [nextPage, setNextPage] = useState(null);
   const [prevPage, setPrevPage] = useState(null);
   const [error, setError] = useState(null);
@@ -14,9 +14,6 @@ export default function Dashboard() {
       const token = session?.accessToken;
 
       fetch(pageUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       })
         .then((res) => {
           if (!res.ok) throw new Error('Failed to fetch');
@@ -42,14 +39,11 @@ export default function Dashboard() {
 
       <ul className="space-y-2">
         {locations.map((loc) => (
-          <li key={loc.id} className="border p-4 rounded shadow">
-            <p><strong>{loc.name}</strong></p>
-            <p>Lat: {loc.latitude}, Lng: {loc.longitude}</p>
-            <p>Country: {loc.country}, Region: {loc.region}</p>
+          <li key={loc.name} className="border p-4 rounded shadow">
+            <p>Lat: {loc.code}, Lng: {loc.longitude}</p>
           </li>
         ))}
       </ul>
-
       <div className="flex justify-between mt-6">
         <button
           onClick={() => setPageUrl(prevPage)}
