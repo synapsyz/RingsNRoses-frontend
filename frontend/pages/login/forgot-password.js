@@ -23,9 +23,6 @@ const handleSubmit = async (e) => {
     });
 
     setSuccess('Password reset link sent to your email...');
-    setTimeout(() => {
-      router.push('/login/resetpassword');
-    }, 2000);
   } catch (err) {
     console.error(err);
     setError(err.response?.data?.detail || 'Something went wrong.');
