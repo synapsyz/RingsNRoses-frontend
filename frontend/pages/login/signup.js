@@ -6,73 +6,21 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
+import LocationSelector from "./location"; // adjust path as needed
+
 
 // Axios instance for backend communication
 const api = axios.create({
     baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
 });
 
-// --- Location Fetching Functions ---
-// These functions will be used by AsyncSelect to load options
-const fetchCountries = async (inputValue) => {
-    try {
-        const response = await api.get("/locations/countries/", {
-            params: { search: inputValue },
-        });
-        // Ensure you're mapping to { label, value } format
-        return response.data.results.map((country) => ({
-            label: country.name,
-            value: country.code, // Assuming country.code is what your backend expects for country ID
-        }));
-    } catch (error) {
-        console.error("Error fetching countries:", error);
-        return [];
-    }
-};
-
-const fetchStates = async (inputValue, countryCode) => {
-    if (!countryCode) return []; // Don't fetch states if no country is selected
-    try {
-        const response = await api.get("/locations/state/", {
-            params: { search: inputValue, country: countryCode },
-        });
-        // Ensure you're mapping to { label, value } format
-        return response.data.results.map((state) => ({
-            label: state.name,
-            value: state.id, // Assuming state.id is what your backend expects for state ID
-        }));
-    } catch (error) {
-        console.error("Error fetching states:", error);
-        return [];
-    }
-};
-
-const fetchLocations = async (inputValue, stateId) => {
-    if (!stateId) return []; // Don't fetch locations if no state is selected
-    try {
-        const response = await api.get("/locations/", {
-            params: { search: inputValue, state: stateId },
-        });
-        // Ensure you're mapping to { label, value } format
-        return response.data.results.map((location) => ({
-            label: location.name,
-            value: location.id, // Assuming location.id is what your backend expects for location ID
-        }));
-    } catch (error) {
-        console.error("Error fetching locations:", error);
-        return [];
-    }
-};
-// --- End Location Fetching Functions ---
-
-
 // Wedding roles mapping for the backend (assuming numerical IDs)
 const WEDDING_ROLES = [
-    { label: "Bride", value: 1, emoji: "👰" },
-    { label: "Groom", value: 2, emoji: "🤵" },
-    { label: "Guest", value: 3, emoji: "🎉" },
-    { label: "Family", value: 4, emoji: "👨‍👩‍👧‍👦" },
-    { label: "Friend", value: 5, emoji: "🤝" },
+    { label: "Bride", value: 1, emoji: "👰" ,svg: ""},
+    { label: "Groom", value: 2, emoji: "🤵" ,svg: ""},
+    { label: "Guest", value: 3, emoji: "🎉" ,svg: ""},
+    { label: "Family", value: 4, emoji: "👨‍👩‍👧‍👦" ,svg: ""},
+    { label: "Friend", value: 5, emoji: "🤝" ,svg: ""},
 ];
 
 // List of countries with flags and codes for phone number dropdown
@@ -325,9 +273,10 @@ export default function Signup() {
     const [selectedRole, setSelectedRole] = useState(WEDDING_ROLES[2]); // Default to Guest (value: 3)
 
     // States for location selector (using react-select/async directly)
-    const [selectedCountry, setSelectedCountry] = useState(null); // Stores { label, value } of selected country
-    const [selectedState, setSelectedState] = useState(null);   // Stores { label, value } of selected state
     const [selectedLocation, setSelectedLocation] = useState(null); // Stores { label, value } of selected location
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [locationDetails, setLocationDetails] = useState(null);
+
 
     // UI states
     const [showPassword, setShowPassword] = useState(false);
@@ -495,13 +444,13 @@ export default function Signup() {
                 email: formData.email,
                 password: formData.password,
                 name: formData.name,
-                phone: getFullPhoneNumber(), // Combined phone number
+                phone: getFullPhoneNumber(), 
                 wedding_date: formData.wedding_date || null,
                 wedding_role: selectedRole.value,
-                // Send only the 'value' (ID) to the backend, null if not selected
-                wedding_location: selectedLocation?.value ?? null,
-            };
+                wedding_location: selectedLocation.value,
 
+
+            };
             const res = await api.post("/signup/customer/", payload);
 
             const { access, refresh, email, user_id } = res.data;
@@ -579,7 +528,7 @@ export default function Signup() {
                 {/* Your header content would go here */}
 
                 <main id="content" className="pb-23 sm:pb-16 w-2/5 flex-grow">
-                    <div className="py-10 lg:py-20 w-full px-4 sm:px-6 lg:px-8 mx-auto">
+                    <div className="mt-10 w-full px-4 sm:px-6 lg:px-8 mx-auto">
                         <div className="w-full max-w-sm mx-auto">
                             <div className="space-y-8">
                                 <form onSubmit={handleSignup}>
@@ -835,7 +784,7 @@ export default function Signup() {
                                                                 onChange={handleRoleChange}
                                                                 required // Make role required
                                                             />
-                                                            <span className="block mb-1 text-xl">{role.emoji}</span>{role.label}
+                                                            <span className="block mb-1 text-xl"></span>{role.label}
                                                         </label>
                                                     ))}
                                                 </div>
@@ -863,56 +812,56 @@ export default function Signup() {
                                                 </div>
 
                                                 {/* Location Selection with AsyncSelect */}
-                                                <div className=" flex flex-col flex-1 space-y-3">
-                                                    <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                                                        Wedding Location
-                                                    </h4>
-                                                    <AsyncSelect
-                                                        cacheOptions
-                                                        defaultOptions
-                                                        loadOptions={fetchCountries}
-                                                        value={selectedCountry}
-                                                        onChange={(value) => {
-                                                            setSelectedCountry(value);
-                                                            setSelectedState(null); // Reset state when country changes
-                                                            setSelectedLocation(null); // Reset location when country changes
-                                                        }}
-                                                        placeholder="Select Country"
-                                                        styles={customStyles} // Apply custom styles
-                                                    />
-
-                                                    {selectedCountry && (
-                                                        <AsyncSelect
-                                                            cacheOptions
-                                                            defaultOptions
-                                                            loadOptions={(inputValue) => fetchStates(inputValue, selectedCountry.value)}
-                                                            value={selectedState}
-                                                            onChange={(value) => {
-                                                                setSelectedState(value);
-                                                                setSelectedLocation(null); // Reset location when state changes
-                                                            }}
-                                                            placeholder="Select State"
-                                                            styles={customStyles} // Apply custom styles
-                                                        />
-                                                    )}
-
-                                                    {selectedState && (
-                                                        <AsyncSelect
-                                                            cacheOptions
-                                                            defaultOptions
-                                                            loadOptions={(inputValue) =>
-                                                                fetchLocations(inputValue, selectedState.value)
-                                                            }
-                                                            value={selectedLocation}
-                                                            onChange={setSelectedLocation}
-                                                            placeholder="Select Wedding Location"
-                                                            styles={customStyles} // Apply custom styles
-                                                        />
-                                                    )}
-                                                </div>
+                                                    
                                             </div>
+{/* <h3 className="pb-2 mt-8 mb-3 text-xs text-gray-500 border-b border-gray-200 dark:text-neutral-500 dark:border-neutral-700">
+  Location Details
+</h3> */}
+
+<div className="-mx-3 flex flex-col py-3">
+  <div className="p-3 group w-full flex items-center gap-x-4 text-start rounded-2xl">
+    <div className="shrink-0 relative">
+      <span className="shrink-0 size-11 inline-flex justify-center items-center bg-gray-100 text-gray-800 rounded-full dark:bg-neutral-800 dark:text-neutral-300">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+</svg>
+
+      </span>
+    </div>
+    <div className="grow">
+      <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
+        Wedding location
+      </span>
+      <span className="block text-sm text-gray-500 dark:text-neutral-500">
+        {locationDetails?.location}, {locationDetails?.state}
+      </span>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="mt-1 inline-block font-medium text-sm text-start text-purple-600 underline underline-offset-4 hover:text-purple-700 focus:outline-hidden dark:text-purple-500 dark:hover:text-purple-600"
+      >
+        Change Location
+      </button>
+    </div>
+  </div>
+</div>
+
+<LocationSelector
+  isOpen={isModalOpen}
+  onClose={() => setIsModalOpen(false)}
+  onSave={(details) => {
+    setLocationDetails(details);
+    setSelectedLocation({ value: details.id, label: details.location }); // <-- This is critical
+    setIsModalOpen(false);
+  }}
+  onChange={(details) => {
+    setLocationDetails(details);
+    setSelectedLocation({ value: details.id, label: details.location }); // <-- Also update here
+  }}
+/>
+
                                         </div>
-                                        <div className="pt-5 mt-6 border-t border-gray-200 dark:border-neutral-700">
+                                        <div className="pt-3 mt-6 border-t border-gray-200 dark:border-neutral-700">
                                             {/* Checkbox */}
                                             <div className="flex gap-x-1">
                                                 <input
@@ -959,12 +908,15 @@ export default function Signup() {
                     </div>
                 </main>
 
+
+
                 <div className="hidden md:flex relative justify-center items-center w-full h-screen">
                     <img
                         alt="Access Account Illustration"
-                        src="undraw_access-account_aydp.svg"
+                        src="vecteezy_indian-wedding-couple-in-traditional-attire_57323689.PNG"
                         className="object-contain max-w-full max-h-full"
                     />
+                    
                 </div>
             </div>
             <footer>

@@ -1,100 +1,221 @@
-import { useState } from "react";
-import AsyncSelect from "react-select/async";
-import axios from "axios";
+import { useState, useEffect, Fragment } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import Select from 'react-select';
+import AsyncSelect from 'react-select/async';
 
-const fetchCountries = async (inputValue) => {
-  try {
-    const res = await axios.get("http://localhost:8000/api/v1/locations/countries/", {
-      params: { search: inputValue },
-    });
-    return res.data.results.map((c) => ({
-      label: c.name,
-      value: c.code,
-    }));
-  } catch {
-    return [];
-  }
-};
-
-const fetchStates = async (inputValue, countryCode) => {
-  if (!countryCode) return [];
-  try {
-    const res = await axios.get("http://localhost:8000/api/v1/locations/state/", {
-      params: { search: inputValue, country: countryCode },
-    });
-    return res.data.results.map((s) => ({
-      label: s.name,
-      value: s.id,
-    }));
-  } catch {
-    return [];
-  }
-};
-
-const fetchLocations = async (inputValue, stateId) => {
-  if (!stateId) return [];
-  try {
-    const res = await axios.get("http://localhost:8000/api/v1/locations/", {
-      params: { search: inputValue, state: stateId },
-    });
-    return res.data.results.map((l) => ({
-      label: l.name,
-      value: l.id,
-    }));
-  } catch {
-    return [];
-  }
-};
-
-const LocationSelector = ({ onCountryChange, onStateChange, onLocationChange }) => {
-  const [selectedCountry, setSelectedCountry] = useState(null);
+const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
+  const [countries] = useState([{ code: 'IN', name: 'India' }]);
+  const [states, setStates] = useState([]);
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [selectedState, setSelectedState] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const loadCountries = (input, cb) => fetchCountries(input).then(cb);
-  const loadStates = (input, cb) => fetchStates(input, selectedCountry?.value).then(cb);
-  const loadLocations = (input, cb) => fetchLocations(input, selectedState?.value).then(cb);
+  useEffect(() => {
+    const getUserLocation = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        const country = data.country || 'IN';
+        const region = data.region;
+        const city = data.city;
+
+        setSelectedCountry(country);
+        fetchStates(country, region, city);
+      } catch (error) {
+        console.error('Failed to fetch user location:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getUserLocation();
+  }, []);
+
+  const fetchStates = async (countryCode, regionToSelect = '', cityToMatch = '') => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/v1/locations/state/?country=${countryCode}`);
+      const data = await res.json();
+      const formattedStates = data.results.map((s) => ({
+        value: s.name,
+        label: s.name,
+      }));
+      setStates(formattedStates);
+
+      if (regionToSelect) {
+        const matched = formattedStates.find(
+          (state) => state.label.toLowerCase() === regionToSelect.toLowerCase()
+        );
+        setSelectedState(matched || null);
+        if (matched) {
+          fetchInitialLocation(matched.value, cityToMatch);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch states:', error);
+    }
+  };
+
+  const fetchInitialLocation = async (stateName, matchCity = '') => {
+    try {
+      const url = `http://localhost:8000/api/v1/locations/?state=${encodeURIComponent(stateName)}&search=${encodeURIComponent(matchCity)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const formattedLocations = data.results.map((loc) => ({
+        value: loc.id,
+        label: loc.name,
+      }));
+
+      if (matchCity) {
+        const matchedLocation = formattedLocations.find(
+          (loc) => loc.label.toLowerCase() === matchCity.toLowerCase()
+        );
+        if (matchedLocation) {
+          setSelectedLocation(matchedLocation);
+          if (onChange) {
+            onChange({
+              country: selectedCountry,
+              state: stateName,
+              location: {
+                id: matchedLocation.value,
+                name: matchedLocation.label,
+              },
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch initial location:', error);
+    }
+  };
+
+  const handleStateChange = (selectedOption) => {
+    setSelectedState(selectedOption);
+    setSelectedLocation(null);
+  };
+
+  const loadLocationOptions = async (inputValue) => {
+    if (!selectedState?.value) return [];
+
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/v1/locations/?state=${encodeURIComponent(selectedState.value)}&search=${encodeURIComponent(inputValue)}`
+      );
+      const data = await res.json();
+      return data.results.map((loc) => ({
+        value: loc.id,
+        label: loc.name,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch locations:', error);
+      return [];
+    }
+  };
 
   return (
-    <div className="space-y-4 max-w-md">
-      <div>
-        <label className="text-sm font-medium">Country</label>
-        <AsyncSelect
-          loadOptions={loadCountries}
-          defaultOptions
-          onChange={(val) => {
-            setSelectedCountry(val);
-            setSelectedState(null);
-            onCountryChange?.(val);
-          }}
-          value={selectedCountry}
-          placeholder="Select country"
-        />
-      </div>
-      <div>
-        <label className="text-sm font-medium">State</label>
-        <AsyncSelect
-          loadOptions={loadStates}
-          defaultOptions
-          isDisabled={!selectedCountry}
-          onChange={(val) => {
-            setSelectedState(val);
-            onStateChange?.(val);
-          }}
-          value={selectedState}
-          placeholder="Select state"
-        />
-      </div>
-      <div>
-        <label className="text-sm font-medium">Location</label>
-        <AsyncSelect
-          loadOptions={loadLocations}
-          defaultOptions
-          isDisabled={!selectedState}
-          onChange={onLocationChange}
-          placeholder="Select location"
-        />
-      </div>
-    </div>
+    <Transition appear show={isOpen} as={Fragment}>
+      <Dialog as="div" className="relative z-50" onClose={onClose}>
+        <Transition.Child
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm" />
+        </Transition.Child>
+
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-6">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
+            >
+              <Dialog.Panel className="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all space-y-4">
+                <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                  Select Your Location
+                </Dialog.Title>
+
+                {/* State Dropdown */}
+                <div>
+                  <label className="block mb-1 text-sm font-medium">State</label>
+                  <Select
+                    options={states}
+                    value={selectedState}
+                    onChange={handleStateChange}
+                    placeholder="Select state"
+                  />
+                </div>
+
+                {/* Location Dropdown */}
+                {selectedState && (
+                  <div>
+                    <label className="block mb-1 text-sm font-medium">Location</label>
+                    <AsyncSelect
+                      cacheOptions
+                      defaultOptions
+                      loadOptions={loadLocationOptions}
+                      value={selectedLocation}
+                      onChange={(loc) => {
+                        setSelectedLocation(loc);
+                        if (onChange && loc) {
+                          onChange({
+                            country: selectedCountry,
+                            state: selectedState.label,
+                            location: {
+                              id: loc.value,
+                              name: loc.label,
+                            },
+                          });
+                        }
+                      }}
+                      placeholder="Search location"
+                      isClearable
+                    />
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="mt-4 flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                    onClick={onClose}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                    onClick={() => {
+                      if (!selectedState || !selectedLocation) return;
+
+                      onSave?.({
+                        country: selectedCountry,
+                        state: selectedState.label,
+                        location: {
+                          id: selectedLocation.value,
+                          name: selectedLocation.label,
+                        },
+                      });
+                    }}
+                  >
+                    Save
+                  </button>
+                </div>
+              </Dialog.Panel>
+            </Transition.Child>
+          </div>
+        </div>
+      </Dialog>
+    </Transition>
   );
 };
 
