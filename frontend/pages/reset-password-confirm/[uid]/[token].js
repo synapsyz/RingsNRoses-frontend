@@ -139,7 +139,7 @@ export default function ResetPasswordConfirm() {
                                         />
                                     </div>
                                     <div className="ms-3">
-                                        {/* <label
+                                        <label
                                             htmlFor="remember-me"
                                             className="text-sm dark:text-white"
                                         >
@@ -150,7 +150,7 @@ export default function ResetPasswordConfirm() {
                                             >
                                                 Terms and Conditions
                                             </a>
-                                        </label> */}
+                                        </label>
                                     </div>
                                 </div>
 

@@ -142,7 +142,7 @@ export default function Login() {
                   <label htmlFor="password" className="block text-sm font-medium text-gray-800 dark:text-white">
                     Password
                   </label>
-                  <Link href="/forgot-password" className="inline-flex items-center gap-x-1.5 text-xs hover:underline" style={{ color: '#e87fe6' }}>
+                  <Link href="/login/forgot-password" className="inline-flex items-center gap-x-1.5 text-xs hover:underline" style={{ color: '#e87fe6' }}>
                     I forgot my password
                   </Link>
                 </div>
