@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"; // Import useRef
 import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
+import { useRouter } from "next/navigation";
 
 // Axios instance for backend communication
 const api = axios.create({
@@ -12,6 +13,7 @@ const api = axios.create({
 export default function Signup() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const router = useRouter();
 
     const [formData, setFormData] = useState({
         name: "",
