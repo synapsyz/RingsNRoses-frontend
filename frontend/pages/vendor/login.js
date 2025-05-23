@@ -96,7 +96,7 @@ export default function Login() {
               <p className="mt-2 text-sm/6 text-gray-500 dark:text-gray-300"> {/* Use a lighter gray for dark mode for better contrast */}
                 Not a member?{' '}
                 <a href="/vendor/signup" className="font-semibold hover:underline"
-                style={{ color: '#e87fe6' }}>
+                style={{ color: '#f9a7a4' }}>
                   Create your Business Account
                 </a>
               </p>
@@ -130,7 +130,7 @@ export default function Login() {
                         Password
                       </label>
                       <Link href="/forgot-password" className="inline-flex items-center gap-x-1.5 text-xs hover:underline focus:outline-none focus:underline "
-                      style={{ color: '#e87fe6' }}>
+                      style={{ color: '#f9a7a4' }}>
                         I forgot my password
                       </Link>
                     </div>
@@ -169,11 +169,11 @@ export default function Login() {
                       type="submit"
                       className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2"
                       style={{
-                        backgroundColor: '#e87fe6',
-                        // focusRingColor: '#e87fe6', // This is not a direct CSS property. Use Tailwind's focus:ring-purple-500
+                        backgroundColor: '#f9a7a4',
+                        // focusRingColor: '#f9a7a4', // This is not a direct CSS property. Use Tailwind's focus:ring-purple-500
                       }}
                       // Tailwind for focus ring if you want to use it
-                      // focus:ring-[#e87fe6] focus:ring-offset-2
+                      // focus:ring-[#f9a7a4] focus:ring-offset-2
                     >
                       Sign in
                     </button>
@@ -222,7 +222,7 @@ export default function Login() {
         <div className="relative hidden w-0 flex-1 lg:block dark:bg-gray-900 mt-6"> {/* Added background to the image container */}
           <img
             alt=""
-            src="./undraw_business-decisions.svg"
+            src="./vendor_signup.svg"
             className="absolute inset-0 size-100 object-cover" // Applied filters here
           />
         </div>

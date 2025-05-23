@@ -913,7 +913,7 @@ export default function Signup() {
                 <div className="hidden md:flex relative justify-center items-center w-full h-screen">
                     <img
                         alt="Access Account Illustration"
-                        src="vecteezy_indian-wedding-couple-in-traditional-attire_57323689.PNG"
+                        src="undraw_global-team_8jok.svg"
                         className="object-contain max-w-full max-h-full"
                     />
                     

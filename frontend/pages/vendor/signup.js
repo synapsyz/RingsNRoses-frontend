@@ -471,13 +471,7 @@ export default function Signup() {
                         {/* Body */}
                         <div className='mt-6'>
                             <img
-                                className="dark:hidden rounded-md shadow-lg"
-                                src="https://i.ytimg.com/vi/jol8JBugmQY/maxresdefault.jpg"
-                                alt="Charts Mockups"
-                            />
-                            <img
-                                className="hidden dark:block rounded-md shadow-lg"
-                                src="https://i.ytimg.com/vi/jol8JBugmQY/maxresdefault.jpg"
+                                src="undraw_real-time-analytics_50za.svg"
                                 alt="Charts Mockups"
                             />
                             <p className="mt-4 text-sm text-gray-500 dark:text-neutral-500">
@@ -502,7 +496,7 @@ export default function Signup() {
                     {/* End Sidebar */}
                 </aside>
                 {/* Content */}
-                <main className="mt-24 flex-1 flex justify-center px-4 sm:px-6 lg:px-8">
+                <main className="mt-16 flex-1 flex justify-center px-4 sm:px-6 lg:px-8">
                     <div className="max-w-md w-full space-y-8">
                         {/* Title */}
                         <div>

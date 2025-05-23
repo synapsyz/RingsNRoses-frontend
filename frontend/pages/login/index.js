@@ -77,7 +77,7 @@ export default function Login() {
         <div className="flex-1 flex items-center justify-center">
           
           <img
-            src="./undraw_love_qypu.svg" // Replace with your image path
+            src="20250523_131759.png" // Replace with your image path
             alt="Wedding Theme"
             className="w-full h-auto object-cover"
           />
@@ -142,7 +142,7 @@ export default function Login() {
                   <label htmlFor="password" className="block text-sm font-medium text-gray-800 dark:text-white">
                     Password
                   </label>
-                  <Link href="/login/forgot-password" className="inline-flex items-center gap-x-1.5 text-xs hover:underline" style={{ color: '#e87fe6' }}>
+                  <Link href="/login/forgot-password" className="inline-flex items-center gap-x-1.5 text-xs hover:underline" style={{ color: '#f9a7a4' }}>
                     I forgot my password
                   </Link>
                 </div>
@@ -180,9 +180,9 @@ export default function Login() {
 
               <button
                 type="submit"
-                className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-[#e87fe6] focus:ring-offset-2"
+                className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-[#f9a7a4] focus:ring-offset-2"
                 style={{
-                  backgroundColor: '#e87fe6',
+                  backgroundColor: '#f9a7a4',
                 }}
               >
                 Sign in
@@ -194,7 +194,7 @@ export default function Login() {
               <Link
                 href="/login/signup"
                 className="font-semibold hover:underline"
-                style={{ color: '#e87fe6' }}
+                style={{ color: '#f9a7a4' }}
               >
                 Sign up
               </Link>
@@ -204,7 +204,7 @@ export default function Login() {
               <Link
                 href="/vendor/login"
                 className="font-semibold hover:underline ml-1 mr-1"
-                style={{ color: '#e87fe6' }}
+                style={{ color: '#f9a7a4' }}
               >
                 Sign in
               </Link>
