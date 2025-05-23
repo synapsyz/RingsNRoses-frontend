@@ -447,7 +447,7 @@ export default function Signup() {
             <div className="min-h-screen flex flex-col lg:flex-row">
 
                 {/* ========== MAIN CONTENT ========== */}
-                <aside className="hidden lg:flex lg:w-1/2 xl:w-2/5 flex-col justify-between p-6 dark:bg-gray-900">
+                <aside className="hidden lg:flex lg:w-1/2 xl:w-2/5 flex-col justify-between p-6 dark:bg-gray-900 h-screen sticky top-0">
                     {/* Sidebar */}
                     <div className="hidden min-h-screen lg:w-100 xl:w-107.5bg-gray-100 lg:flex flex-col justify-between p-6 dark:bg-gray-900">
                         {/* Header */}
@@ -496,7 +496,7 @@ export default function Signup() {
                     {/* End Sidebar */}
                 </aside>
                 {/* Content */}
-                <main className="mt-16 flex-1 flex justify-center px-4 sm:px-6 lg:px-8">
+                <main className="mt-16 flex-1 flex justify-center px-4 sm:px-6 lg:px-8 overflow-y-auto h-screen">
                     <div className="max-w-md w-full space-y-8">
                         {/* Title */}
                         <div>

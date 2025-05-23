@@ -527,7 +527,7 @@ export default function Signup() {
             <div className="flex min-h-full flex-1">
                 {/* Your header content would go here */}
 
-                <main id="content" className="pb-23 sm:pb-16 w-2/5 flex-grow">
+                <main id="content" className="w-2/5 h-screen overflow-y-auto bg-white dark:bg-gray-900">
                     <div className="mt-10 w-full px-4 sm:px-6 lg:px-8 mx-auto">
                         <div className="w-full max-w-sm mx-auto">
                             <div className="space-y-8">
