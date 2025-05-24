@@ -256,7 +256,8 @@ const COUNTRY_DATA = [
 
 export default function Signup() {
     const router = useRouter();
-
+   const [email, setemailError] = useState(null);
+    const [phoneExist, setphoneError] = useState(null);
     // Form data state
     const [formData, setFormData] = useState({
         name: "",
@@ -461,6 +462,17 @@ export default function Signup() {
 
             router.push("/dashboard"); // Use Next.js router for navigation
         } catch (err) {
+            // err = {"email":["user with this Email already exists."],"phone":["user with this Phone already exists."]}
+            let errorKey = Object.keys(err)
+            let errorValue = Object.values(err)
+            if(errorKey.includes('email')){
+                let index = errorKey.indexOf('email')
+                setemailError(errorValue[index][0])
+            }
+            if(errorKey.includes('phone')){
+                let index = errorKey.indexOf('phone')
+                setphoneError(errorValue[index][0])
+            }
             console.error("Signup error:", err.response?.data || err.message);
             // Display a more user-friendly error message
             setError(err.response?.data?.detail || err.response?.data?.message || "Signup failed. Please check your inputs.");
@@ -527,7 +539,7 @@ export default function Signup() {
             <div className="flex min-h-full flex-1">
                 {/* Your header content would go here */}
 
-                <main id="content" className="pb-23 sm:pb-16 w-2/5 flex-grow">
+                <main id="content" className="w-2/5 h-screen overflow-y-auto bg-white dark:bg-gray-900">
                     <div className="mt-10 w-full px-4 sm:px-6 lg:px-8 mx-auto">
                         <div className="w-full max-w-sm mx-auto">
                             <div className="space-y-8">
@@ -593,6 +605,9 @@ export default function Signup() {
                                                     onChange={handleChange}
                                                     required
                                                 />
+                                                {email && (
+                                                    <p className="text-sm text-red-600 mt-1">{email}</p>
+                                                )}
                                             </div>
 
                                             {/* Strong Password */}
@@ -726,7 +741,9 @@ export default function Signup() {
                                                     required // Make phone number required
                                                 />
                                             </div>
-
+ {phoneExist && (
+                                                    <p className="text-sm text-red-600 mt-1">{phoneExist}</p>
+                                                )}
                                             {isDropdownOpen && (
                                                 <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
                                                     <div className="p-2">
@@ -913,7 +930,7 @@ export default function Signup() {
                 <div className="hidden md:flex relative justify-center items-center w-full h-screen">
                     <img
                         alt="Access Account Illustration"
-                        src="vecteezy_indian-wedding-couple-in-traditional-attire_57323689.PNG"
+                        src="20250524_141607.png"
                         className="object-contain max-w-full max-h-full"
                     />
                     

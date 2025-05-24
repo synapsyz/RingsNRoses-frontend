@@ -128,32 +128,6 @@ export default function ResetPasswordConfirm() {
                                     </p>
                                 </div>
 
-                                {/* Terms Checkbox */}
-                                <div className="flex items-center">
-                                    <div className="flex">
-                                        <input
-                                            id="remember-me"
-                                            name="remember-me"
-                                            type="checkbox"
-                                            className="shrink-0 mt-0.5 border-gray-200 rounded-sm text-blue-600 focus:ring-blue-500 dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                                        />
-                                    </div>
-                                    <div className="ms-3">
-                                        <label
-                                            htmlFor="remember-me"
-                                            className="text-sm dark:text-white"
-                                        >
-                                            I accept the{' '}
-                                            <a
-                                                href="#"
-                                                className="text-blue-600 decoration-2 hover:underline focus:outline-hidden focus:underline font-medium dark:text-blue-500"
-                                            >
-                                                Terms and Conditions
-                                            </a>
-                                        </label>
-                                    </div>
-                                </div>
-
                                 <button
                                     type="submit"
                                     className="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 focus:outline-hidden focus:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none"

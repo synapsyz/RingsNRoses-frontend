@@ -4,13 +4,59 @@ import { useState, useEffect, useRef } from "react"; // Import useRef
 import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
+import { useRouter } from "next/navigation";
 
 // Axios instance for backend communication
 const api = axios.create({
     baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
 });
 export default function Signup() {
-    const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const router = useRouter();
+
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        password: "",
+        business_name: "",
+    });
+
+
+    const handleSignup = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        try {
+            const payload = {
+                email: formData.email,
+                password: formData.password,
+                name: formData.name,
+                business_name: formData.business_name,
+                phone: getFullPhoneNumber(),
+
+
+            };
+            const res = await api.post("/signup/vendor/", payload);
+
+            const { access, refresh, email, user_id } = res.data;
+            sessionStorage.setItem("accessToken", access);
+            sessionStorage.setItem("refreshToken", refresh);
+            sessionStorage.setItem("user_email", email);
+            sessionStorage.setItem("user_id", user_id);
+
+            router.push("/dashboard"); // Use Next.js router for navigation
+        } catch (err) {
+            console.error("Signup error:", err.response?.data || err.message);
+            // Display a more user-friendly error message
+            setError(err.response?.data?.detail || err.response?.data?.message || "Signup failed. Please check your inputs.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [countries, setCountries] = useState([]);
     const [filteredCountries, setFilteredCountries] = useState([]);
@@ -39,7 +85,7 @@ export default function Signup() {
     const [acceptTerms, setAcceptTerms] = useState(false); // State for the "Terms and Conditions" checkbox
 
     const MIN_PASSWORD_LENGTH = 8;
- const COUNTRY_DATA = [
+    const COUNTRY_DATA = [
         { name: 'United States', code: '+1', flag: '🇺🇸' },
         { name: 'Canada', code: '+1', flag: '🇨🇦' }, // Canada also uses +1
         { name: 'Russia', code: '+7', flag: '🇷🇺' },
@@ -266,63 +312,87 @@ export default function Signup() {
         { name: 'Jamaica', code: '+1-876', flag: '🇯🇲' },
         { name: 'Puerto Rico', code: '+1-939', flag: '🇵🇷' },
     ].sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
-useEffect(() => {
-  const root = window.document.documentElement;
-  if (theme === "dark") {
-    root.classList.add("dark", "bg-gray-900", "text-white");
-    root.classList.remove("bg-white", "text-gray-900");
-  } else {
-    root.classList.remove("dark", "bg-gray-900", "text-white");
-    root.classList.add("bg-white", "text-gray-900");
-  }
-  localStorage.setItem("theme", theme);
-}, [theme]);
+    useEffect(() => {
+        const root = window.document.documentElement;
+        if (theme === "dark") {
+            root.classList.add("dark", "bg-gray-900", "text-white");
+            root.classList.remove("bg-white", "text-gray-900");
+        } else {
+            root.classList.remove("dark", "bg-gray-900", "text-white");
+            root.classList.add("bg-white", "text-gray-900");
+        }
+        localStorage.setItem("theme", theme);
+    }, [theme]);
 
     useEffect(() => {
-  const storedTheme = localStorage.getItem("theme");
-  if (storedTheme) {
-    setTheme(storedTheme);
-  } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    setTheme("dark");
-  }
-}, []);
-const toggleTheme = () => {
-  setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-};
+        const storedTheme = localStorage.getItem("theme");
+        if (storedTheme) {
+            setTheme(storedTheme);
+        } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+            setTheme("dark");
+        }
+    }, []);
+    const toggleTheme = () => {
+        setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+    };
 
-    useEffect(() => {
-        // --- Password Strength Logic ---
-        const checkPasswordStrength = () => {
-            const newRules = {
-                minLength: password.length >= MIN_PASSWORD_LENGTH,
-                lowercase: /[a-z]/.test(password),
-                uppercase: /[A-Z]/.test(password),
-                numbers: /\d/.test(password),
-                specialCharacters: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]/.test(password),
-            };
-            setPasswordRules(prevRules => {
-                const updatedVisibleRules = { ...visibleRules };
-                for (const rule in newRules) {
-                    if (newRules[rule] && !prevRules[rule]) { // If rule just became true
-                        setTimeout(() => {
-                            setVisibleRules(prevVisible => ({
-                                ...prevVisible,
-                                [rule]: false, // Hide the rule after 0.5 seconds
-                            }));
-                        }, 1000); // 0.5 seconds
-                    } else if (!newRules[rule] && prevRules[rule]) { // If rule just became false, make it visible again
-                        updatedVisibleRules[rule] = true;
-                    }
-                }
-                setVisibleRules(updatedVisibleRules); // Update visible rules state
-                return newRules;
-            });
-        };
-        checkPasswordStrength();
-        setCountries(COUNTRY_DATA);
-        setFilteredCountries(COUNTRY_DATA);
-    }, [password]); // Re-run effect whenever password changes
- const handleCountrySearchChange = (event) => {
+   useEffect(() => {
+           // Theme logic
+           const root = window.document.documentElement;
+           if (theme === "dark") {
+               root.classList.add("dark", "bg-gray-900", "text-white");
+               root.classList.remove("bg-white", "text-gray-900");
+           } else {
+               root.classList.remove("dark", "bg-gray-900", "text-white");
+               root.classList.add("bg-white", "text-gray-900");
+           }
+           localStorage.setItem("theme", theme);
+   
+           // Password Strength Logic
+           const checkPasswordStrength = () => {
+               const newRules = {
+                   minLength: formData.password.length >= MIN_PASSWORD_LENGTH,
+                   lowercase: /[a-z]/.test(formData.password),
+                   uppercase: /[A-Z]/.test(formData.password),
+                   numbers: /\d/.test(formData.password),
+                   specialCharacters: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]/.test(formData.password),
+               };
+               setPasswordRules(prevRules => {
+                   const updatedVisibleRules = { ...visibleRules };
+                   for (const rule in newRules) {
+                       if (newRules[rule] && !prevRules[rule]) {
+                           setTimeout(() => {
+                               setVisibleRules(prevVisible => ({
+                                   ...prevVisible,
+                                   [rule]: false,
+                               }));
+                           }, 1000);
+                       } else if (!newRules[rule] && prevRules[rule]) {
+                           updatedVisibleRules[rule] = true;
+                       }
+                   }
+                   setVisibleRules(updatedVisibleRules);
+                   return newRules;
+               });
+           };
+           checkPasswordStrength();
+   
+          
+   
+           // Click outside to close phone country dropdown
+           const handleClickOutside = (event) => {
+               if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                   setIsDropdownOpen(false);
+               }
+           };
+   
+           document.addEventListener('mousedown', handleClickOutside);
+           return () => {
+               document.removeEventListener('mousedown', handleClickOutside);
+           };
+       }, [formData.password, theme]);
+
+    const handleCountrySearchChange = (event) => {
         const term = event.target.value;
         setSearchTerm(term);
         if (term) {
@@ -336,12 +406,19 @@ const toggleTheme = () => {
             setFilteredCountries(countries);
         }
     };
-        const handleCountrySelect = (country) => {
+    const handleCountrySelect = (country) => {
         setSelectedCountry(country);
         setIsDropdownOpen(false);
         setSearchTerm(''); // Clear search term on selection
         setFilteredCountries(countries); // Reset filtered countries
         countryInputRef.current?.focus(); // Focus back on the phone number input if desired
+    };
+ const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            ...prevData,
+            [name]: value,
+        }));
     };
 
     const handlePhoneNumberChange = (event) => {
@@ -370,7 +447,7 @@ const toggleTheme = () => {
             <div className="min-h-screen flex flex-col lg:flex-row">
 
                 {/* ========== MAIN CONTENT ========== */}
-                <aside className="hidden lg:flex lg:w-1/2 xl:w-2/5 flex-col justify-between p-6 dark:bg-gray-900">
+                <aside className="hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between p-6 dark:bg-gray-900 h-screen sticky top-0">
                     {/* Sidebar */}
                     <div className="hidden min-h-screen lg:w-100 xl:w-107.5bg-gray-100 lg:flex flex-col justify-between p-6 dark:bg-gray-900">
                         {/* Header */}
@@ -378,9 +455,9 @@ const toggleTheme = () => {
                             {/* Logo */}
                             <a className="flex-none rounded-md text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80" href="/" aria-label="Preline">
                                 <svg className="w-9 h-auto" width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path fillRule="evenodd" clip-rule="evenodd" d="M18.0835 3.23358C9.88316 3.23358 3.23548 9.8771 3.23548 18.0723V35.5832H0.583496V18.0723C0.583496 8.41337 8.41851 0.583252 18.0835 0.583252C27.7485 0.583252 35.5835 8.41337 35.5835 18.0723C35.5835 27.7312 27.7485 35.5614 18.0835 35.5614H16.7357V32.911H18.0835C26.2838 32.911 32.9315 26.2675 32.9315 18.0723C32.9315 9.8771 26.2838 3.23358 18.0835 3.23358Z" className="fill-blue-600 dark:fill-blue-500" fill="currentColor"/>
-                                    <path fillRule="evenodd" clip-rule="evenodd" d="M18.0833 8.62162C12.8852 8.62162 8.62666 12.9245 8.62666 18.2879V35.5833H5.97468V18.2879C5.97468 11.5105 11.3713 5.97129 18.0833 5.97129C24.7954 5.97129 30.192 11.5105 30.192 18.2879C30.192 25.0653 24.7954 30.6045 18.0833 30.6045H16.7355V27.9542H18.0833C23.2815 27.9542 27.54 23.6513 27.54 18.2879C27.54 12.9245 23.2815 8.62162 18.0833 8.62162Z" className="fill-blue-600 dark:fill-blue-500" fill="currentColor"/>
-                                    <path d="M24.8225 18.1012C24.8225 21.8208 21.8053 24.8361 18.0833 24.8361C14.3614 24.8361 11.3442 21.8208 11.3442 18.1012C11.3442 14.3815 14.3614 11.3662 18.0833 11.3662C21.8053 11.3662 24.8225 14.3815 24.8225 18.1012Z" className="fill-blue-600 dark:fill-blue-500" fill="currentColor"/>
+                                    <path fillRule="evenodd" clip-rule="evenodd" d="M18.0835 3.23358C9.88316 3.23358 3.23548 9.8771 3.23548 18.0723V35.5832H0.583496V18.0723C0.583496 8.41337 8.41851 0.583252 18.0835 0.583252C27.7485 0.583252 35.5835 8.41337 35.5835 18.0723C35.5835 27.7312 27.7485 35.5614 18.0835 35.5614H16.7357V32.911H18.0835C26.2838 32.911 32.9315 26.2675 32.9315 18.0723C32.9315 9.8771 26.2838 3.23358 18.0835 3.23358Z" className="fill-blue-600 dark:fill-blue-500" fill="currentColor" />
+                                    <path fillRule="evenodd" clip-rule="evenodd" d="M18.0833 8.62162C12.8852 8.62162 8.62666 12.9245 8.62666 18.2879V35.5833H5.97468V18.2879C5.97468 11.5105 11.3713 5.97129 18.0833 5.97129C24.7954 5.97129 30.192 11.5105 30.192 18.2879C30.192 25.0653 24.7954 30.6045 18.0833 30.6045H16.7355V27.9542H18.0833C23.2815 27.9542 27.54 23.6513 27.54 18.2879C27.54 12.9245 23.2815 8.62162 18.0833 8.62162Z" className="fill-blue-600 dark:fill-blue-500" fill="currentColor" />
+                                    <path d="M24.8225 18.1012C24.8225 21.8208 21.8053 24.8361 18.0833 24.8361C14.3614 24.8361 11.3442 21.8208 11.3442 18.1012C11.3442 14.3815 14.3614 11.3662 18.0833 11.3662C21.8053 11.3662 24.8225 14.3815 24.8225 18.1012Z" className="fill-blue-600 dark:fill-blue-500" fill="currentColor" />
                                 </svg>
                             </a>
                             {/* End Logo */}
@@ -392,26 +469,14 @@ const toggleTheme = () => {
                         {/* End Header */}
 
                         {/* Body */}
-                        <div className='mt-6'>
-                            <img
-                                className="dark:hidden rounded-md shadow-lg"
-                                src="https://i.ytimg.com/vi/jol8JBugmQY/maxresdefault.jpg"
-                                alt="Charts Mockups"
-                            />
-                            <img
-                                className="hidden dark:block rounded-md shadow-lg"
-                                src="https://i.ytimg.com/vi/jol8JBugmQY/maxresdefault.jpg"
-                                alt="Charts Mockups"
-                            />
-                            <p className="mt-4 text-sm text-gray-500 dark:text-neutral-500">
-                                Your business, their dream wedding
+  <div className='mt-6'>
+  <img
+    src="20250524_154914.png"
+    alt="Charts Mockups"
+  />
+  <hr className="mt-4 border-t border-gray-300" />
+</div>
 
-                            </p>
-                            <p className="mt-2 text-sm text-gray-500 dark:text-neutral-500 font-semibold">
-                                Powered by RingsNRoses.
-
-                            </p>
-                        </div>
 
                         {/* End Body */}
 
@@ -425,7 +490,7 @@ const toggleTheme = () => {
                     {/* End Sidebar */}
                 </aside>
                 {/* Content */}
-                <main className="mt-24 flex-1 flex justify-center px-4 sm:px-6 lg:px-8">
+                <main className="mt-16 flex-1 flex justify-center px-4 sm:px-6 lg:px-8 overflow-y-auto h-screen">
                     <div className="max-w-md w-full space-y-8">
                         {/* Title */}
                         <div>
@@ -443,14 +508,14 @@ const toggleTheme = () => {
                             <button type="button" className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-gray-900 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
                                 <svg className="shrink-0 size-4" width="33" height="32" viewBox="0 0 33 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clipPath="url(#clip0_4132_5805)">
-                                        <path d="M32.2566 16.36C32.2566 15.04 32.1567 14.08 31.9171 13.08H16.9166V19.02H25.7251C25.5454 20.5 24.5866 22.72 22.4494 24.22L22.4294 24.42L27.1633 28.1L27.4828 28.14C30.5189 25.34 32.2566 21.22 32.2566 16.36Z" fill="#4285F4"/>
-                                        <path d="M16.9166 32C21.231 32 24.8463 30.58 27.5028 28.12L22.4694 24.2C21.1111 25.14 19.3135 25.8 16.9366 25.8C12.7021 25.8 9.12677 23 7.84844 19.16L7.66867 19.18L2.71513 23L2.65521 23.18C5.2718 28.4 10.6648 32 16.9166 32Z" fill="#34A853"/>
-                                        <path d="M7.82845 19.16C7.48889 18.16 7.28915 17.1 7.28915 16C7.28915 14.9 7.48889 13.84 7.80848 12.84V12.62L2.81499 8.73999L2.65520 8.81999C1.55663 10.98 0.937439 13.42 0.937439 16C0.937439 18.58 1.55663 21.02 2.63522 23.18L7.82845 19.16Z" fill="#FBBC05"/>
-                                        <path d="M16.9166 6.18C19.9127 6.18 21.9501 7.48 23.0886 8.56L27.6027 4.16C24.8263 1.58 21.231 0 16.9166 0C10.6648 0 5.27181 3.6 2.63525 8.82L7.80851 12.84C9.10681 8.98 12.6821 6.18 16.9166 6.18Z" fill="#EB4335"/>
+                                        <path d="M32.2566 16.36C32.2566 15.04 32.1567 14.08 31.9171 13.08H16.9166V19.02H25.7251C25.5454 20.5 24.5866 22.72 22.4494 24.22L22.4294 24.42L27.1633 28.1L27.4828 28.14C30.5189 25.34 32.2566 21.22 32.2566 16.36Z" fill="#4285F4" />
+                                        <path d="M16.9166 32C21.231 32 24.8463 30.58 27.5028 28.12L22.4694 24.2C21.1111 25.14 19.3135 25.8 16.9366 25.8C12.7021 25.8 9.12677 23 7.84844 19.16L7.66867 19.18L2.71513 23L2.65521 23.18C5.2718 28.4 10.6648 32 16.9166 32Z" fill="#34A853" />
+                                        <path d="M7.82845 19.16C7.48889 18.16 7.28915 17.1 7.28915 16C7.28915 14.9 7.48889 13.84 7.80848 12.84V12.62L2.81499 8.73999L2.65520 8.81999C1.55663 10.98 0.937439 13.42 0.937439 16C0.937439 18.58 1.55663 21.02 2.63522 23.18L7.82845 19.16Z" fill="#FBBC05" />
+                                        <path d="M16.9166 6.18C19.9127 6.18 21.9501 7.48 23.0886 8.56L27.6027 4.16C24.8263 1.58 21.231 0 16.9166 0C10.6648 0 5.27181 3.6 2.63525 8.82L7.80851 12.84C9.10681 8.98 12.6821 6.18 16.9166 6.18Z" fill="#EB4335" />
                                     </g>
                                     <defs>
                                         <clipPath id="clip0_4132_5805">
-                                            <rect width="32" height="32" fill="white" transform="translate(0.937439)"/>
+                                            <rect width="32" height="32" fill="white" transform="translate(0.937439)" />
                                         </clipPath>
                                     </defs>
                                 </svg>
@@ -461,67 +526,100 @@ const toggleTheme = () => {
 
                         <div className="flex items-center text-xs text-gray-400 uppercase before:flex-1 before:border-t before:border-gray-200 before:me-6 after:flex-1 after:border-t after:border-gray-200 after:ms-6 dark:text-neutral-500 dark:before:border-neutral-700 dark:after:border-neutral-700">Or</div>
 
-                        <form>
+                        <form onSubmit={handleSignup}>
                             <div className="space-y-5">
                                 <div>
                                     <label htmlFor="hs-pro-dalfn" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
                                         Name
                                     </label>
-                                    <input type="text" id="hs-pro-dalfn" className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="John Doe" />
+                                      <input
+                                                    type="text"
+                                                    className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                                    placeholder="Name"
+                                                    name="name"
+                                                    value={formData.name}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
                                 </div>
- <div>
+                                <div>
                                     <label htmlFor="hs-pro-dappcn" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
                                         Business name
                                     </label>
-
-                                    <input type="text" id="hs-pro-dappcn" className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="Acmecorp" />
+<input
+                                                    type="text"
+                                                    className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                                    placeholder="Name"
+                                                    name="business_name"
+                                                    value={formData.business_name}
+                                                    onChange={handleChange}
+                                                    required
+                                                />
+                                    {/* <input type="text" id="hs-pro-dappcn"
+                                        value={formData.business_name}
+                                        onChange={handleChange}
+                                        required
+                                        className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="Acmecorp" /> */}
                                 </div>
                                 <div>
                                     <label htmlFor="hs-pro-dale" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
                                         Email
                                     </label>
-
-                                    <input type="email" id="hs-pro-dale" className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="you@email.com" />
+                                    <input
+                                        id="hs-pro-shcafem"
+                                        type="email"
+                                        className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                        placeholder="Email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    {/* <input type="email" id="hs-pro-dale"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        required
+                                        className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="you@email.com" /> */}
                                 </div>
 
                                 {/* Password Input and Rules */}
                                 <div className="space-y-3">
                                     <div>
-                                        <label htmlFor="hs-pro-dappnp" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
-                                            Password
-                                        </label>
-
-                                        <div className="relative">
-                                            <input
-                                                type={showPassword ? "text" : "password"}
-                                                id="hs-pro-shcafpw"
-                                                className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                placeholder="Password"
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                            />
-                                            <button
-                                                type="button" // Important: Set type to "button" to prevent form submission
-                                                onClick={() => setShowPassword((prev) => !prev)} // Toggle showPassword state
-                                                className="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
-                                                >
-                                                {showPassword ? (
-                                                // Eye-slash icon (hide password)
-                                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
-                                                    <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
-                                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
-                                                    <line x1="2" x2="22" y1="2" y2="22"/>
-                                                </svg>
-                                                ) : (
-                                                // Eye icon (show password)
-                                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                                )}
-                                            </button>
-                                        </div>
+                                        <label htmlFor="hs-pro-shcafpw" className="sr-only">
+                                                    Password
+                                                </label>
+                                                <div className='relative'>
+                                                    <input
+                                                        type={showPassword ? "text" : "password"}
+                                                        id="hs-pro-shcafpw"
+                                                        className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                                        placeholder="Password"
+                                                        name="password"
+                                                        value={formData.password}
+                                                        onChange={handleChange}
+                                                        required
+                                                        minLength={MIN_PASSWORD_LENGTH}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword((prev) => !prev)}
+                                                        className="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
+                                                    >
+                                                        {showPassword ? (
+                                                            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                                                <line x1="2" x2="22" y1="2" y2="22" />
+                                                            </svg>
+                                                        ) : (
+                                                            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                                                <circle cx="12" cy="12" r="3" />
+                                                            </svg>
+                                                        )}
+                                                    </button>
+                                                </div>
                                     </div>
 
                                     {/* Password Rules */}
@@ -529,125 +627,125 @@ const toggleTheme = () => {
                                         <ul className="space-y-2 text-xs text-gray-500 dark:text-neutral-500">
                                             {/* Min Length Rule */}
                                             {visibleRules.minLength && (
-                                                        <li className={`${passwordRules.minLength ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                            {passwordRules.minLength ? (
-                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
-                                                            ) : (
-                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
-                                                            )}
-                                                            <span className="text-gray-500 dark:text-neutral-200">Minimum {MIN_PASSWORD_LENGTH} characters</span>
-                                                        </li>
+                                                <li className={`${passwordRules.minLength ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                    {passwordRules.minLength ? (
+                                                        <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                    ) : (
+                                                        <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
                                                     )}
+                                                    <span className="text-gray-500 dark:text-neutral-200">Minimum {MIN_PASSWORD_LENGTH} characters</span>
+                                                </li>
+                                            )}
 
                                             {/* Lowercase Rule */}
                                             {visibleRules.lowercase && (
-                                                        <li className={`${passwordRules.lowercase ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                            {passwordRules.lowercase ? (
-                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
-                                                            ) : (
-                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
-                                                            )}
-                                                            <span className="text-gray-500 dark:text-neutral-200">Contain lowercase</span>
-                                                        </li>
+                                                <li className={`${passwordRules.lowercase ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                    {passwordRules.lowercase ? (
+                                                        <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                    ) : (
+                                                        <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
                                                     )}
+                                                    <span className="text-gray-500 dark:text-neutral-200">Contain lowercase</span>
+                                                </li>
+                                            )}
 
                                             {/* Uppercase Rule */}
                                             {visibleRules.uppercase && (
-                                                        <li className={`${passwordRules.uppercase ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                            {passwordRules.uppercase ? (
-                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
-                                                            ) : (
-                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
-                                                            )}
-                                                            <span className="text-gray-500 dark:text-neutral-200">Contain uppercase</span>
-                                                        </li>
+                                                <li className={`${passwordRules.uppercase ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                    {passwordRules.uppercase ? (
+                                                        <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                    ) : (
+                                                        <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
                                                     )}
+                                                    <span className="text-gray-500 dark:text-neutral-200">Contain uppercase</span>
+                                                </li>
+                                            )}
 
                                             {/* Numbers Rule */}
                                             {visibleRules.numbers && (
-                                                        <li className={`${passwordRules.numbers ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                            {passwordRules.numbers ? (
-                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
-                                                            ) : (
-                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
-                                                            )}
-                                                            <span className="text-gray-500 dark:text-neutral-200">Contain numbers</span>
-                                                        </li>
+                                                <li className={`${passwordRules.numbers ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                    {passwordRules.numbers ? (
+                                                        <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                    ) : (
+                                                        <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
                                                     )}
+                                                    <span className="text-gray-500 dark:text-neutral-200">Contain numbers</span>
+                                                </li>
+                                            )}
 
                                             {/* Special Characters Rule */}
                                             {visibleRules.specialCharacters && (
-                                                        <li className={`${passwordRules.specialCharacters ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
-                                                            {passwordRules.specialCharacters ? (
-                                                                <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
-                                                            ) : (
-                                                                <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
-                                                            )}
-                                                            <span className="text-gray-500 dark:text-neutral-200">
-                                                                Contain special characters like ~!@$%etc...
-                                                            </span>
-                                                        </li>
+                                                <li className={`${passwordRules.specialCharacters ? 'text-teal-500' : ''} flex items-center gap-x-3`}>
+                                                    {passwordRules.specialCharacters ? (
+                                                        <svg className="shrink-0 size-4 text-teal-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>
+                                                    ) : (
+                                                        <svg className="shrink-0 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /></svg>
                                                     )}
+                                                    <span className="text-gray-500 dark:text-neutral-200">
+                                                        Contain special characters like ~!@$%etc...
+                                                    </span>
+                                                </li>
+                                            )}
                                         </ul>
                                     </div>
                                 </div>
                                 {/* End Password Input and Rules */}
-                                
-                               <div className="relative mt-3" ref={dropdownRef}>
-                                        <div className="flex">
-                                            <button
-                                                type="button"
-                                                className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-400 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-900 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600"
-                                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                            >
-                                                {selectedCountry.flag} {selectedCountry.code}
-                                                <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
-                                                </svg>
-                                            </button>
-                                            <input
-                                                type="tel"
-                                                id="phone-input"
-                                                className="py-2.5 px-3 block w-full border border-s-0 border-gray-400 rounded-e-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                placeholder="Phone Number"
-                                                value={phoneNumber}
-                                                onChange={handlePhoneNumberChange}
-                                                ref={countryInputRef} // Assign ref to phone input
-                                            />
-                                            {/* Hidden input to hold the full phone number for form submission */}
-                                            <input type="hidden" name="full_phone_number" value={getFullPhoneNumber()} />
-                                        </div>
 
-                                        {isDropdownOpen && (
-                                            <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
-                                                <div className="p-2">
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Search country..."
-                                                        className="py-2 px-3 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
-                                                        value={searchTerm}
-                                                        onChange={handleCountrySearchChange}
-                                                    />
-                                                </div>
-                                                <ul>
-                                                    {filteredCountries.map((country) => (
-                                                        <li
-                                                            key={country.code + country.name} // Unique key
-                                                            className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-700 text-gray-800 dark:text-neutral-200"
-                                                            onClick={() => handleCountrySelect(country)}
-                                                        >
-                                                            <span className="mr-2">{country.flag}</span>
-                                                            {country.name} ({country.code})
-                                                        </li>
-                                                    ))}
-                                                    {filteredCountries.length === 0 && (
-                                                        <li className="px-4 py-2 text-gray-500 dark:text-neutral-400">No countries found.</li>
-                                                    )}
-                                                </ul>
-                                            </div>
-                                        )}
+                                <div className="relative mt-3" ref={dropdownRef}>
+                                    <div className="flex">
+                                        <button
+                                            type="button"
+                                            className="flex-shrink-0 z-10 inline-flex items-center py-2.5 px-4 text-sm font-medium text-center text-gray-900 bg-gray-100 border border-gray-400 rounded-s-lg hover:bg-gray-200 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-900 dark:hover:bg-gray-600 dark:focus:ring-gray-700 dark:text-white dark:border-gray-600"
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        >
+                                            {selectedCountry.flag} {selectedCountry.code}
+                                            <svg className="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 4 4 4-4" />
+                                            </svg>
+                                        </button>
+                                        <input
+                                            type="tel"
+                                            id="phone-input"
+                                            className="py-2.5 px-3 block w-full border border-s-0 border-gray-400 rounded-e-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                            placeholder="Phone Number"
+                                            value={phoneNumber}
+                                            onChange={handlePhoneNumberChange}
+                                            ref={countryInputRef} // Assign ref to phone input
+                                        />
+                                        {/* Hidden input to hold the full phone number for form submission */}
+                                        <input type="hidden" name="full_phone_number" value={getFullPhoneNumber()} />
                                     </div>
-                               
+
+                                    {isDropdownOpen && (
+                                        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
+                                            <div className="p-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search country..."
+                                                    className="py-2 px-3 block w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                                                    value={searchTerm}
+                                                    onChange={handleCountrySearchChange}
+                                                />
+                                            </div>
+                                            <ul>
+                                                {filteredCountries.map((country) => (
+                                                    <li
+                                                        key={country.code + country.name} // Unique key
+                                                        className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-700 text-gray-800 dark:text-neutral-200"
+                                                        onClick={() => handleCountrySelect(country)}
+                                                    >
+                                                        <span className="mr-2">{country.flag}</span>
+                                                        {country.name} ({country.code})
+                                                    </li>
+                                                ))}
+                                                {filteredCountries.length === 0 && (
+                                                    <li className="px-4 py-2 text-gray-500 dark:text-neutral-400">No countries found.</li>
+                                                )}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+
 
                                 {/* Terms and Conditions Checkbox */}
                                 <div className="flex items-center gap-x-2">
@@ -668,7 +766,7 @@ const toggleTheme = () => {
                                 {/* End Terms and Conditions Checkbox */}
 
                                 <button
-                                    type="button"
+                                    type="submit"
                                     className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
                                     disabled={!passwordRules.minLength || !passwordRules.lowercase || !passwordRules.uppercase || !passwordRules.numbers || !passwordRules.specialCharacters || !acceptTerms}
                                 >
@@ -681,7 +779,7 @@ const toggleTheme = () => {
                             Have an Business account?
                             <a className="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium focus:outline-hidden focus:underline dark:text-blue-500" href="/vendor/login">
                                 Sign in
-                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                             </a>
                         </p>
                     </div>
@@ -699,30 +797,30 @@ const toggleTheme = () => {
                         <a href="#" className="hover:underline">About us</a>
                     </div>
                     <div className="flex items-center justify-center gap-x-2 mt-2">
-            <p className="text-gray-500 text-sm dark:text-gray-400">© {new Date().getFullYear()} RingsNRoses</p>
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="text-xs text-gray-500 dark:text-gray-400 hover:underline flex items-center justify-center space-x-1"
-            >
-              {theme === "dark" ? (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                  </svg>
-                  <span>Dark Mode</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="4" />
-                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                  </svg>
-                  <span>Light Mode</span>
-                </>
-              )}
-            </button>
-          </div>
+                        <p className="text-gray-500 text-sm dark:text-gray-400">© {new Date().getFullYear()} RingsNRoses</p>
+                        <button
+                            type="button"
+                            onClick={toggleTheme}
+                            className="text-xs text-gray-500 dark:text-gray-400 hover:underline flex items-center justify-center space-x-1"
+                        >
+                            {theme === "dark" ? (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                                    </svg>
+                                    <span>Dark Mode</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="4" />
+                                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                                    </svg>
+                                    <span>Light Mode</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
 
                 </div>
                 <div className="mt-4"></div>
