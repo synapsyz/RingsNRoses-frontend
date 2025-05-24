@@ -77,7 +77,7 @@ export default function Login() {
         <div className="flex-1 flex items-center justify-center">
           
           <img
-            src="20250523_131759.png" // Replace with your image path
+            src="./c_login_2.png" // Replace with your image path
             alt="Wedding Theme"
             className="w-full h-auto object-cover"
           />

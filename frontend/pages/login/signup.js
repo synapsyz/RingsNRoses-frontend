@@ -930,7 +930,7 @@ export default function Signup() {
                 <div className="hidden md:flex relative justify-center items-center w-full h-screen">
                     <img
                         alt="Access Account Illustration"
-                        src="undraw_global-team_8jok.svg"
+                        src="20250524_141607.png"
                         className="object-contain max-w-full max-h-full"
                     />
                     

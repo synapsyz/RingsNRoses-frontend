@@ -447,7 +447,7 @@ export default function Signup() {
             <div className="min-h-screen flex flex-col lg:flex-row">
 
                 {/* ========== MAIN CONTENT ========== */}
-                <aside className="hidden lg:flex lg:w-1/2 xl:w-2/5 flex-col justify-between p-6 dark:bg-gray-900 h-screen sticky top-0">
+                <aside className="hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between p-6 dark:bg-gray-900 h-screen sticky top-0">
                     {/* Sidebar */}
                     <div className="hidden min-h-screen lg:w-100 xl:w-107.5bg-gray-100 lg:flex flex-col justify-between p-6 dark:bg-gray-900">
                         {/* Header */}
@@ -469,20 +469,14 @@ export default function Signup() {
                         {/* End Header */}
 
                         {/* Body */}
-                        <div className='mt-6'>
-                            <img
-                                src="undraw_real-time-analytics_50za.svg"
-                                alt="Charts Mockups"
-                            />
-                            <p className="mt-4 text-sm text-gray-500 dark:text-neutral-500">
-                                Your business, their dream wedding
+  <div className='mt-6'>
+  <img
+    src="20250524_154914.png"
+    alt="Charts Mockups"
+  />
+  <hr className="mt-4 border-t border-gray-300" />
+</div>
 
-                            </p>
-                            <p className="mt-2 text-sm text-gray-500 dark:text-neutral-500 font-semibold">
-                                Powered by RingsNRoses.
-
-                            </p>
-                        </div>
 
                         {/* End Body */}
 

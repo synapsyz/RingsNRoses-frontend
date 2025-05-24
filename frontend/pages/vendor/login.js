@@ -222,7 +222,7 @@ export default function Login() {
         <div className="relative hidden w-0 flex-1 lg:block dark:bg-gray-900 mt-6"> {/* Added background to the image container */}
           <img
             alt=""
-            src="./vendor_signup.svg"
+            src="./20250524_154914.png"
             className="absolute inset-0 size-100 object-cover" // Applied filters here
           />
         </div>
