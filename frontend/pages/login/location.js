@@ -242,7 +242,8 @@ const handleStateChange = async (selectedOption) => {
           </div>
         </div>
       </Dialog>
-    </Transition>
+    <Transition appear show={isOpen} as={Fragment}>
+
   );
 };
 

@@ -215,7 +215,8 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
           </div>
         </div>
       </Dialog>
-    </Transition>
+    <Transition appear show={isOpen} as={Fragment}>
+
   );
 };
 
