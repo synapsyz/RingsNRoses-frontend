@@ -539,8 +539,11 @@ export default function Signup() {
             <div className="flex min-h-full flex-1">
                 {/* Your header content would go here */}
 
-                <main id="content" className="w-2/5 h-screen overflow-y-auto bg-white dark:bg-gray-900">
-                    <div className="mt-10 w-full px-4 sm:px-6 lg:px-8 mx-auto">
+                        <main
+                        id="content"
+                        className="w-full lg:w-2/5 h-screen overflow-y-auto bg-white dark:bg-gray-900"
+                        >
+                        <div className="mt-10 w-full px-4 sm:px-6 lg:px-8 mx-auto">
                         <div className="w-full max-w-sm mx-auto">
                             <div className="space-y-8">
                                 <form onSubmit={handleSignup}>
@@ -927,7 +930,7 @@ export default function Signup() {
 
 
 
-                <div className="hidden md:flex relative justify-center items-center w-full h-screen">
+                <div className="hidden lg:block relative justify-center items-center w-full h-screen">
                     <img
                         alt="Access Account Illustration"
                         src="20250524_141607.png"

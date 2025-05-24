@@ -219,13 +219,15 @@ export default function Login() {
         </div>
         </main>
         {/* Right column - Image */}
-        <div className="relative hidden w-0 flex-1 lg:block dark:bg-gray-900 mt-6"> {/* Added background to the image container */}
-          <img
-            alt=""
-            src="./20250524_154914.png"
-            className="absolute inset-0 size-100 object-cover" // Applied filters here
-          />
-        </div>
+{/* Right column - Image (Visible only on large screens and up) */}
+<div className="hidden lg:block relative flex-1 dark:bg-gray-900 mt-6">
+  <img
+    alt="Background"
+    src="./20250524_154914.png"
+    className="absolute inset-0 w-full h-full object-cover"
+  />
+</div>
+
         
 <footer className="w-full py-4 px-6 bg-white dark:bg-gray-900 fixed -bottom-3 mt-8"> {/* Added background to footer */}
         <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-400 gap-1 pb-4"> {/* Added pb-4 for some padding */}
