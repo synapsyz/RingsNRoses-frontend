@@ -74,7 +74,7 @@ export default function Login() {
         
 
         {/* Left Side - Image */}
-        <div className="flex-1 flex items-center justify-center">
+        <div className="hidden lg:block flex-1 flex items-center justify-center">
           
           <img
             src="./c_login_2.png" // Replace with your image path
