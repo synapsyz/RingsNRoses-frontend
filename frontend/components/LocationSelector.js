@@ -14,7 +14,7 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
   useEffect(() => {
     const getUserLocation = async () => {
       try {
-        const res = await fetch('https://ipapi.co/json/');
+        const res = await fetch('https://ipinfo.io/json');
         const data = await res.json();
         const country = data.country || 'IN';
         const region = data.region;
@@ -64,24 +64,22 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
       const formattedLocations = data.results.map((loc) => ({
         value: loc.id,
         label: loc.name,
+        name: loc.name,
       }));
 
       if (matchCity) {
         const matchedLocation = formattedLocations.find(
           (loc) => loc.label.toLowerCase() === matchCity.toLowerCase()
         );
-        if (matchedLocation) {
-          setSelectedLocation(matchedLocation);
-          if (onChange) {
-            onChange({
-              country: selectedCountry,
-              state: stateName,
-              location: {
-                id: matchedLocation.value,
-                name: matchedLocation.label,
-              },
-            });
-          }
+        setSelectedLocation(matchedLocation || null);
+
+        if (matchedLocation && typeof onChange === 'function') {
+          onChange({
+            country: selectedCountry,
+            state: stateName,
+            location: matchedLocation.label,
+            locationId: matchedLocation.value,
+          });
         }
       }
     } catch (error) {
@@ -89,9 +87,38 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
     }
   };
 
-  const handleStateChange = (selectedOption) => {
+  const handleStateChange = async (selectedOption) => {
     setSelectedState(selectedOption);
     setSelectedLocation(null);
+
+    if (selectedOption) {
+      try {
+        const url = `http://localhost:8000/api/v1/locations/?state=${encodeURIComponent(selectedOption.value)}&search=`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const formattedLocations = data.results.map((loc) => ({
+          value: loc.name,
+          label: loc.name,
+        }));
+
+        if (formattedLocations.length === 1) {
+          setSelectedLocation(formattedLocations[0]);
+          if (onChange) {
+            onChange({
+              country: selectedCountry,
+              state: selectedOption.label,
+              location: formattedLocations[0].label,
+            });
+          }
+        }
+
+        if (typeof loadLocationOptions === 'function') {
+          loadLocationOptions('');
+        }
+      } catch (err) {
+        console.error('Failed to fetch locations for selected state:', err);
+      }
+    }
   };
 
   const loadLocationOptions = async (inputValue) => {
@@ -103,7 +130,7 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
       );
       const data = await res.json();
       return data.results.map((loc) => ({
-        value: loc.id,
+        value: loc.name,
         label: loc.name,
       }));
     } catch (error) {
@@ -159,20 +186,19 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
                   <div>
                     <label className="block mb-1 text-sm font-medium">Location</label>
                     <AsyncSelect
+                      key={selectedState?.value}
                       cacheOptions
                       defaultOptions
                       loadOptions={loadLocationOptions}
                       value={selectedLocation}
-                      onChange={(loc) => {
-                        setSelectedLocation(loc);
-                        if (onChange && loc) {
+                      onChange={(val) => {
+                        setSelectedLocation(val);
+                        if (val && typeof onChange === 'function') {
                           onChange({
                             country: selectedCountry,
                             state: selectedState.label,
-                            location: {
-                              id: loc.value,
-                              name: loc.label,
-                            },
+                            location: val.label,
+                            id: val.value,
                           });
                         }
                       }}
@@ -182,7 +208,6 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
                   </div>
                 )}
 
-                {/* Action Buttons */}
                 <div className="mt-4 flex justify-end space-x-2">
                   <button
                     type="button"
@@ -195,16 +220,13 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
                     type="button"
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
                     onClick={() => {
-                      if (!selectedState || !selectedLocation) return;
-
-                      onSave?.({
-                        country: selectedCountry,
-                        state: selectedState.label,
-                        location: {
-                          id: selectedLocation.value,
-                          name: selectedLocation.label,
-                        },
-                      });
+                      if (onSave) {
+                        onSave({
+                          country: selectedCountry,
+                          state: selectedState?.label || '',
+                          location: selectedLocation?.label || '',
+                        });
+                      }
                     }}
                   >
                     Save
@@ -215,8 +237,7 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
           </div>
         </div>
       </Dialog>
-    <Transition appear show={isOpen} as={Fragment}>
-
+    </Transition>
   );
 };
 
