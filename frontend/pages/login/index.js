@@ -84,7 +84,7 @@ export default function Login() {
         </div>
 
         {/* Right Side - Login Form */}
-        <main className="flex-1 flex flex-col justify-center items-center px-4 py-12 sm:px-6 lg:px-8">
+        <main className="lg:flex-1 flex flex-col justify-center items-center px-4 py-12 sm:px-6 lg:px-8">
           
           <div className="max-w-md w-full space-y-8">
             <div>
