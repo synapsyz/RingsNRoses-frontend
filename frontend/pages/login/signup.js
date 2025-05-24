@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
-import LocationSelector from "./location"; // adjust path as needed
+import LocationSelector from "@/components/LocationSelector"; // adjust path as needed
 
 
 // Axios instance for backend communication
