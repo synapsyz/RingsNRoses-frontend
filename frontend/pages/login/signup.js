@@ -256,7 +256,8 @@ const COUNTRY_DATA = [
 
 export default function Signup() {
     const router = useRouter();
-
+   const [email, setemailError] = useState(null);
+    const [phoneExist, setphoneError] = useState(null);
     // Form data state
     const [formData, setFormData] = useState({
         name: "",
@@ -461,6 +462,17 @@ export default function Signup() {
 
             router.push("/dashboard"); // Use Next.js router for navigation
         } catch (err) {
+            // err = {"email":["user with this Email already exists."],"phone":["user with this Phone already exists."]}
+            let errorKey = Object.keys(err)
+            let errorValue = Object.values(err)
+            if(errorKey.includes('email')){
+                let index = errorKey.indexOf('email')
+                setemailError(errorValue[index][0])
+            }
+            if(errorKey.includes('phone')){
+                let index = errorKey.indexOf('phone')
+                setphoneError(errorValue[index][0])
+            }
             console.error("Signup error:", err.response?.data || err.message);
             // Display a more user-friendly error message
             setError(err.response?.data?.detail || err.response?.data?.message || "Signup failed. Please check your inputs.");
@@ -593,6 +605,9 @@ export default function Signup() {
                                                     onChange={handleChange}
                                                     required
                                                 />
+                                                {email && (
+                                                    <p className="text-sm text-red-600 mt-1">{email}</p>
+                                                )}
                                             </div>
 
                                             {/* Strong Password */}
@@ -726,7 +741,9 @@ export default function Signup() {
                                                     required // Make phone number required
                                                 />
                                             </div>
-
+ {phoneExist && (
+                                                    <p className="text-sm text-red-600 mt-1">{phoneExist}</p>
+                                                )}
                                             {isDropdownOpen && (
                                                 <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
                                                     <div className="p-2">
