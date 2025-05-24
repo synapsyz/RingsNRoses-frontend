@@ -80,7 +80,7 @@ export default function Login() {
       </Head>
       <ErrorAlert errors={errors} />
       {/* Main container with min-h-screen to ensure it takes full height */}
-      <div className="flex min-h-screen flex-1">
+      <div className="flex flex-col lg:flex-row min-h-screen">
         {/* Left column - Login Form */}
         <main>
         <div className="flex flex-1 flex-col justify-center px-4 py-8 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
