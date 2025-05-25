@@ -13,12 +13,19 @@ export default function Dashboard() {
   }, [status]);
 
   const fetchLocations = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/api/v1/location/", {
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+   const isBrowser = typeof window !== "undefined";
+const isLocalhost = isBrowser && window.location.hostname === "localhost";
+
+const baseHost = isLocalhost
+  ? process.env.NEXT_PUBLIC_API_LOCALHOST
+  : process.env.NEXT_PUBLIC_API_PRODUCTION;
+
+try {
+  const res = await fetch(`${baseHost}/api/v1/location/`, {
+    headers: {
+      Authorization: `Bearer ${session.accessToken}`,
+    },
+  });
 
       if (!res.ok) {
         throw new Error(`Error: ${res.status}`);
