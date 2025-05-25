@@ -13,12 +13,13 @@ export default NextAuth({
       async authorize(credentials) {
         const { email, password, user_type } = credentials;
         let endpoint = "";
-      
+
         if (user_type === "vendor") {
-          endpoint = "http://localhost:8000/api/v1/vendor/token/";
-        } else if (user_type === "customer") {
-          endpoint = "http://localhost:8000/api/v1/customer/token/";
-        } else {
+          
+  endpoint = `${process.env.NEXT_PUBLIC_HOST}/api/v1/vendor/token/`;
+} else if (user_type === "customer") {
+  endpoint = `${process.env.NEXT_PUBLIC_HOST}/api/v1/customer/token/`;
+}else {
           throw new Error("Invalid user type. Must be customer or vendor.");
         }
       
@@ -27,7 +28,7 @@ export default NextAuth({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
-      
+      console.log(res);
         const data = await res.json();
       
         if (res.ok && data.access) {

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [locations, setLocations] = useState([]);
-  const [pageUrl, setPageUrl] = useState('http://localhost:8000/api/v1/locations/countries/');
+  const [pageUrl, setPageUrl] = useState(`${process.env.NEXT_PUBLIC_HOST}/api/v1/locations/countries/`);
   const [nextPage, setNextPage] = useState(null);
   const [prevPage, setPrevPage] = useState(null);
   const [error, setError] = useState(null);

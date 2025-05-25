@@ -17,8 +17,7 @@ const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
-    await axios.post('http://localhost:8000/api/v1/auth/password-reset/', {
-
+await axios.post(`${process.env.NEXT_PUBLIC_HOST}/api/v1/auth/password-reset/`, {
       email: email,
     });
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getSession, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -14,20 +14,25 @@ export default function Dashboard() {
 
   const fetchLocations = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/v1/location/", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/api/v1/locations/`, {
         headers: {
-          Authorization: `Bearer ${session.accessToken}`,
+          "ngrok-skip-browser-warning": "true",
+          "Content-Type": "application/json",
         },
       });
 
-      if (!res.ok) {
-        throw new Error(`Error: ${res.status}`);
+      // Check if the response is actually JSON
+      const contentType = res.headers.get("content-type");
+      if (!res.ok || !contentType?.includes("application/json")) {
+        const text = await res.text(); // get the response body safely
+        throw new Error(`Unexpected response: ${text}`);
       }
 
       const data = await res.json();
       setLocations(data);
     } catch (err) {
-      setError(err.message);
+      console.error("Fetch error:", err);
+      setError(err.message || "Failed to fetch locations.");
     }
   };
 
@@ -40,7 +45,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
+    <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Dashboard</h1>
 
       {error && <p className="text-red-500">Error: {error}</p>}

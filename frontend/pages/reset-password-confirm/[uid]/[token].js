@@ -26,7 +26,7 @@ export default function ResetPasswordConfirm() {
         }
 
         try {
-            await axios.post('http://127.0.0.1:8000/api/v1/auth/password-reset-confirm/', {
+await axios.post(`${process.env.NEXT_PUBLIC_HOST}/api/v1/auth/password-reset-confirm/`, {
                 uid,
                 token,
                 new_password: newPassword,

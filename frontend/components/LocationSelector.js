@@ -34,7 +34,7 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
 
   const fetchStates = async (countryCode, regionToSelect = '', cityToMatch = '') => {
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/locations/state/?country=${countryCode}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOST}/locations/state/?country=${countryCode}`);
       const data = await res.json();
       const formattedStates = data.results.map((s) => ({
         value: s.name,
@@ -58,7 +58,7 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
 
   const fetchInitialLocation = async (stateName, matchCity = '') => {
     try {
-      const url = `http://localhost:8000/api/v1/locations/?state=${encodeURIComponent(stateName)}&search=${encodeURIComponent(matchCity)}`;
+const url = `${process.env.NEXT_PUBLIC_HOST}/api/v1/locations/?state=${encodeURIComponent(stateName)}&search=${encodeURIComponent(matchCity)}`;
       const res = await fetch(url);
       const data = await res.json();
       const formattedLocations = data.results.map((loc) => ({
@@ -93,7 +93,7 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
 
     if (selectedOption) {
       try {
-        const url = `http://localhost:8000/api/v1/locations/?state=${encodeURIComponent(selectedOption.value)}&search=`;
+const url = `${process.env.NEXT_PUBLIC_HOST}/api/v1/locations/?state=${encodeURIComponent(selectedOption.value)}&search=`;
         const res = await fetch(url);
         const data = await res.json();
         const formattedLocations = data.results.map((loc) => ({
@@ -126,7 +126,7 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
 
     try {
       const res = await fetch(
-        `http://localhost:8000/api/v1/locations/?state=${encodeURIComponent(selectedState.value)}&search=${encodeURIComponent(inputValue)}`
+`${process.env.NEXT_PUBLIC_HOST}/api/v1/locations/?state=${encodeURIComponent(selectedState.value)}&search=${encodeURIComponent(inputValue)}`
       );
       const data = await res.json();
       return data.results.map((loc) => ({

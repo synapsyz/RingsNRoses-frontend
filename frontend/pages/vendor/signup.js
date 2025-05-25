@@ -8,8 +8,10 @@ import { useRouter } from "next/navigation";
 
 // Axios instance for backend communication
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
+  baseURL: `${process.env.NEXT_PUBLIC_HOST}/api/v1`,
 });
+
+
 export default function Signup() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

@@ -52,20 +52,36 @@ export default function Login() {
       user_type,
       password,
     });
+if (res.ok) {
+  router.push("/dashboard");
+} else {
+  try {
+    // If it's valid JSON
+    console.log(res);
+    const err = JSON.parse(res.error);
+    const messages = Array.isArray(err.detail)
+      ? err.detail
+      : [err.detail || "Login failed"];
+    setErrors(messages);
+  } catch {
+    // If it's not JSON (likely HTML error or plain string)
+    setErrors([res.error || "An unknown error occurred."]);
+  }
+}
 
-    if (res.ok) {
-      router.push("/dashboard");
-    } else {
-      try {
-        const err = JSON.parse(res.error);
-        const messages = Array.isArray(err.detail)
-          ? err.detail
-          : [err.detail || "Login failed"];
-        setErrors(messages);
-      } catch {
-        setErrors([res.error]);
-      }
-    }
+    // if (res.ok) {
+    //   router.push("/dashboard");
+    // } else {
+    //   try {
+    //     const err = JSON.parse(res.error);
+    //     const messages = Array.isArray(err.detail)
+    //       ? err.detail
+    //       : [err.detail || "Login failed"];
+    //     setErrors(messages);
+    //   } catch {
+    //     setErrors([res.error]);
+    //   }
+    // }
   };
 
   const toggleTheme = () => {

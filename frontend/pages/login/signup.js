@@ -11,7 +11,7 @@ import LocationSelector from "@/components/LocationSelector"; // adjust path as 
 
 // Axios instance for backend communication
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
+  baseURL: `${process.env.NEXT_PUBLIC_HOST}/api/v1`,
 });
 
 // Wedding roles mapping for the backend (assuming numerical IDs)
