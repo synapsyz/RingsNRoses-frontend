@@ -13,7 +13,6 @@ export default NextAuth({
       async authorize(credentials) {
         const { email, password, user_type } = credentials;
         
-      
         let endpoint = "";
 
 const isBrowser = typeof window !== "undefined";
