@@ -12,15 +12,24 @@ export default NextAuth({
       },
       async authorize(credentials) {
         const { email, password, user_type } = credentials;
+        
         let endpoint = "";
-      
-        if (user_type === "vendor") {
-          endpoint = "http://localhost:8000/api/v1/vendor/token/";
-        } else if (user_type === "customer") {
-          endpoint = "http://localhost:8000/api/v1/customer/token/";
-        } else {
-          throw new Error("Invalid user type. Must be customer or vendor.");
-        }
+
+const isBrowser = typeof window !== "undefined";
+const isLocalhost = isBrowser && window.location.hostname === "localhost";
+
+const baseHost = isLocalhost
+  ? process.env.NEXT_PUBLIC_API_LOCALHOST
+  : process.env.NEXT_PUBLIC_API_PRODUCTION;
+
+if (user_type === "vendor") {
+  endpoint = `${baseHost}/api/v1/vendor/token/`;
+} else if (user_type === "customer") {
+  endpoint = `${baseHost}/api/v1/customer/token/`;
+} else {
+  throw new Error("Invalid user type. Must be customer or vendor.");
+}
+
       
         const res = await fetch(endpoint, {
           method: "POST",

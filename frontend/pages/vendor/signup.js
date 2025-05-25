@@ -7,8 +7,14 @@ import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import { useRouter } from "next/navigation";
 
 // Axios instance for backend communication
+let baseHost = process.env.NEXT_PUBLIC_API_PRODUCTION; // default to production
+
+if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    baseHost = process.env.NEXT_PUBLIC_API_LOCALHOST;
+}
+
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
+    baseURL: `${baseHost}/api/v1`,
 });
 export default function Signup() {
     const [loading, setLoading] = useState(false);
@@ -376,7 +382,8 @@ export default function Signup() {
                });
            };
            checkPasswordStrength();
-   
+   setCountries(COUNTRY_DATA);
+        setFilteredCountries(COUNTRY_DATA);
           
    
            // Click outside to close phone country dropdown

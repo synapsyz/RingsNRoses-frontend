@@ -26,7 +26,14 @@ export default function ResetPasswordConfirm() {
         }
 
         try {
-            await axios.post('http://127.0.0.1:8000/api/v1/auth/password-reset-confirm/', {
+const isBrowser = typeof window !== "undefined";
+const isLocalhost = isBrowser && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+
+const baseHost = isLocalhost
+  ? process.env.NEXT_PUBLIC_API_LOCALHOST
+  : process.env.NEXT_PUBLIC_API_PRODUCTION;
+
+await axios.post(`${baseHost}/api/v1/auth/password-reset-confirm/`, {                
                 uid,
                 token,
                 new_password: newPassword,

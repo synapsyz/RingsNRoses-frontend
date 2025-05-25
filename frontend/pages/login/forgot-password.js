@@ -16,11 +16,17 @@ const [success, setSuccess] = useState('');
 const handleSubmit = async (e) => {
   e.preventDefault();
 
-  try {
-    await axios.post('http://localhost:8000/api/v1/auth/password-reset/', {
+  const isBrowser = typeof window !== "undefined";
+const isLocalhost = isBrowser && window.location.hostname === "localhost";
 
-      email: email,
-    });
+const baseHost = isLocalhost
+  ? process.env.NEXT_PUBLIC_API_LOCALHOST
+  : process.env.NEXT_PUBLIC_API_PRODUCTION;
+
+try {
+  await axios.post(`${baseHost}/api/v1/auth/password-reset/`, {
+    email: email,
+  });
 
     setSuccess('Password reset link sent to your email...');
   } catch (err) {

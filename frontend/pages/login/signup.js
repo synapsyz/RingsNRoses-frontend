@@ -8,10 +8,14 @@ import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import LocationSelector from "@/components/LocationSelector"; // adjust path as needed
 
+let baseHost = process.env.NEXT_PUBLIC_API_PRODUCTION; // default to production
 
-// Axios instance for backend communication
+if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    baseHost = process.env.NEXT_PUBLIC_API_LOCALHOST;
+}
+
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
+    baseURL: `${baseHost}/api/v1`,
 });
 
 // Wedding roles mapping for the backend (assuming numerical IDs)
