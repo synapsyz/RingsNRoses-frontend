@@ -5,15 +5,23 @@ import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import { useRouter } from "next/navigation";
-
+let api_url;
+const getApiUrl = () => {
+  return process.env.NODE_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
 // Axios instance for backend communication
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
+    baseURL: api_url+"/api/v1", // Adjust this to your backend API base URL
 });
 export default function Signup() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const router = useRouter();
+    const [email, setemailError] = useState(null);
+    const [phoneExist, setphoneError] = useState(null);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -49,6 +57,16 @@ export default function Signup() {
             router.push("/dashboard"); // Use Next.js router for navigation
         } catch (err) {
             console.error("Signup error:", err.response?.data || err.message);
+            let errorKey = Object.keys(err)
+            let errorValue = Object.values(err)
+            if(errorKey.includes('email')){
+                let index = errorKey.indexOf('email')
+                setemailError(errorValue[index][0])
+            }
+            if(errorKey.includes('phone')){
+                let index = errorKey.indexOf('phone')
+                setphoneError(errorValue[index][0])
+            }
             // Display a more user-friendly error message
             setError(err.response?.data?.detail || err.response?.data?.message || "Signup failed. Please check your inputs.");
         } finally {
@@ -575,6 +593,9 @@ export default function Signup() {
                                         onChange={handleChange}
                                         required
                                     />
+                                      {email && (
+                                                    <p className="text-sm text-red-600 mt-1">{email}</p>
+                                                )}
                                     {/* <input type="email" id="hs-pro-dale"
                                         value={formData.email}
                                         onChange={handleChange}
@@ -715,7 +736,9 @@ export default function Signup() {
                                         {/* Hidden input to hold the full phone number for form submission */}
                                         <input type="hidden" name="full_phone_number" value={getFullPhoneNumber()} />
                                     </div>
-
+                                    {phoneExist && (
+                                        <p className="text-sm text-red-600 mt-1">{phoneExist}</p>
+                                    )}
                                     {isDropdownOpen && (
                                         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
                                             <div className="p-2">

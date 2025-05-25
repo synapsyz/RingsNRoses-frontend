@@ -1,10 +1,16 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
-
+let api_url;
+const getApiUrl = () => {
+  return process.env.NODE_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [locations, setLocations] = useState([]);
-  const [pageUrl, setPageUrl] = useState('http://localhost:8000/api/v1/locations/countries/');
+  const [pageUrl, setPageUrl] = useState(api_url+'/api/v1/locations/countries/');
   const [nextPage, setNextPage] = useState(null);
   const [prevPage, setPrevPage] = useState(null);
   const [error, setError] = useState(null);
