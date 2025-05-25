@@ -1,6 +1,12 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
+let api_url;
+const getApiUrl = () => {
+  return process.env.NODE_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
 export default NextAuth({
   providers: [
     CredentialsProvider({
@@ -15,9 +21,9 @@ export default NextAuth({
         let endpoint = "";
       
         if (user_type === "vendor") {
-          endpoint = "http://localhost:8000/api/v1/vendor/token/";
+          endpoint = api_url+"/api/v1/vendor/token/";
         } else if (user_type === "customer") {
-          endpoint = "http://localhost:8000/api/v1/customer/token/";
+          endpoint = api_url+"/api/v1/customer/token/";
         } else {
           throw new Error("Invalid user type. Must be customer or vendor.");
         }

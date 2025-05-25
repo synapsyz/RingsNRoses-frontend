@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import AsyncSelect from "react-select/async";
 import axios from "axios";
-
+let api_url;
+const getApiUrl = () => {
+  return process.env.NODE_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
 // Axios instance
 const api = axios.create({
-  baseURL: "http://localhost:8000/api/v1",
+  baseURL: api_url+"/api/v1",
 });
 
 // Fetch countries

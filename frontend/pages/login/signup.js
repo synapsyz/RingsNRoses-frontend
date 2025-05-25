@@ -8,10 +8,17 @@ import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import LocationSelector from "@/components/LocationSelector"; // adjust path as needed
 
-
-// Axios instance for backend communication
+let api_url;
+const getApiUrl = () => {
+  return process.env.NODE_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
+console.log(api_url);
+// Axios instance for backend communicatio1n
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
+    baseURL: api_url+"/api/v1", // Adjust this to your backend API base URL
 });
 
 // Wedding roles mapping for the backend (assuming numerical IDs)
@@ -20,7 +27,7 @@ const WEDDING_ROLES = [
     { label: "Groom", value: 2, emoji: "🤵" ,svg: ""},
     { label: "Guest", value: 3, emoji: "🎉" ,svg: ""},
     { label: "Family", value: 4, emoji: "👨‍👩‍👧‍👦" ,svg: ""},
-    { label: "Friend", value: 5, emoji: "🤝" ,svg: ""},
+    { label: "Friend", value: 5, emoji: "🤝" ,svg: ""} ,
 ];
 
 // List of countries with flags and codes for phone number dropdown
@@ -448,10 +455,12 @@ export default function Signup() {
                 phone: getFullPhoneNumber(), 
                 wedding_date: formData.wedding_date || null,
                 wedding_role: selectedRole.value,
-                wedding_location: selectedLocation.value,
+                wedding_location: 'chennai'
+                //selectedLocation.value,
 
 
             };
+            console.log(api_url)
             const res = await api.post("/signup/customer/", payload);
 
             const { access, refresh, email, user_id } = res.data;
