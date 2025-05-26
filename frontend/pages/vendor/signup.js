@@ -49,6 +49,16 @@ export default function Signup() {
             router.push("/dashboard"); // Use Next.js router for navigation
         } catch (err) {
             console.error("Signup error:", err.response?.data || err.message);
+            let errorKey = Object.keys(err.response?.data)
+            let errorValue = Object.values(err.response?.data)
+            if(errorKey.includes('email')){
+                let index = errorKey.indexOf('email')
+                setemailError(errorValue[index][0])
+            }
+            if(errorKey.includes('phone')){
+                let index = errorKey.indexOf('phone')
+                setphoneError(errorValue[index][0])
+            }
             // Display a more user-friendly error message
             setError(err.response?.data?.detail || err.response?.data?.message || "Signup failed. Please check your inputs.");
         } finally {
