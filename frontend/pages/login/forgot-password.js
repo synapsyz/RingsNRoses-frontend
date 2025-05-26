@@ -2,7 +2,13 @@ import Link from 'next/link';
 // import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-
+let api_url;
+const getApiUrl = () => {
+  return process.env.NODE_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
 export default function ForgotPassword() {
   
 // const router = useRouter();
@@ -17,7 +23,7 @@ const handleSubmit = async (e) => {
   e.preventDefault();
 
   try {
-    await axios.post('http://localhost:8000/api/v1/auth/password-reset/', {
+    await axios.post(api_url+'/api/v1/auth/password-reset/', {
 
       email: email,
     });

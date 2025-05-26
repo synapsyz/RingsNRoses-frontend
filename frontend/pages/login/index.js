@@ -13,7 +13,7 @@ export default function Login() {
   const [user_type, setUserType] = useState("customer");
   const [theme, setTheme] = useState("light");
   const router = useRouter();
-
+const api_url = process.env.PROD_URL
   useEffect(() => {
     const root = window.document.documentElement;
     if (theme === "dark") {
