@@ -3,6 +3,10 @@ import { Dialog, Transition } from '@headlessui/react';
 import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
 let api_url;
+let isNgrok
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
@@ -40,7 +44,12 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
 
   const fetchStates = async (countryCode, regionToSelect = '', cityToMatch = '') => {
     try {
-      const res = await fetch(api_url+`/api/v1/locations/state/?country=${countryCode}`);
+      const res = await fetch(api_url+`/api/v1/locations/state/?country=${countryCode}`,
+               {
+                  headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               });
       const data = await res.json();
       const formattedStates = data.results.map((s) => ({
         value: s.name,
@@ -65,7 +74,12 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
   const fetchInitialLocation = async (stateName, matchCity = '') => {
     try {
       const url = api_url+`/api/v1/locations/?state=${encodeURIComponent(stateName)}&search=${encodeURIComponent(matchCity)}`;
-      const res = await fetch(url);
+      const res = await fetch(url,
+               {
+                  headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               });
       const data = await res.json();
       const formattedLocations = data.results.map((loc) => ({
         value: loc.id,
@@ -100,7 +114,12 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
     if (selectedOption) {
       try {
         const url = api_url+`/api/v1/locations/?state=${encodeURIComponent(selectedOption.value)}&search=`;
-        const res = await fetch(url);
+        const res = await fetch(url,
+               {
+                   headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               });
         const data = await res.json();
         const formattedLocations = data.results.map((loc) => ({
           value: loc.name,
@@ -132,7 +151,12 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
 
     try {
       const res = await fetch(
-        api_url+`/api/v1/locations/?state=${encodeURIComponent(selectedState.value)}&search=${encodeURIComponent(inputValue)}`
+        api_url+`/api/v1/locations/?state=${encodeURIComponent(selectedState.value)}&search=${encodeURIComponent(inputValue)}`,
+               {
+                 headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               }
       );
       const data = await res.json();
       return data.results.map((loc) => ({

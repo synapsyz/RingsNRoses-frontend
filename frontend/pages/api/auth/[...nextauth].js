@@ -1,6 +1,10 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 let api_url;
+let isNgrok
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
@@ -30,7 +34,9 @@ export default NextAuth({
       
         const res = await fetch(endpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   },
           body: JSON.stringify({ email, password }),
         });
       

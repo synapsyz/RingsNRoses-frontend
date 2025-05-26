@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { getSession, useSession } from "next-auth/react";
 let api_url;
+let isNgrok 
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
@@ -23,6 +27,7 @@ export default function Dashboard() {
       const res = await fetch(api_url+"/api/v1/location/", {
         headers: {
           Authorization: `Bearer ${session.accessToken}`,
+          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
         },
       });
 

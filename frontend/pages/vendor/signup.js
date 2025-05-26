@@ -6,6 +6,10 @@ import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import { useRouter } from "next/navigation";
 let api_url;
+let isNgrok
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
@@ -15,6 +19,9 @@ api_url = getApiUrl()
 // Axios instance for backend communication
 const api = axios.create({
     baseURL: api_url+"/api/v1", // Adjust this to your backend API base URL
+   headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
 });
 export default function Signup() {
     const [loading, setLoading] = useState(false);
@@ -46,7 +53,15 @@ export default function Signup() {
 
 
             };
-            const res = await api.post("/signup/vendor/", payload);
+           const res = await api.post(
+               "/signup/vendor/",
+               payload,
+               {
+                headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               }
+           );
 
             const { access, refresh, email, user_id } = res.data;
             sessionStorage.setItem("accessToken", access);
