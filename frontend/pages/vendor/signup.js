@@ -75,6 +75,8 @@ export default function Signup() {
     const [searchTerm, setSearchTerm] = useState('');
     const [phoneNumber, setPhoneNumber] = useState(''); // State for phone number input
     const [theme, setTheme] = useState("light");
+    const [email, setemailError] = useState(null);
+    const [phoneExist, setphoneError] = useState(null);
 
     const dropdownRef = useRef(null); // Ref for the dropdown container
     const countryInputRef = useRef(null); // Ref for the country search input
@@ -591,6 +593,9 @@ export default function Signup() {
                                         required
                                         className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="you@email.com" /> */}
                                 </div>
+                                {email && (
+                                                    <p className="text-sm text-red-600 mt-1">{email}</p>
+                                                )}
 
                                 {/* Password Input and Rules */}
                                 <div className="space-y-3">
@@ -725,6 +730,9 @@ export default function Signup() {
                                         {/* Hidden input to hold the full phone number for form submission */}
                                         <input type="hidden" name="full_phone_number" value={getFullPhoneNumber()} />
                                     </div>
+                                    {phoneExist && (
+                                                    <p className="text-sm text-red-600 mt-1">{phoneExist}</p>
+                                                )}
 
                                     {isDropdownOpen && (
                                         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
