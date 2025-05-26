@@ -18,7 +18,6 @@ const getApiUrl = () => {
     : process.env.NEXT_PUBLIC_HOST;
 };
 api_url = getApiUrl()
-console.log(api_url);
 // Axios instance for backend communicatio1n
 const api = axios.create({
     baseURL: api_url+"/api/v1", // Adjust this to your backend API base URL
@@ -463,12 +462,10 @@ export default function Signup() {
                 phone: getFullPhoneNumber(), 
                 wedding_date: formData.wedding_date || null,
                 wedding_role: selectedRole.value,
-                wedding_location: 'chennai'
-                //selectedLocation.value,
+                wedding_location: selectedLocation.value,
 
 
             };
-            console.log(api_url)
             const res = await api.post("/signup/customer/", payload,
                {
                headers: {

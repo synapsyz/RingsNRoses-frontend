@@ -35,7 +35,8 @@ export default NextAuth({
         const res = await fetch(endpoint, {
           method: "POST",
           headers: {
-                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),                 'Content-Type': 'application/json',
+
                    },
           body: JSON.stringify({ email, password }),
         });

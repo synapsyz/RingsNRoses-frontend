@@ -1,19 +1,18 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+
+
 let api_url;
 let isNgrok
 isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? false
     : true
 const getApiUrl = () => {
-  console.log(process.env.NEXT_PUBLIC_APP_ENV)
-  console.log(process.env.NEXT_PUBLIC_APP_ENV === 'development')
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
     : process.env.NEXT_PUBLIC_HOST;
 };
 api_url = getApiUrl()
-console.log(api_url);
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -30,7 +29,8 @@ export default function Dashboard() {
 
       fetch(pageUrl, {
         headers: {
-          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }), 'Content-Type': 'application/json',
+
         },
       })
 

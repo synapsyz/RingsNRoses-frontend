@@ -27,8 +27,6 @@ export default function Signup() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const router = useRouter();
-    const [email, setemailError] = useState(null);
-    const [phoneExist, setphoneError] = useState(null);
 
     const [formData, setFormData] = useState({
         name: "",
@@ -471,7 +469,6 @@ export default function Signup() {
     const handleSubmit = (event) => {
         event.preventDefault();
         const fullNumber = getFullPhoneNumber();
-        console.log("Submitting phone number:", fullNumber);
         // Here you would typically send `fullNumber` to your backend (e.g., Django)
         // You might use a hidden input field or pass it directly via state/context.
     };
