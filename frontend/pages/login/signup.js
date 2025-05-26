@@ -7,12 +7,26 @@ import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import LocationSelector from "@/components/LocationSelector"; // adjust path as needed
-
-
-// Axios instance for backend communication
+let isNgrok
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
+let api_url;
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
+// Axios instance for backend communicatio1n
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/v1", // Adjust this to your backend API base URL
-});
+    baseURL: api_url+"/api/v1", // Adjust this to your backend API base URL
+},
+               {
+                  headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               });
 
 // Wedding roles mapping for the backend (assuming numerical IDs)
 const WEDDING_ROLES = [
@@ -20,7 +34,7 @@ const WEDDING_ROLES = [
     { label: "Groom", value: 2, emoji: "🤵" ,svg: ""},
     { label: "Guest", value: 3, emoji: "🎉" ,svg: ""},
     { label: "Family", value: 4, emoji: "👨‍👩‍👧‍👦" ,svg: ""},
-    { label: "Friend", value: 5, emoji: "🤝" ,svg: ""},
+    { label: "Friend", value: 5, emoji: "🤝" ,svg: ""} ,
 ];
 
 // List of countries with flags and codes for phone number dropdown
@@ -452,7 +466,12 @@ export default function Signup() {
 
 
             };
-            const res = await api.post("/signup/customer/", payload);
+            const res = await api.post("/signup/customer/", payload,
+               {
+               headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               });
 
             const { access, refresh, email, user_id } = res.data;
             sessionStorage.setItem("accessToken", access);
@@ -744,9 +763,9 @@ export default function Signup() {
                                                     required // Make phone number required
                                                 />
                                             </div>
- {phoneExist && (
-                                                    <p className="text-sm text-red-600 mt-1">{phoneExist}</p>
-                                                )}
+                                            {phoneExist && (
+                                                <p className="text-sm text-red-600 mt-1">{phoneExist}</p>
+                                            )}
                                             {isDropdownOpen && (
                                                 <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
                                                     <div className="p-2">

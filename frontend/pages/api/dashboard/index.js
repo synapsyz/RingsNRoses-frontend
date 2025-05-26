@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { getSession, useSession } from "next-auth/react";
-
+let api_url;
+let isNgrok 
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [locations, setLocations] = useState([]);
@@ -14,9 +24,10 @@ export default function Dashboard() {
 
   const fetchLocations = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/v1/location/", {
+      const res = await fetch(api_url+"/api/v1/location/", {
         headers: {
           Authorization: `Bearer ${session.accessToken}`,
+          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
         },
       });
 

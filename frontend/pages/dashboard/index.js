@@ -1,10 +1,23 @@
 import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 
+
+let api_url;
+let isNgrok
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [locations, setLocations] = useState([]);
-  const [pageUrl, setPageUrl] = useState('http://localhost:8000/api/v1/locations/countries/');
+  const [pageUrl, setPageUrl] = useState(api_url+'/api/v1/locations/countries/');
   const [nextPage, setNextPage] = useState(null);
   const [prevPage, setPrevPage] = useState(null);
   const [error, setError] = useState(null);
@@ -15,7 +28,12 @@ export default function Dashboard() {
       const token = session?.accessToken;
 
       fetch(pageUrl, {
+        headers: {
+          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }), 'Content-Type': 'application/json',
+
+        },
       })
+
         .then((res) => {
           if (!res.ok) throw new Error('Failed to fetch');
           return res.json();

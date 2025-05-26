@@ -1,16 +1,29 @@
 import React, { useState } from "react";
 import AsyncSelect from "react-select/async";
 import axios from "axios";
-
+let isNgrok
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
+let api_url;
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
 // Axios instance
 const api = axios.create({
-  baseURL: "http://localhost:8000/api/v1",
+  baseURL: api_url+"/api/v1",
 });
 
 // Fetch countries
 const fetchCountries = async (inputValue) => {
   const response = await api.get("/locations/countries/", {
     params: { search: inputValue },
+     headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
   });
   return response.data.results.map((country) => ({
     label: country.name,
@@ -22,6 +35,9 @@ const fetchCountries = async (inputValue) => {
 const fetchStates = async (countryCode) => {
   const response = await api.get("/locations/state/", {
     params: { country: countryCode },
+     headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
   });
   return response.data.results.map((state) => ({
     label: state.name,
@@ -33,6 +49,9 @@ const fetchStates = async (countryCode) => {
 const fetchLocations = async (inputValue, stateId) => {
   const response = await api.get("/locations/", {
     params: { search: inputValue, state: stateId },
+     headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
   });
   return response.data.results.map((location) => ({
     label: location.name,
@@ -72,7 +91,12 @@ const CustomerSignup = () => {
         wedding_location: selectedLocation?.value ?? null,
       };
 
-      const res = await api.post("/signup/customer/", payload);
+      const res = await api.post("/signup/customer/", payload,
+               {
+     headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               });
 
       const { access, refresh, email, user_id } = res.data;
       sessionStorage.setItem("accessToken", access);

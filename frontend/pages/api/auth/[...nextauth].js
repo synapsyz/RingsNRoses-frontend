@@ -1,6 +1,16 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-
+let api_url;
+let isNgrok
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? false
+    : true
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+api_url = getApiUrl()
 export default NextAuth({
   providers: [
     CredentialsProvider({
@@ -15,16 +25,19 @@ export default NextAuth({
         let endpoint = "";
       
         if (user_type === "vendor") {
-          endpoint = "http://localhost:8000/api/v1/vendor/token/";
+          endpoint = api_url+"/api/v1/vendor/token/";
         } else if (user_type === "customer") {
-          endpoint = "http://localhost:8000/api/v1/customer/token/";
+          endpoint = api_url+"/api/v1/customer/token/";
         } else {
           throw new Error("Invalid user type. Must be customer or vendor.");
         }
       
         const res = await fetch(endpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),                 'Content-Type': 'application/json',
+
+                   },
           body: JSON.stringify({ email, password }),
         });
       
