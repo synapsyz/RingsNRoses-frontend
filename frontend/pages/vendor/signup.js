@@ -72,8 +72,10 @@ export default function Signup() {
             router.push("/dashboard"); // Use Next.js router for navigation
         } catch (err) {
             console.error("Signup error:", err.response?.data || err.message);
-            let errorKey = Object.keys(err)
-            let errorValue = Object.values(err)
+
+            let errorKey = Object.keys(err.response?.data)
+            let errorValue = Object.values(err.response?.data)
+
             if(errorKey.includes('email')){
                 let index = errorKey.indexOf('email')
                 setemailError(errorValue[index][0])
@@ -98,6 +100,8 @@ export default function Signup() {
     const [searchTerm, setSearchTerm] = useState('');
     const [phoneNumber, setPhoneNumber] = useState(''); // State for phone number input
     const [theme, setTheme] = useState("light");
+    const [email, setemailError] = useState(null);
+    const [phoneExist, setphoneError] = useState(null);
 
     const dropdownRef = useRef(null); // Ref for the dropdown container
     const countryInputRef = useRef(null); // Ref for the country search input
@@ -617,6 +621,9 @@ export default function Signup() {
                                         required
                                         className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="you@email.com" /> */}
                                 </div>
+                                {email && (
+                                                    <p className="text-sm text-red-600 mt-1">{email}</p>
+                                                )}
 
                                 {/* Password Input and Rules */}
                                 <div className="space-y-3">

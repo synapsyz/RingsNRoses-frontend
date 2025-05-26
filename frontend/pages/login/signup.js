@@ -485,8 +485,8 @@ export default function Signup() {
             router.push("/dashboard"); // Use Next.js router for navigation
         } catch (err) {
             // err = {"email":["user with this Email already exists."],"phone":["user with this Phone already exists."]}
-            let errorKey = Object.keys(err)
-            let errorValue = Object.values(err)
+            let errorKey = Object.keys(err.response?.data)
+            let errorValue = Object.values(err.response?.data)
             if(errorKey.includes('email')){
                 let index = errorKey.indexOf('email')
                 setemailError(errorValue[index][0])

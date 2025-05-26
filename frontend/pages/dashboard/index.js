@@ -23,6 +23,7 @@ export default function Dashboard() {
   const [prevPage, setPrevPage] = useState(null);
   const [error, setError] = useState(null);
 
+  
   useEffect(() => {
     if (status === 'authenticated') {
       const token = session?.accessToken;
