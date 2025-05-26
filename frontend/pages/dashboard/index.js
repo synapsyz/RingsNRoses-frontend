@@ -2,11 +2,15 @@ import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 let api_url;
 const getApiUrl = () => {
-  return process.env.NODE_ENV === 'development'
+  console.log(process.env.NEXT_PUBLIC_APP_ENV)
+  console.log(process.env.NEXT_PUBLIC_APP_ENV === 'development')
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
     : process.env.NEXT_PUBLIC_HOST;
 };
 api_url = getApiUrl()
+console.log(api_url);
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const [locations, setLocations] = useState([]);
@@ -20,7 +24,11 @@ export default function Dashboard() {
       const token = session?.accessToken;
 
       fetch(pageUrl, {
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+        },
       })
+
         .then((res) => {
           if (!res.ok) throw new Error('Failed to fetch');
           return res.json();

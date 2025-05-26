@@ -4,7 +4,7 @@ import Select from 'react-select';
 import AsyncSelect from 'react-select/async';
 let api_url;
 const getApiUrl = () => {
-  return process.env.NODE_ENV === 'development'
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
     : process.env.NEXT_PUBLIC_HOST;
 };
