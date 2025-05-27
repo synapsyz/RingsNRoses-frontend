@@ -277,7 +277,6 @@ export default function Signup() {
         name: "",
         email: "",
         password: "",
-        wedding_date: "",
     });
 
     // Separate state for phone number and country code
@@ -460,11 +459,6 @@ export default function Signup() {
                 password: formData.password,
                 name: formData.name,
                 phone: getFullPhoneNumber(), 
-                wedding_date: formData.wedding_date || null,
-                wedding_role: selectedRole.value,
-                wedding_location: selectedLocation.value,
-
-
             };
             const res = await api.post("/signup/customer/", payload,
                {
@@ -481,21 +475,35 @@ export default function Signup() {
 
             router.push("/dashboard"); // Use Next.js router for navigation
         } catch (err) {
-            // err = {"email":["user with this Email already exists."],"phone":["user with this Phone already exists."]}
-            let errorKey = Object.keys(err.response?.data)
-            let errorValue = Object.values(err.response?.data)
-            if(errorKey.includes('email')){
-                let index = errorKey.indexOf('email')
-                setemailError(errorValue[index][0])
-            }
-            if(errorKey.includes('phone')){
-                let index = errorKey.indexOf('phone')
-                setphoneError(errorValue[index][0])
-            }
-            console.error("Signup error:", err.response?.data || err.message);
-            // Display a more user-friendly error message
-            setError(err.response?.data?.detail || err.response?.data?.message || "Signup failed. Please check your inputs.");
-        } finally {
+  const errorData = err?.response?.data;
+
+  if (errorData && typeof errorData === 'object') {
+    const errorKeys = Object.keys(errorData);
+    const errorValues = Object.values(errorData);
+
+    if (errorKeys.includes('email')) {
+      const index = errorKeys.indexOf('email');
+      setemailError(errorValues[index]?.[0] || 'Invalid email');
+    }
+
+    if (errorKeys.includes('phone')) {
+      const index = errorKeys.indexOf('phone');
+      setphoneError(errorValues[index]?.[0] || 'Invalid phone');
+    }
+
+    setError(
+      errorData?.detail ||
+      errorData?.message ||
+      'Signup failed. Please check your inputs.'
+    );
+    console.error("Signup error:", errorData);
+  } else {
+    // fallback for unexpected error structure
+    console.error("Unexpected error:", err);
+    setError("An unexpected error occurred. Please try again.");
+  }
+}
+ finally {
             setLoading(false);
         }
     };
@@ -800,106 +808,8 @@ export default function Signup() {
                                     </div>
 
                                     <div className="space-y-5">
-                                        <div className="pt-5 mt-6 border-t border-gray-200 dark:border-neutral-700">
-                                            <div className="space-y-3">
-                                                <h4 className="block mb-4 font-medium text-sm text-gray-800 dark:text-neutral-200">
-                                                    Wedding Role
-                                                </h4>
-
-                                                <div className="grid grid-cols-5 gap-1 sm:gap-3">
-                                                    {WEDDING_ROLES.map((role) => (
-                                                        <label
-                                                            key={role.value}
-                                                            htmlFor={`role-${role.label.toLowerCase()}`}
-                                                            className={`p-2 sm:p-3 text-xs flex flex-col justify-center items-center sm:text-[13px] text-center bg-white text-gray-800 border cursor-pointer rounded-lg dark:bg-gray-900 dark:border-neutral-700 dark:text-neutral-200 ${selectedRole.value === role.value ? 'border-indigo-500 ring-2 ring-indigo-500' : 'border-gray-200'}`}
-                                                        >
-                                                            <input
-                                                                type="radio"
-                                                                id={`role-${role.label.toLowerCase()}`}
-                                                                className="hidden"
-                                                                value={role.value}
-                                                                name="wedding_role"
-                                                                checked={selectedRole.value === role.value}
-                                                                onChange={handleRoleChange}
-                                                                required // Make role required
-                                                            />
-                                                            <span className="block mb-1 text-xl"></span>{role.label}
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="pt-5 mt-6 border-t border-gray-200 dark:border-neutral-700">
-                                            <div className="flex gap-4">
-                                                {/* Wedding Date Column */}
-                                                <div className="flex flex-col flex-1">
-                                                    <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200 mb-2">
-                                                        Wedding Date
-                                                    </h4>
-                                                    <label htmlFor="hs-pro-shcafbr" className="sr-only">
-                                                        Wedding Date
-                                                    </label>
-                                                    <input
-                                                        id="hs-pro-shcafbr"
-                                                        type="date"
-                                                        className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                        min={minWeddingDate}
-                                                        name="wedding_date"
-                                                        value={formData.wedding_date}
-                                                        onChange={handleChange}
-                                                    />
-                                                </div>
-
-                                                {/* Location Selection with AsyncSelect */}
-                                                    
-                                            </div>
-{/* <h3 className="pb-2 mt-8 mb-3 text-xs text-gray-500 border-b border-gray-200 dark:text-neutral-500 dark:border-neutral-700">
-  Location Details
-</h3> */}
-
-<div className="-mx-3 flex flex-col py-3">
-  <div className="p-3 group w-full flex items-center gap-x-4 text-start rounded-2xl">
-    <div className="shrink-0 relative">
-      <span className="shrink-0 size-11 inline-flex justify-center items-center bg-gray-100 text-gray-800 rounded-full dark:bg-neutral-800 dark:text-neutral-300">
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-</svg>
-
-      </span>
-    </div>
-    <div className="grow">
-      <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-        Wedding location
-      </span>
-      <span className="block text-sm text-gray-500 dark:text-neutral-500">
-        {locationDetails?.location}, {locationDetails?.state}
-      </span>
-      <button
-        onClick={() => setIsModalOpen(true)}
-        className="mt-1 inline-block font-medium text-sm text-start text-purple-600 underline underline-offset-4 hover:text-purple-700 focus:outline-hidden dark:text-purple-500 dark:hover:text-purple-600"
-      >
-        Change Location
-      </button>
-    </div>
-  </div>
-</div>
-
-<LocationSelector
-  isOpen={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-  onSave={(details) => {
-    setLocationDetails(details);
-    setSelectedLocation({ value: details.id, label: details.location }); // <-- This is critical
-    setIsModalOpen(false);
-  }}
-  onChange={(details) => {
-    setLocationDetails(details);
-    setSelectedLocation({ value: details.id, label: details.location }); // <-- Also update here
-  }}
-/>
-
-                                        </div>
+                        
+                                
                                         <div className="pt-3 mt-6 border-t border-gray-200 dark:border-neutral-700">
                                             {/* Checkbox */}
                                             <div className="flex gap-x-1">

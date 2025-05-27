@@ -564,7 +564,6 @@ export default function Signup() {
                             <div className="space-y-5">
                                 <div>
                                     <label htmlFor="hs-pro-dalfn" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
-                                        Name
                                     </label>
                                       <input
                                                     type="text"
@@ -578,12 +577,11 @@ export default function Signup() {
                                 </div>
                                 <div>
                                     <label htmlFor="hs-pro-dappcn" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
-                                        Business name
                                     </label>
 <input
                                                     type="text"
                                                     className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                    placeholder="Name"
+                                                    placeholder="Business Name"
                                                     name="business_name"
                                                     value={formData.business_name}
                                                     onChange={handleChange}
@@ -597,7 +595,6 @@ export default function Signup() {
                                 </div>
                                 <div>
                                     <label htmlFor="hs-pro-dale" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
-                                        Email
                                     </label>
                                     <input
                                         id="hs-pro-shcafem"
