@@ -2,12 +2,10 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 let api_url;
 let isNgrok
-isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? false
-    : true
+isNgrok = true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    ? process.env.NEXT_PUBLIC_HOST
     : process.env.NEXT_PUBLIC_HOST;
 };
 api_url = getApiUrl()
