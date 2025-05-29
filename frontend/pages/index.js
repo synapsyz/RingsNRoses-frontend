@@ -1,8 +1,10 @@
+'use client';
+
+
 // import { Html, Head, Main, NextScript } from 'next/document';
 // import '../styles/globals.css';
 import Script from 'next/script';
 import { useEffect, useState } from "react";
-'use client';
 export const metadata = {
   title: 'Rings N Roses',
   description:
@@ -107,7 +109,7 @@ export default function Home() {
   return (
         
       
-<html lang="en">
+<div>
   <Script
         src="https://cdn.jsdelivr.net/npm/preline@latest/dist/preline.js"
         strategy="afterInteractive"
@@ -153,7 +155,7 @@ export default function Home() {
           `}
         </Script>
 
-      <body className="dark:bg-neutral-900">
+      <div className="dark:bg-neutral-900">
         <header className="flex flex-col lg:flex-nowrap z-50 bg-white dark:bg-neutral-900"></header>
           <div className="bg-gray-100 dark:bg-neutral-800">
       <div className="max-w-[85rem] flex justify-between w-full mx-auto py-3 px-4 sm:px-6 lg:px-8">
@@ -4892,8 +4894,8 @@ export default function Home() {
       <TabsSync />
     </div>
 
-      </body>
-    </html>
+      </div>
+    </div>
   );
  
 }
