@@ -1883,7 +1883,7 @@ export default function Home() {
   <h2 className="text-lg font-bold text-gray-800 dark:text-white">&</h2>
   <h2 className="text-lg font-bold text-gray-800 dark:text-white">Lavanya</h2>
 </div>
-        <p className="text-l text-gray-500 dark:text-neutral-300">28th of May, 2025</p>
+        <p className="text-l text-gray-500 dark:text-neutral-300">28th of June, 2025</p>
 
         <div id="countdown" className="mt-2 text-gray-800 dark:text-white font-medium flex gap-4 text-center">
           <div className="flex flex-col items-center">
