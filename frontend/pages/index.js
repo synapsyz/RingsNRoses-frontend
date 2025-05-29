@@ -70,7 +70,7 @@ export default function Home() {
   });
 
   useEffect(() => {
-    const targetDate = new Date("May 28, 2025 00:00:00").getTime();
+    const targetDate = new Date("June 28, 2025 00:00:00").getTime();
 
     const updateCountdown = () => {
       const now = new Date().getTime();
