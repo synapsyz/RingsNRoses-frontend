@@ -49,7 +49,7 @@ const api_url = process.env.PROD_URL
     });
 
     if (res?.ok) {
-      router.push("/");
+      router.replace("/");
     } else {
       alert("Invalid credentials");
     }
