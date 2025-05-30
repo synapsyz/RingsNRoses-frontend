@@ -75,16 +75,20 @@ export default function Home() {
   });
 
 
-  useEffect(() => {
-  const hasRefreshed = localStorage.getItem('hasRefreshed');
+useEffect(() => {
+  const hasRefreshed = sessionStorage.getItem('hasRefreshed');
 
   if (!hasRefreshed) {
-    localStorage.setItem('hasRefreshed', 'true');
+    sessionStorage.setItem('hasRefreshed', 'true');
     setTimeout(() => {
       window.location.reload();
-    }, 500); // Adjust delay if needed
+    }, 500);
+  } else {
+    sessionStorage.removeItem('hasRefreshed');
   }
 }, []);
+
+
 
 
   useEffect(() => {
