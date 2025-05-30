@@ -74,6 +74,19 @@ export default function Home() {
     seconds: 0,
   });
 
+
+  useEffect(() => {
+  const hasRefreshed = localStorage.getItem('hasRefreshed');
+
+  if (!hasRefreshed) {
+    localStorage.setItem('hasRefreshed', 'true');
+    setTimeout(() => {
+      window.location.reload();
+    }, 500); // Adjust delay if needed
+  }
+}, []);
+
+
   useEffect(() => {
   // Check if the date exists in session data
   if (!session?.user?.customer_profile?.event_date) {
