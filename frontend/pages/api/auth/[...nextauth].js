@@ -1,46 +1,49 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+
 let api_url;
-let isNgrok
-isNgrok = true;
+let isNgrok = true;
+
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? process.env.NEXT_PUBLIC_HOST
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
     : process.env.NEXT_PUBLIC_HOST;
 };
-api_url = getApiUrl()
-export default NextAuth({
+
+api_url = getApiUrl();
+
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
-        user_type: { label: "User Type", type: "text" }, 
+        user_type: { label: "User Type", type: "text" },
       },
       async authorize(credentials) {
         const { email, password, user_type } = credentials;
         let endpoint = "";
-      
+
         if (user_type === "vendor") {
-          endpoint = api_url+"/api/v1/vendor/token/";
+          endpoint = `${api_url}/api/v1/vendor/token/`;
         } else if (user_type === "customer") {
-          endpoint = api_url+"/api/v1/customer/token/";
+          endpoint = `${api_url}/api/v1/customer/token/`;
         } else {
           throw new Error("Invalid user type. Must be customer or vendor.");
         }
-      
+
         const res = await fetch(endpoint, {
           method: "POST",
           headers: {
-                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),                 'Content-Type': 'application/json',
-
-                   },
+            "Content-Type": "application/json",
+            ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+          },
           body: JSON.stringify({ email, password }),
         });
-      
+
         const data = await res.json();
-      
+
         if (res.ok && data.access) {
           return {
             id: data.user_id || email,
@@ -49,30 +52,33 @@ export default NextAuth({
             user_type,
             accessToken: data.access,
             refreshToken: data.refresh,
+            full_user: data.user || {},
           };
         }
-      
-        // Throw error message returned by API
+
         throw new Error(
           data.detail ||
           data.non_field_errors?.[0] ||
           data.message ||
           "Login failed. Please check your credentials."
         );
-              },
-      
+      },
     }),
   ],
 
   session: {
     strategy: "jwt",
   },
+
+  secret: process.env.NEXTAUTH_SECRET,
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.user_type = user.user_type;
+        token.user = user.full_user || {};
       }
       return token;
     },
@@ -81,11 +87,14 @@ export default NextAuth({
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.user_type = token.user_type;
+      session.user = token.user || {};
       return session;
     },
   },
 
   pages: {
-    signIn: "/login", // Use a shared login page
+    signIn: "/login",
   },
-});
+};
+
+export default NextAuth(authOptions);
