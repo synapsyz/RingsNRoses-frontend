@@ -82,7 +82,7 @@ useEffect(() => {
     sessionStorage.setItem('hasRefreshed', 'true');
     setTimeout(() => {
       window.location.reload();
-    }, 500);
+    }, 1500);
   } else {
     sessionStorage.removeItem('hasRefreshed');
   }
