@@ -75,15 +75,6 @@ export default function Home() {
   });
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      window.location.reload();
-    }, 500); // 500 milliseconds (adjust as needed)
-
-    return () => clearTimeout(timeout); // Cleanup on unmount
-  }, []);
-
-
-  useEffect(() => {
   // Check if the date exists in session data
   if (!session?.user?.customer_profile?.event_date) {
     console.error("Event date not found in session");
