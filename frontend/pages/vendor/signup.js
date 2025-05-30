@@ -411,7 +411,8 @@ export default function Signup() {
                });
            };
            checkPasswordStrength();
-   
+   setCountries(COUNTRY_DATA);
+        setFilteredCountries(COUNTRY_DATA);
           
    
            // Click outside to close phone country dropdown

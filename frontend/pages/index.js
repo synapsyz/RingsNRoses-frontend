@@ -5,6 +5,9 @@
 // import '../styles/globals.css';
 import Script from 'next/script';
 import { useEffect, useState } from "react";
+import { useSession, signOut } from 'next-auth/react';
+import Image from 'next/image';
+import Link from 'next/link';
 export const metadata = {
   title: 'Rings N Roses',
   description:
@@ -62,6 +65,8 @@ function TabsSync() {
   return null; // This component only applies side effects
 }
 export default function Home() {
+  const { data: session, status } = useSession();
+  const user = session?.user;
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -70,35 +75,48 @@ export default function Home() {
   });
 
   useEffect(() => {
-    const targetDate = new Date("June 28, 2025 00:00:00").getTime();
+  // Check if the date exists in session data
+  if (!session?.user?.customer_profile?.event_date) {
+    console.error("Event date not found in session");
+    return;
+  }
 
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
+  // Parse the date from session (assuming format like "2025-06-28T00:00:00")
+  const targetDate = new Date(session.user.customer_profile.event_date).getTime();
 
-      if (distance <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        clearInterval(timerInterval);
-        return;
-      }
+  // Handle invalid dates
+  if (isNaN(targetDate)) {
+    console.error("Invalid date format in session data");
+    return;
+  }
 
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutes = Math.floor(
-        (distance % (1000 * 60 * 60)) / (1000 * 60)
-      );
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  const updateCountdown = () => {
+    const now = new Date().getTime();
+    const distance = targetDate - now;
 
-      setTimeLeft({ days, hours, minutes, seconds });
-    };
+    if (distance <= 0) {
+      setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      clearInterval(timerInterval);
+      return;
+    }
 
-    const timerInterval = setInterval(updateCountdown, 1000);
-    updateCountdown(); // Initial run
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor(
+      (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+    );
+    const minutes = Math.floor(
+      (distance % (1000 * 60 * 60)) / (1000 * 60)
+    );
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-    return () => clearInterval(timerInterval); // Cleanup on unmount
-  }, []);
+    setTimeLeft({ days, hours, minutes, seconds });
+  };
+
+  const timerInterval = setInterval(updateCountdown, 1000);
+  updateCountdown(); // Initial run
+
+  return () => clearInterval(timerInterval); // Cleanup on unmount
+}, [session?.user?.customer_profile?.event_date]); // Add dependency
     const handlePrelineLoad = () => {
     const el = document.querySelector('[data-hs-carousel]');
     if (el && window.HSCarousel) {
@@ -1567,7 +1585,9 @@ export default function Home() {
         {/* <!-- End Search --> */}
 
         {/* <!-- Widgets --> */}
-        <div className="order-2 md:order-3 ms-auto lg:ms-0">
+        { status === "authenticated" && user ? (
+          <>
+<div className="order-2 md:order-3 ms-auto lg:ms-0">
           <div className="flex justify-end items-center gap-x-2">
                     {/* <!-- Favorites Button Icon --> */}
                     <div className="hs-dropdown [--auto-close:inside] [--placement:bottom-right] relative inline-flex">
@@ -1676,7 +1696,7 @@ export default function Home() {
                     {/* <!-- Account Button Icon --> */}
                     <div className="hs-dropdown [--auto-close:inside] [--placement:bottom-right] relative inline-flex">
                       <button id="hs-pro-shadnli" type="button" className="relative shrink-0 inline-flex justify-center items-center gap-x-2 size-9.5 rounded-full text-gray-800 hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-                        <img className="shrink-0 size-8 rounded-full" src="https://images.unsplash.com/photo-1659482633369-9fe69af50bfb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=3&w=320&h=320&q=80" alt="Avatar"></img>
+                        <img className="shrink-0 size-8 rounded-full" src={session.user.profile_picture||"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} alt="Avatar"></img>
                       </button>
                       {/* <!-- End Account Button Icon --> */}
           
@@ -1684,25 +1704,36 @@ export default function Home() {
                       <div className="hs-dropdown-menu transition-[opacity,margin] duration-[0.1ms] md:duration-[150ms] hs-dropdown-open:opacity-100 opacity-0 w-full sm:w-72 hidden z-10 bg-white border-y sm:border-x border-gray-200 sm:border-gray-100 sm:mt-2 sm:rounded-xl shadow-lg before:absolute before:-top-4 before:start-0 before:w-full before:h-5 dark:bg-neutral-900 dark:border-neutral-700" role="menu" aria-orientation="vertical" aria-labelledby="hs-pro-shadnli">
                         <div className="p-2">
                           {/* <!-- Account Details --> */}
-                          <a className="py-2 px-2.5 flex items-center gap-3 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="../../pro/shop/account.html">
-                            <img className="shrink-0 size-10 rounded-full" src="https://images.unsplash.com/photo-1659482633369-9fe69af50bfb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=3&w=320&h=320&q=80" alt="Avatar"></img>
-          
-                            <div className="grow">
-                              <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-                                James Collins
-                              </span>
-                              <p className="text-xs text-gray-500 dark:text-neutral-500">
-                                jamescollins@site.so
-                              </p>
-                            </div>
-                          </a>
+                          <a 
+  className="py-2 px-2.5 flex items-center gap-3 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" 
+  href="../../pro/shop/account.html"
+>
+  <img 
+    className="shrink-0 size-10 rounded-full" 
+    src={session.user.profile_picture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} 
+    alt="Avatar"
+    onError={(e) => {
+      e.target.onerror = null; 
+      e.target.src = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+    }}
+  />
+  
+  <div className="grow">
+    <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
+      {session.user.name}
+    </span>
+    <p className="text-xs text-gray-500 dark:text-neutral-500">
+      {session.user.email}
+    </p>
+  </div>
+</a>
                           {/* <!-- End Account Details --> */}
           
           
                           {/* <!-- List --> */}
                           <ul className="flex flex-col space-y-0.5">
                             <li>
-                              <a className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="../../pro/shop/personal-info.html">
+                              <a className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="/personal-info.html">
                                 <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                   <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                                   <circle cx="12" cy="7" r="4" />
@@ -1725,7 +1756,9 @@ export default function Home() {
                           <div className="my-2 mx-2.5 h-px bg-gray-200 dark:bg-neutral-700"></div>
           
                           <p>
-                            <button type="button" className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 hover:text-red-500 focus:outline-hidden focus:bg-gray-100 focus:text-red-500 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:hover:text-red-500 dark:focus:text-red-500">
+                            <button type="button" 
+                            onClick={() => signOut({ redirect: false })}
+                            className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 hover:text-red-500 focus:outline-hidden focus:bg-gray-100 focus:text-red-500 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:hover:text-red-500 dark:focus:text-red-500">
                               <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                                 <polyline points="16 17 21 12 16 7" />
@@ -1740,6 +1773,28 @@ export default function Home() {
                     {/* <!-- End Account Dropdown --> */}
           </div>
         </div>
+        </>
+        ) : (
+         <div className="order-2 md:order-3 ms-auto lg:ms-0 flex flex-col items-center space-y-1 text-end">
+  <a
+    href="/login"
+    className="py-2 px-6 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-colors duration-200 dark:bg-emerald-700 dark:hover:bg-emerald-600 dark:focus:ring-emerald-500"
+  >
+    Sign in
+  </a>
+
+  <p className="text-xs text-gray-700 dark:text-gray-300 whitespace-nowrap">
+    New Customer?{" "}
+    <a
+      href="/login/signup"
+      className="text-emerald-600 dark:text-emerald-400 hover:underline"
+    >
+      Sign up
+    </a>
+  </p>
+</div>
+
+        )}
         {/* <!-- End Widgets --> */}
       </div>
 
@@ -1871,20 +1926,37 @@ export default function Home() {
 
   {/* <!-- ========== MAIN CONTENT ========== --> */}
   <main id="content">
+    
+
+    
 <div className="py-10 w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
 {/* <!-- Stats Grid --> */}
+  {status === "authenticated" && user &&(
+  <>
 <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-2">
   <div className="group p-4 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition dark:bg-neutral-900 dark:border-neutral-700 md:col-span-2">
     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
 
       <div className="flex-1 flex flex-col gap-2">
 <div className="flex items-center gap-2">
-  <h2 className="text-lg font-bold text-gray-800 dark:text-white">Madhesh</h2>
+  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user.customer_profile.groom_name}</h2>
   <h2 className="text-lg font-bold text-gray-800 dark:text-white">&</h2>
-  <h2 className="text-lg font-bold text-gray-800 dark:text-white">Lavanya</h2>
+<h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user.customer_profile.bride_name}</h2>
 </div>
-        <p className="text-l text-gray-500 dark:text-neutral-300">28th of June, 2025</p>
-
+<p className="text-l text-gray-500 dark:text-neutral-300">
+  {new Date(session.user.customer_profile.event_date).toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).replace(/(\d+)/, (match) => {
+    const day = parseInt(match);
+    const suffix = 
+      day === 1 ? 'st' :
+      day === 2 ? 'nd' :
+      day === 3 ? 'rd' : 'th';
+    return `${day}${suffix} of`;
+  })}
+</p>
         <div id="countdown" className="mt-2 text-gray-800 dark:text-white font-medium flex gap-4 text-center">
           <div className="flex flex-col items-center">
             {/* <span id="days" className="text-xs font-bold">--</span> */}
@@ -1931,6 +2003,9 @@ export default function Home() {
     </div>
   </div>
 </div>
+</>
+
+)}
 
 {/* <!-- End Stats Grid --> */}
 
@@ -2065,6 +2140,7 @@ export default function Home() {
       </div>
     {/* <!-- End Slider --> */}
 </div>
+
     {/* <!-- Catgory Group --> */}
     <div className="w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
       {/* <!-- Grid --> */}

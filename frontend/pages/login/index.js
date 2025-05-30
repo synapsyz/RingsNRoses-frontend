@@ -49,7 +49,7 @@ const api_url = process.env.PROD_URL
     });
 
     if (res?.ok) {
-      router.push("/dashboard");
+      router.push("/");
     } else {
       alert("Invalid credentials");
     }
@@ -96,7 +96,7 @@ const api_url = process.env.PROD_URL
               </p>
             </div>
 
-            <div className="lg:hidden flex justify-end">
+        {/*    <div className="lg:hidden flex justify-end">
               <button
                 type="button"
                 onClick={toggleTheme}
@@ -119,7 +119,7 @@ const api_url = process.env.PROD_URL
                   </>
                 )}
               </button>
-            </div>
+            </div> */}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
