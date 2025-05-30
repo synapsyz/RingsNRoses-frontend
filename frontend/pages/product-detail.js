@@ -2615,7 +2615,7 @@ The management was extremely cooperative and professional throughout the booking
        <div class="h-full flex flex-col">
           <div class="group relative">
             <div class="relative">
-              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail.html">
+              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail">
                 <img class="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx_dGPXv0JN3-nkPUgbdbGVT1mzSY6_RNcnQ&s" alt="Resorts"/>
               </a>
 
@@ -2647,7 +2647,7 @@ The management was extremely cooperative and professional throughout the booking
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div class="pt-3">
               <h4 class="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2710,7 +2710,7 @@ The management was extremely cooperative and professional throughout the booking
         <div class="h-full flex flex-col">
           <div class="group relative">
             <div class="relative">
-              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail.html">
+              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail">
                 <img class="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://static.wixstatic.com/media/0057ed_daaa8ede0ebb479f9bbda20f6db193ed~mv2.jpg/v1/fill/w_716,h_602,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Copy-of-072A0956-Edit-min-1024x683.jpg" alt="Product Image"/>
               </a>
 
@@ -2734,7 +2734,7 @@ The management was extremely cooperative and professional throughout the booking
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div class="pt-3">
               <h4 class="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2797,7 +2797,7 @@ The management was extremely cooperative and professional throughout the booking
        <div class="h-full flex flex-col">
           <div class="group relative">
             <div class="relative">
-              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail.html">
+              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail">
                 <img class="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.venuebookingz.com/28254-1686054421-wm-mary10.jpg" alt="Product Image"/>
               </a>
 
@@ -2817,7 +2817,7 @@ The management was extremely cooperative and professional throughout the booking
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div class="pt-3">
               <h4 class="font-medium text-sm text-gray-800 dark:text-neutral-200">    
@@ -2877,7 +2877,7 @@ The management was extremely cooperative and professional throughout the booking
          <div class="h-full flex flex-col">
           <div class="group relative">
             <div class="relative">
-              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail.html">
+              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail">
                 <img class="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR87TsCDhwKtTRhIYWQrwI_Jk2L9lSl7XhYeA&s" alt="Product Image"/>
               </a>
 
@@ -2897,7 +2897,7 @@ The management was extremely cooperative and professional throughout the booking
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div class="pt-3">
               <h4 class="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2960,7 +2960,7 @@ The management was extremely cooperative and professional throughout the booking
        <div class="h-full flex flex-col">
           <div class="group relative">
             <div class="relative">
-              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail.html">
+              <a class="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="../../pro/shop-marketplace/product-detail">
                 <img class="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.venuebookingz.com/24089-1686048898-wm-thanthai-periyar-community-hall-2.jpg" alt="Product Image"/>
               </a>
 
@@ -2984,7 +2984,7 @@ The management was extremely cooperative and professional throughout the booking
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a class="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div class="pt-3">
               <h4 class="font-medium text-sm text-gray-800 dark:text-neutral-200">

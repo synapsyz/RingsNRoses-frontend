@@ -1945,7 +1945,7 @@ useEffect(() => {
                   Categories
                 </a>
 
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 " href="./product-detail.html">
+                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 " href="./product-detail">
                   Product Detail
                 </a>
               </div>
@@ -2318,7 +2318,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.squarespace-cdn.com/content/v1/5f152ec422af2a37ad8d4da4/1595231592681-7PDPA2AX1EQHG56NQNV3/Outdoor+Wedding+Venue+Chennai" alt="Product Image"/>
               </a>
 
@@ -2335,7 +2335,7 @@ useEffect(() => {
               {/* <!-- End Badge Group --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2385,12 +2385,12 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://img.staticmb.com/mbcontent/images/uploads/2023/8/Heaven_4.jpg" alt="Product Image"/>
               </a>
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2417,7 +2417,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://t4.ftcdn.net/jpg/08/01/08/11/360_F_801081156_a7Rpu5kGuHBCPLkN9JhWe0qWpmWhwjNx.jpg" alt="Product Image"/>
               </a>
 
@@ -2434,7 +2434,7 @@ useEffect(() => {
               {/* <!-- End Badge Group --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2484,12 +2484,12 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://www.hamaraevent.com/uploads/blog/0076248001475654338.jpg" alt="Product Image"/>
               </a>
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2539,7 +2539,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://imgmediagumlet.lbb.in/media/2023/10/6520072fd766a50bd12a61b5_1696597807795.jpg" alt="Product Image"/>
               </a>
 
@@ -2556,7 +2556,7 @@ useEffect(() => {
               {/* <!-- End Badge Group --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2661,7 +2661,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx_dGPXv0JN3-nkPUgbdbGVT1mzSY6_RNcnQ&s" alt="Resorts"></img>
               </a>
 
@@ -2693,7 +2693,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2757,7 +2757,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.venuebookingz.com/28254-1686054421-wm-mary10.jpg" alt="Product Image"/>
               </a>
 
@@ -2777,7 +2777,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">    
@@ -2838,7 +2838,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://static.wixstatic.com/media/0057ed_daaa8ede0ebb479f9bbda20f6db193ed~mv2.jpg/v1/fill/w_716,h_602,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Copy-of-072A0956-Edit-min-1024x683.jpg" alt="Product Image"/>
               </a>
 
@@ -2862,7 +2862,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2926,7 +2926,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR87TsCDhwKtTRhIYWQrwI_Jk2L9lSl7XhYeA&s" alt="Product Image"/>
               </a>
 
@@ -2946,7 +2946,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3010,7 +3010,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.venuebookingz.com/24089-1686048898-wm-thanthai-periyar-community-hall-2.jpg" alt="Product Image"/>
               </a>
 
@@ -3034,7 +3034,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3075,7 +3075,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://content.jdmagicbox.com/comp/def_content/caterers/default-caterers-22.jpg" alt="Product Image"/>
               </a>
 
@@ -3099,7 +3099,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3157,7 +3157,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://moha-mushkil.com/wp-content/uploads/2018/09/IMG_20180724_212721.jpg" alt="Product Image"/>
               </a>
 
@@ -3177,7 +3177,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3235,7 +3235,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.jdmagicbox.com/v2/comp/chennai/a2/044pxx44.xx44.210330020515.i4a2/catalogue/chemistry-lab-the-bar-school-kodambakkam-chennai-bartender-services-426gjykqf8.jpg" alt="Product Image"/>
               </a>
 
@@ -3255,7 +3255,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3291,7 +3291,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://content.jdmagicbox.com/v2/comp/chennai/m6/044pxx44.xx44.090921161513.h7m6/catalogue/sriji-sweets-vepery-chennai-sweet-shops-37f8bph.jpg" alt="Product Image"/>
               </a>
 
@@ -3323,7 +3323,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3381,7 +3381,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDslDDP1C653ta4es5oUErh-De3rFClLiCHw&s" alt="Product Image"/>
               </a>
 
@@ -3413,7 +3413,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3446,7 +3446,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://lh6.googleusercontent.com/proxy/6-PoU_DOIbURMTBFclfmrHB1Vd26vWmWpIKoT3YtUg1cBLNsc_sK0NX75Y1RgAHJKD0VN1_BlsCVZx_C6pYB-LC5r7P8vLW6POv4LogML7ThWZYIrw5rq5uO9WNDRPJqQLvPyXoaXuo" alt="Product Image"/>
               </a>
 
@@ -3470,7 +3470,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3526,7 +3526,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://knotstories.in/wp-content/uploads/2024/02/image8-1.webp" alt="Product Image"/>
               </a>
 
@@ -3550,7 +3550,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3606,8 +3606,8 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://content3.jdmagicbox.com/comp/coimbatore/n2/0422px422.x422.170928083415.l3n2/catalogue/mystic-studios-wedding-photographers-gopalapuram-coimbatore-wedding-photographers-56tjx5yach.jpg" alt="Product Image"/>
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
+                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://mysticstudios.in/wp-content/uploads/2019/05/CHENNAI_BEACH_CREATIVE_COUPLE_PRE_WEDDING_SHOOT_MYSTIC_STUDIOS1730.jpg" alt="Product Image"/>
               </a>
 
               {/* <!-- Add to Favorites --> */}
@@ -3626,7 +3626,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3682,7 +3682,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://i.ytimg.com/vi/glDDKWjyiSE/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLD_YXepabXRqthid0cHW4XqV0l48A" alt="Product Image"/>
               </a>
 
@@ -3702,7 +3702,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3735,7 +3735,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://dlmphotography.in/wp-content/uploads/2024/06/Wedding-Photography-Chennai-Best-Candid-Wedding-Photography-In-Chennai.jpg" alt="Product Image"/>
               </a>
 
@@ -3759,7 +3759,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3814,7 +3814,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTN4yHnobAcx-vZMXI0_9R2-fKJSsF_cguNyg&s" alt="Product Image"/>
               </a>
 
@@ -3838,7 +3838,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3894,7 +3894,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://makeupnoor.wordpress.com/wp-content/uploads/2016/03/best-bridal-makeup-chennai-2.jpg" alt="Product Image"/>
               </a>
 
@@ -3914,7 +3914,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -3966,7 +3966,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://cdn.augrav.com/online/jewels/2016/01/Beautiful-punjabi-mehandi-designs.jpg" alt="Product Image"/>
               </a>
 
@@ -3986,7 +3986,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -4042,7 +4042,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://www.studiovogueluxury.com/wp-content/uploads/2024/01/Hair-Care-Services.jpg" alt="Product Image"/>
               </a>
 
@@ -4062,7 +4062,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */} 
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -4118,7 +4118,7 @@ useEffect(() => {
         <div className="h-full flex flex-col">
           <div className="group relative">
             <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail.html">
+              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
                 <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR26FEBcAWRfDzKDsCOeAYL-Y2YQk-HYrOLBg&s" alt="Product Image"/>
               </a>
 
@@ -4142,7 +4142,7 @@ useEffect(() => {
               {/* <!-- ENd Quick View --> */}
             </div>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail.html"></a>
+            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
 
             <div className="pt-3">
               <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
