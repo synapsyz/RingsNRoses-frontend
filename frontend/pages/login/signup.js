@@ -574,16 +574,17 @@ export default function Signup() {
                         <div className="w-full max-w-sm mx-auto">
                             <div className="space-y-8">
                                 <form onSubmit={handleSignup}>
-                                    <div className="flex items-center justify-center space-x-3">
-                                        <img
-                                            alt="Your Company"
-                                            src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                                            className="h-10 w-auto"
-                                        />
-                                        <h1 className="font-medium text-2xl text-gray-800 dark:text-neutral-200">
-                                            Create an account
-                                        </h1>
-                                    </div>
+                                    <div className="flex items-center justify-center space-x-3 flex-nowrap">
+  <img
+    alt="Your Company"
+    src="./Logo.png"
+    className="h-12 w-auto" // slightly smaller image if needed
+  />
+  <h1 className="font-medium text-2xl text-gray-800 dark:text-neutral-200 whitespace-nowrap">
+    Create an account
+  </h1>
+</div>
+
  {/* Button Group */}
                         <div className="mt-4 flex flex-col sm:flex-row gap-2">
                             <button type="button" className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-gray-900 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700">
@@ -814,16 +815,29 @@ export default function Signup() {
                                             {/* Checkbox */}
                                             <div className="flex gap-x-1">
                                                 <input
-                                                    type="checkbox"
-                                                    className="shrink-0 border-gray-300 size-4.5 rounded-sm text-indigo-600 checked:border-indigo-600 focus:ring-indigo-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-600 dark:checked:bg-indigo-500 dark:checked:border-indigo-500 dark:focus:ring-offset-gray-800"
-                                                    id="hs-pro-shcaftac"
-                                                    required
+                                                type="checkbox"
+                                                className="shrink-0 border-gray-300 size-4.5 rounded-sm disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-600 dark:focus:ring-offset-gray-800"
+                                                id="hs-pro-shcaftac"
+                                                required
+                                                style={{
+                                                    accentColor: '#E91E63',
+                                                }}
                                                 />
+
                                                 <label htmlFor="hs-pro-shcaftac" className="text-sm text-gray-500 ms-1.5 dark:text-neutral-400">
                                                     I accept the
-                                                    <a className="ml-1 text-sm text-gray-500 hover:underline hover:text-indigo-600 focus:outline-hidden focus:text-indigo-600 dark:text-neutral-500 dark:hover:text-indigo-400 dark:focus:text-indigo-400" href="#">
-                                                        Terms and Conditions
+                                                    <a
+                                                    className="ml-1 text-sm hover:underline focus:outline-hidden text-gray-500 dark:text-neutral-500"
+                                                    href="#"
+                                                    style={{ color: '#E91E63' }}
+                                                    onMouseOver={(e) => (e.currentTarget.style.color = '#D81B60')} // hover
+                                                    onMouseOut={(e) => (e.currentTarget.style.color = '#E91E63')}   // reset after hover
+                                                    onFocus={(e) => (e.currentTarget.style.color = '#C2185B')}     // focus
+                                                    onBlur={(e) => (e.currentTarget.style.color = '#E91E63')}      // reset after focus
+                                                    >
+                                                    Terms and Conditions
                                                     </a>
+
                                                 </label>
                                             </div>
                                         </div>
@@ -837,18 +851,37 @@ export default function Signup() {
 
                                     <div className="mt-4 space-y-4">
                                         <button
-                                            type="submit"
-                                            className="py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 sm:text-sm font-medium rounded-lg border border-transparent bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-indigo-700"
-                                            disabled={loading}
-                                        >
-                                            {loading ? "Creating account..." : "Create account"}
-                                        </button>
+                                                type="submit"
+                                                className="py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 sm:text-sm font-medium rounded-lg border border-transparent text-white disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden"
+                                                style={{
+                                                    backgroundColor: loading ? '#D81B60' : '#E91E63', // optional darker shade on loading
+                                                }}
+                                                onMouseOver={(e) => {
+                                                    e.currentTarget.style.backgroundColor = '#D81B60'; // hover color
+                                                }}
+                                                onMouseOut={(e) => {
+                                                    e.currentTarget.style.backgroundColor = loading ? '#D81B60' : '#E91E63'; // normal color
+                                                }}
+                                                disabled={loading}
+                                                >
+                                                {loading ? 'Creating account...' : 'Create account'}
+                                                </button>
+
 
                                         <p className="text-center text-sm text-gray-500 dark:text-neutral-500">
                                             Already have an account?
-                                            <Link className="ml-1 text-[13px] text-indigo-500 hover:underline hover:text-indigo-800 focus:outline-hidden focus:text-indigo-600 dark:text-indigo-500 dark:hover:text-indigo-400 dark:focus:text-indigo-400" href="/login">
+                                            <Link
+                                                className="ml-1 text-[13px] hover:underline focus:outline-hidden"
+                                                href="/login"
+                                                style={{ color: '#E91E63' }}
+                                                onMouseOver={(e) => (e.currentTarget.style.color = '#D81B60')} // hover color
+                                                onMouseOut={(e) => (e.currentTarget.style.color = '#E91E63')}   // normal color
+                                                onFocus={(e) => (e.currentTarget.style.color = '#C2185B')}     // focus color
+                                                onBlur={(e) => (e.currentTarget.style.color = '#E91E63')}      // reset after focus
+                                                >
                                                 Log in
-                                            </Link>
+                                                </Link>
+
                                         </p>
                                     </div>
                                 </form>
@@ -859,14 +892,17 @@ export default function Signup() {
 
 
 
-                <div className="hidden lg:block relative justify-center items-center w-full h-screen">
-                    <img
-                        alt="Access Account Illustration"
-                        src="20250524_141607.png"
-                        className="object-contain max-w-full max-h-full"
-                    />
-                    
-                </div>
+                <div className="hidden lg:block relative justify-center items-center w-full h-full">
+  <video
+    src="./Signup_video.mp4" // Replace with your actual video path
+    className="object-contain max-w-full max-h-full"
+    autoPlay
+    loop
+    muted
+    playsInline
+  />
+</div>
+
             </div>
             <footer>
                 <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-500 gap-1">

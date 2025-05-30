@@ -88,15 +88,15 @@ export default function Login() {
             <div>
               <img
                 alt="Your Company"
-                src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
-                className="h-10 w-auto"
+                src="./Logo.png"
+                className="h-12 w-auto"
               />
               {/* Text color applied via global styling or specific dark:text-white */}
               <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-gray-900 dark:text-white">Sign in to your Business Account</h2>
               <p className="mt-2 text-sm/6 text-gray-500 dark:text-gray-300"> {/* Use a lighter gray for dark mode for better contrast */}
                 Not a member?{' '}
                 <a href="/vendor/signup" className="font-semibold hover:underline"
-                style={{ color: '#f9a7a4' }}>
+                style={{ color: '#E91E63' }}>
                   Create your Business Account
                 </a>
               </p>
@@ -130,7 +130,7 @@ export default function Login() {
                         Password
                       </label>
                       <Link href="/login/forgot-password" className="inline-flex items-center gap-x-1.5 text-xs hover:underline focus:outline-none focus:underline "
-                      style={{ color: '#f9a7a4' }}>
+                      style={{ color: '#E91E63' }}>
                         I forgot my password
                       </Link>
                     </div>
@@ -169,7 +169,7 @@ export default function Login() {
                       type="submit"
                       className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2"
                       style={{
-                        backgroundColor: '#f9a7a4',
+                        backgroundColor: '#E91E63',
                         // focusRingColor: '#f9a7a4', // This is not a direct CSS property. Use Tailwind's focus:ring-purple-500
                       }}
                       // Tailwind for focus ring if you want to use it
