@@ -1333,7 +1333,7 @@
             fixed inset-y-0 start-0 z-60
             bg-white
             lg:block lg:static lg:z-0 lg:translate-x-0
-            dark:bg-neutral-900" role="dialog" tabindex="-1" aria-label="Sidebar">
+            dark:bg-neutral-900" role="dialog" tabIndex="-1" aria-label="Sidebar">
             <div class="h-full flex-1 flex flex-col lg:h-auto">
               <!-- Header -->
               <div class="lg:hidden py-3 px-5 flex justify-between items-center gap-x-3 border-b border-gray-200 dark:border-neutral-700">
@@ -3980,7 +3980,7 @@
 
   <!-- ========== SECONDARY CONTENT ========== -->
   <!-- Regional Settings Modal -->
-  <div id="hs-pro-shmnrsm" class="hs-overlay hidden size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto [--close-when-click-inside:true] pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="hs-pro-shmnrsm-label">
+  <div id="hs-pro-shmnrsm" class="hs-overlay hidden size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto [--close-when-click-inside:true] pointer-events-none" role="dialog" tabIndex="-1" aria-labelledby="hs-pro-shmnrsm-label">
     <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto h-[calc(100%-56px)] min-h-[calc(100%-56px)] flex items-center">
       <div class="w-full max-h-full relative overflow-hidden flex flex-col bg-white rounded-xl pointer-events-auto shadow-xl dark:bg-neutral-800">
         <!-- Header -->
@@ -5294,7 +5294,7 @@
   <!-- End Regional Settings Modal -->
 
   <!-- Regional Settings Modal -->
-  <div id="hs-pro-shmnlcm" class="hs-overlay hidden size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto [--close-when-click-inside:true] pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="hs-pro-shmnlcm-label">
+  <div id="hs-pro-shmnlcm" class="hs-overlay hidden size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto [--close-when-click-inside:true] pointer-events-none" role="dialog" tabIndex="-1" aria-labelledby="hs-pro-shmnlcm-label">
     <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto h-[calc(100%-56px)] min-h-[calc(100%-56px)] flex items-center">
       <div class="w-full max-h-full relative overflow-hidden flex flex-col bg-white rounded-xl pointer-events-auto shadow-xl dark:bg-neutral-800">
         <!-- Header -->
@@ -5440,7 +5440,7 @@
   <!-- End Regional Settings Modal -->
 
   <!-- Product Detail Modal -->
-  <div id="hs-pro-shmchpdm" class="hs-overlay hidden size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto [--close-when-click-inside:true] pointer-events-none" role="dialog" tabindex="-1" aria-labelledby="hs-pro-shmchpdm-label">
+  <div id="hs-pro-shmchpdm" class="hs-overlay hidden size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto [--close-when-click-inside:true] pointer-events-none" role="dialog" tabIndex="-1" aria-labelledby="hs-pro-shmchpdm-label">
     <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md lg:max-w-4xl sm:w-full m-3 sm:mx-auto h-[calc(100%-56px)] min-h-[calc(100%-56px)] flex items-center">
       <div class="relative w-full max-h-full flex flex-col bg-white rounded-xl pointer-events-auto shadow-xl dark:bg-neutral-800">
         <!-- Close Button -->
