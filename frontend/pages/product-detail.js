@@ -1420,6 +1420,7 @@ The management was extremely cooperative and professional throughout the booking
 
                             <input 
                               type="date" 
+                              style={{'width': '215px'}}
                               className="py-2 ps-20 pe-8 w-full inline-block border-gray-200 rounded-full text-sm text-gray-800 cursor-pointer hover:bg-gray-50 focus:border-emerald-500 focus:ring-emerald-500 focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                               min="{{ today }}"
                             />
