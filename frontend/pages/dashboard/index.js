@@ -1,83 +1,25 @@
-import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-
-
-let api_url;
-let isNgrok
-isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? false
-    : true
-const getApiUrl = () => {
-  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? process.env.NEXT_PUBLIC_API_LOCALHOST
-    : process.env.NEXT_PUBLIC_HOST;
-};
-api_url = getApiUrl()
+import { useSession } from "next-auth/react";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
-  const [locations, setLocations] = useState([]);
-  const [pageUrl, setPageUrl] = useState(api_url+'/api/v1/locations/countries/');
-  const [nextPage, setNextPage] = useState(null);
-  const [prevPage, setPrevPage] = useState(null);
-  const [error, setError] = useState(null);
 
-  
-  useEffect(() => {
-    if (status === 'authenticated') {
-      const token = session?.accessToken;
+  if (status === "loading") {
+    return <p>Loading session...</p>;
+  }
 
-      fetch(pageUrl, {
-        headers: {
-          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }), 'Content-Type': 'application/json',
-
-        },
-      })
-
-        .then((res) => {
-          if (!res.ok) throw new Error('Failed to fetch');
-          return res.json();
-        })
-        .then((data) => {
-          setLocations(data.results);
-          setNextPage(data.next);
-          setPrevPage(data.previous);
-        })
-        .catch((err) => {
-          setError(err.message);
-        });
-    }
-  }, [status, session, pageUrl]);
-
-  if (status === 'loading') return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (status === "unauthenticated") {
+    return <p>Unauthorized. Please login.</p>;
+  }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Locations</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
-      <ul className="space-y-2">
-        {locations.map((loc) => (
-          <li key={loc.name} className="border p-4 rounded shadow">
-            <p>Lat: {loc.code}, Lng: {loc.longitude}</p>
-          </li>
-        ))}
-      </ul>
-      <div className="flex justify-between mt-6">
-        <button
-          onClick={() => setPageUrl(prevPage)}
-          disabled={!prevPage}
-          className="px-4 py-2 bg-gray-300 text-black rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <button
-          onClick={() => setPageUrl(nextPage)}
-          disabled={!nextPage}
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-        >
-          Next
-        </button>
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-2">User Info</h2>
+        <div className="p-4 bg-gray-100 rounded border">
+          <pre>{JSON.stringify(session.user, null, 2)}</pre>
+        </div>
       </div>
     </div>
   );

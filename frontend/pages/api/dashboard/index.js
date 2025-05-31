@@ -1,46 +1,7 @@
-import { useEffect, useState } from "react";
-import { getSession, useSession } from "next-auth/react";
-let api_url;
-let isNgrok 
-isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? false
-    : true
-const getApiUrl = () => {
-  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? process.env.NEXT_PUBLIC_API_LOCALHOST
-    : process.env.NEXT_PUBLIC_HOST;
-};
-api_url = getApiUrl()
+import { useSession } from "next-auth/react";
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
-  const [locations, setLocations] = useState([]);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchLocations();
-    }
-  }, [status]);
-
-  const fetchLocations = async () => {
-    try {
-      const res = await fetch(api_url+"/api/v1/location/", {
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error(`Error: ${res.status}`);
-      }
-
-      const data = await res.json();
-      setLocations(data);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
 
   if (status === "loading") {
     return <p>Loading session...</p>;
@@ -51,21 +12,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-4">Dashboard</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
 
-      {error && <p className="text-red-500">Error: {error}</p>}
-
-      <div className="space-y-2">
-        {locations.length > 0 ? (
-          locations.map((location, idx) => (
-            <div key={idx} className="p-2 border rounded bg-gray-50">
-              <pre>{JSON.stringify(location, null, 2)}</pre>
-            </div>
-          ))
-        ) : (
-          <p>No locations found.</p>
-        )}
+      <div className="mb-6">
+        <h2 className="text-lg font-semibold mb-2">User Info</h2>
+        <div className="p-4 bg-gray-100 rounded border">
+          <pre>{JSON.stringify(session.user, null, 2)}</pre>
+        </div>
       </div>
     </div>
   );
