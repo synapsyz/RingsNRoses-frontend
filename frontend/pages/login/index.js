@@ -49,7 +49,7 @@ const api_url = process.env.PROD_URL
     });
 
     if (res?.ok) {
-      router.replace("/");
+      window.location.replace("/");
     } else {
       alert("Invalid credentials");
     }
@@ -102,31 +102,6 @@ const api_url = process.env.PROD_URL
                 Book Your Wedding with RingsNRoses.
               </p>
             </div>
-
-        {/*    <div className="lg:hidden flex justify-end">
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="py-1 px-2 rounded-md border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-300 text-xs hover:bg-gray-100 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center justify-center space-x-1"
-              >
-                {theme === "dark" ? (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                    </svg>
-                    <span>Dark Mode</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <circle cx="12" cy="12" r="4" />
-                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                    </svg>
-                    <span>Light Mode</span>
-                  </>
-                )}
-              </button>
-            </div> */}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>

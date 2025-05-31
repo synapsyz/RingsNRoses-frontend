@@ -73,24 +73,6 @@ export default function Home() {
     minutes: 0,
     seconds: 0,
   });
-
-
-useEffect(() => {
-  const hasRefreshed = sessionStorage.getItem('hasRefreshed');
-
-  if (!hasRefreshed) {
-    sessionStorage.setItem('hasRefreshed', 'true');
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
-  } else {
-    sessionStorage.removeItem('hasRefreshed');
-  }
-}, []);
-
-
-
-
   useEffect(() => {
   // Check if the date exists in session data
   if (!session?.user?.customer_profile?.event_date) {
@@ -1786,28 +1768,28 @@ useEffect(() => {
                         <div className="p-2">
                           {/* <!-- Account Details --> */}
                           <a 
-  className="py-2 px-2.5 flex items-center gap-3 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" 
-  href="../../pro/shop/account.html"
->
-  <img 
-    className="shrink-0 size-10 rounded-full" 
-    src={session.user.profile_picture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} 
-    alt="Avatar"
-    onError={(e) => {
-      e.target.onerror = null; 
-      e.target.src = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
-    }}
-  />
-  
-  <div className="grow">
-    <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-      {session.user.name}
-    </span>
-    <p className="text-xs text-gray-500 dark:text-neutral-500">
-      {session.user.email}
-    </p>
-  </div>
-</a>
+                            className="py-2 px-2.5 flex items-center gap-3 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" 
+                            href="../../pro/shop/account.html"
+                          >
+                            <img 
+                              className="shrink-0 size-10 rounded-full" 
+                              src={session.user.profile_picture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} 
+                              alt="Avatar"
+                              onError={(e) => {
+                                e.target.onerror = null; 
+                                e.target.src = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+                              }}
+                            />
+                            
+                            <div className="grow">
+                              <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
+                                {session.user.name}
+                              </span>
+                              <p className="text-xs text-gray-500 dark:text-neutral-500">
+                                {session.user.email}
+                              </p>
+                            </div>
+                          </a>
                           {/* <!-- End Account Details --> */}
           
           
@@ -1834,7 +1816,6 @@ useEffect(() => {
        
                           {/* <!-- End List --> */}
           
-                          <div className="my-2 mx-2.5 h-px bg-gray-200 dark:bg-neutral-700"></div>
           
                           <p>
                             <button type="button" 
@@ -1882,8 +1863,6 @@ useEffect(() => {
     </a>
   </p>
 </div>
-
-
         )}
         {/* <!-- End Widgets --> */}
       </div>
