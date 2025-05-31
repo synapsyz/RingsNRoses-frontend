@@ -3635,8 +3635,4 @@ The management was extremely cooperative and professional throughout the booking
 
     </>
   );
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 57ec67fcec2a08f2f4823ddfc5c551b989b4d89f
