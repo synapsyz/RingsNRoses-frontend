@@ -152,7 +152,10 @@ const [categories, setCategories] = useState([]);
   const [mobileSelectedCategoryName, setMobileSelectedCategoryName] = useState('Select a category'); // For custom dropdown display
   const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false); // State for custom dropdown
 
-  const [subcategories, setSubcategories] = useState([]);
+   // New state for caching subcategories
+
+  const [subcategoriesCache, setSubcategoriesCache] = useState({});
+  const [currentSubcategories, setCurrentSubcategories] = useState([]); // State to hold currently displayed subcategories
   const [isSubcategoriesLoading, setIsSubcategoriesLoading] = useState(false);
   const [subcategoriesError, setSubcategoriesError] = useState(null);
 
@@ -171,13 +174,32 @@ const [categories, setCategories] = useState([]);
 
   // Effect to fetch main categories when the catalog opens
   useEffect(() => {
-    if (isCatalogOpen && categories.length === 0 && !isLoading) {
+    if (categories.length === 0 && !isLoading) {
       setIsLoading(true);
       setError(null);
       api
         .get('/categories')
         .then((response) => {
           setCategories(response.data.results);
+           // Set initial hovered/clicked/mobile selected category if needed
+
+          if (response.data.results.length > 0) {
+
+            if (isMobile) {
+
+              setMobileSelectedCategoryId(response.data.results[0].id);
+
+              setMobileSelectedCategoryName(response.data.results[0].name);
+
+            } else {
+
+              setHoveredCategoryId(response.data.results[0].id);
+
+              setClickedCategoryId(response.data.results[0].id);
+
+            }
+
+          }
         })
         .catch((err) => {
           console.error('Error fetching categories:', err);
@@ -187,7 +209,7 @@ const [categories, setCategories] = useState([]);
           setIsLoading(false);
         });
     }
-  }, [isCatalogOpen, categories.length, isLoading]);
+  }, [categories.length, isLoading, isMobile]);
 
   // Effect to fetch subcategories based on hovered, clicked, or mobile selected category
   useEffect(() => {
@@ -198,25 +220,50 @@ const [categories, setCategories] = useState([]);
       : clickedCategoryId;
 
     if (idToFetch) {
+       // Check if subcategories are already in cache
+
+      if (subcategoriesCache[idToFetch]) {
+
+        setCurrentSubcategories(subcategoriesCache[idToFetch]);
+
+        setIsSubcategoriesLoading(false);
+
+        setSubcategoriesError(null);
+
+        return; // Exit early as data is cached
+
+      }
       setIsSubcategoriesLoading(true);
       setSubcategoriesError(null);
       api.get(`/categories/${idToFetch}/subcategories/`)
         .then(response => {
-          setSubcategories(response.data.results);
+          const fetchedSubcategories = response.data.results;
+
+          setCurrentSubcategories(fetchedSubcategories);
+
+          // Store fetched subcategories in cache
+
+          setSubcategoriesCache(prevCache => ({
+
+            ...prevCache,
+
+            [idToFetch]: fetchedSubcategories,
+
+          }));
         })
         .catch(err => {
           console.error('Error fetching subcategories for category', idToFetch, ':', err);
           setSubcategoriesError('Failed to load subcategories for this category.');
-          setSubcategories([]);
+          setCurrentSubcategories([]);
         })
         .finally(() => {
           setIsSubcategoriesLoading(false);
         });
     } else {
-      setSubcategories([]);
+      setCurrentSubcategories([]);
       setSubcategoriesError(null);
     }
-  }, [hoveredCategoryId, clickedCategoryId, mobileSelectedCategoryId, isMobile]);
+  }, [hoveredCategoryId, clickedCategoryId, mobileSelectedCategoryId, isMobile, subcategoriesCache]);
 
   // Effect to close the catalog section AND the custom mobile dropdown when clicking outside
   useEffect(() => {
@@ -248,11 +295,36 @@ const [categories, setCategories] = useState([]);
   const toggleCatalog = () => {
     setIsCatalogOpen(!isCatalogOpen);
     if (!isCatalogOpen) {
-      setHoveredCategoryId(null);
-      setClickedCategoryId(null);
-      setMobileSelectedCategoryId(null);
-      setMobileSelectedCategoryName('Select a category');
-      setIsMobileDropdownOpen(false); // Ensure custom dropdown is closed when catalog opens
+
+      if (categories.length > 0) {
+
+        if (isMobile) {
+
+          // If no mobile category selected yet, default to first
+
+          if (mobileSelectedCategoryId === null) {
+
+            setMobileSelectedCategoryId(categories[0].id);
+
+            setMobileSelectedCategoryName(categories[0].name);
+
+          }
+
+        } else {
+
+          // If no desktop category selected yet, default to first
+
+          if (hoveredCategoryId === null && clickedCategoryId === null) {
+
+            setHoveredCategoryId(categories[0].id);
+
+            setClickedCategoryId(categories[0].id);
+
+          }
+
+        }
+
+      }
     }
   };
 
@@ -269,7 +341,7 @@ const [categories, setCategories] = useState([]);
     <Link
       key={subcategory.id}
       href={`/categories/${subcategory.category.id}/subcategories/${subcategory.id}`}
-      className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+      className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-800 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
       onClick={onClick}
     >
       {subcategory.image_url ? (
@@ -289,7 +361,7 @@ const [categories, setCategories] = useState([]);
           </svg>
         </div>
       )}
-      <span className="text-gray-800 font-medium">{subcategory.name}</span>
+      <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
     </Link>
   );
 
@@ -397,11 +469,11 @@ const [categories, setCategories] = useState([]);
     </div>
    <div
       ref={headerContainerRef}
-      className="max-w-[85rem] basis-full w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 z-30 relative bg-white"
+      className="max-w-[85rem] basis-full w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 z-30 relative bg-white dark:bg-neutral-900"
     >
 
-    <div className="max-w-[85rem] basis-full w-full mx-auto py-3 px-4 sm:px-6 lg:px-8">
-      <div className="w-full flex md:flex-nowrap md:items-center gap-2 lg:gap-6">
+    <div className="max-w-[85rem] basis-full w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900">
+      <div className="w-full flex md:flex-nowrap md:items-center gap-2 lg:gap-6 ">
         
         <div className="order-1 md:w-auto flex items-center gap-x-1">
           <div className="hidden sm:block">
@@ -840,49 +912,100 @@ const [categories, setCategories] = useState([]);
         {/* <!-- End Search Input --> */}
       </div>
     </div>
-    {isCatalogOpen && (
-        <div
-          className="w-full bg-white shadow-md z-20 absolute top-full left-0 right-0"
-        >
-          {/* Inner container with max-width and padding */}
-          <div className="max-w-[85rem] mx-auto py-4 px-4 sm:px-6 lg:px-8">
-            {/* Desktop View */}
-            <div className="hidden md:grid grid-cols-[22%_78%] gap-4 min-h-[300px]">
-              {/* Categories List (Left 22%) */}
-              <div>
-                {isLoading ? (
-                  <div className="text-sm text-gray-500">Loading categories...</div>
-                ) : error ? (
-                  <div className="text-sm text-red-500">{error}</div>
-                ) : categories.length > 0 ? (
-                  <nav className="space-y-1">
-                    {categories.map((category) => (
-                      <button
-                        key={category.id}
-                        type="button"
-                        className={`py-2.5 px-2 w-full flex items-center text-start font-medium text-sm rounded-lg focus:outline-hidden
-                          ${clickedCategoryId === category.id ? 'bg-gray-200 text-gray-900' :
-                            hoveredCategoryId === category.id ? 'bg-gray-100 text-gray-800' :
-                            'bg-white text-gray-800 hover:bg-gray-100'}
-                          dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800`}
-                        onClick={() => {
-                          setClickedCategoryId(category.id);
-                          setHoveredCategoryId(category.id);
-                        }}
-                        onMouseEnter={() => setHoveredCategoryId(category.id)}
-                        onMouseLeave={() => setHoveredCategoryId(null)}
-                      >
-                        {category.name}
-                        <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m9 18 6-6-6-6" />
-                        </svg>
-                      </button>
-                    ))}
-                  </nav>
-                ) : (
-                  <div className="text-sm text-gray-500">No categories found.</div>
-                )}
-              </div>
+   {/* Expanded Catalog Section - Now always rendered but hidden with CSS */}
+
+      <div
+
+        className={`w-full bg-white shadow-md z-20 absolute top-full left-0 right-0 dark:bg-neutral-900 transition-all duration-30  transform ${
+
+          isCatalogOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible pointer-events-none -translate-y-2'
+
+        }`}
+
+        // You might want to adjust max-height or height for a smooth transition if content can vary greatly
+
+        // For simple opacity/visibility, the above is fine.
+
+      >
+
+        <div className="max-w-[85rem] mx-auto py-4 px-4 sm:px-6 lg:px-8">
+
+          {/* Desktop View */}
+
+          <div className="hidden md:grid grid-cols-[22%_78%] gap-4 min-h-[300px]">
+
+            {/* Categories List (Left 22%) */}
+
+            <div>
+                   {isLoading ? (
+
+                <div className="text-sm text-gray-500">Loading categories...</div>
+
+              ) : error ? (
+
+                <div className="text-sm text-red-500">{error}</div>
+
+              ) : categories.length > 0 ? (
+
+                <nav className="space-y-1">
+
+                  {categories.map((category) => (
+
+                    <button
+
+                      key={category.id}
+
+                      type="button"
+
+                      className={`py-2.5 px-2 w-full flex items-center text-start font-medium text-sm rounded-lg focus:outline-hidden
+
+                        ${clickedCategoryId === category.id ? 'bg-gray-200 text-gray-900' :
+
+                          hoveredCategoryId === category.id ? 'bg-gray-100 text-gray-800' :
+
+                          'bg-white text-gray-800 hover:bg-gray-100'}
+
+                        dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800`}
+
+                      onClick={() => {
+
+                        setClickedCategoryId(category.id);
+
+                        setHoveredCategoryId(category.id); // Keep hovered for consistent behavior
+
+                      }}
+
+                      onMouseEnter={() => setHoveredCategoryId(category.id)}
+
+                      onMouseLeave={() => {
+
+                        // Only remove hover if it's not the clicked category
+
+                        if (clickedCategoryId !== category.id) {
+
+                          setHoveredCategoryId(null);
+
+                        }
+
+                      }}
+
+                    >
+
+                      {category.name}
+
+                      <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </button>
+                  ))}
+                </nav>
+              ) : (
+                <div className="text-sm text-gray-500">No categories found.</div>
+
+              )}
+
+            </div>
 
               {/* Subcategories List (Right 78%) */}
               <div>
@@ -890,11 +1013,11 @@ const [categories, setCategories] = useState([]);
                   <div className="text-sm text-gray-500">Loading subcategories...</div>
                 ) : subcategoriesError ? (
                   <div className="text-sm text-red-500">{subcategoriesError}</div>
-                ) : subcategories.length > 0 ? (
+                ) : currentSubcategories.length > 0 ? (
                   <>
-                    {subcategories.length <= 3 && (
+                    {currentSubcategories.length <= 3 && (
                       <nav className={`grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 place-items-center gap-x-4 gap-y-4`}>
-                        {subcategories.map((subcategory) => (
+                        {currentSubcategories.map((subcategory) => (
                           <SubcategoryItem
                             key={subcategory.id}
                             subcategory={subcategory}
@@ -908,223 +1031,343 @@ const [categories, setCategories] = useState([]);
                       </nav>
                     )}
 
-                    {subcategories.length === 4 && (
-                      <nav className={`grid grid-cols-2 sm:grid-cols-2 gap-x-4 gap-y-4`}>
-                        {subcategories.map((subcategory) => (
-                          <SubcategoryItem
-                            key={subcategory.id}
-                            subcategory={subcategory}
-                            onClick={() => {
-                              setIsCatalogOpen(false);
-                              setHoveredCategoryId(null);
-                              setClickedCategoryId(null);
-                            }}
-                          />
-                        ))}
-                      </nav>
-                    )}
+                     {currentSubcategories.length === 4 && (
 
-                    {subcategories.length === 5 && (
-                      <div className="flex flex-col gap-y-4">
-                        <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4 place-items-center`}>
-                          {subcategories.slice(0, 3).map((subcategory) => (
-                            <SubcategoryItem
-                              key={subcategory.id}
-                              subcategory={subcategory}
-                              onClick={() => {
-                                setIsCatalogOpen(false);
-                                setHoveredCategoryId(null);
-                                setClickedCategoryId(null);
-                              }}
-                            />
-                          ))}
-                        </nav>
-                        <nav className={`grid grid-cols-2 sm:grid-cols-2 gap-x-4 gap-y-4 place-items-center`}>
-                          {subcategories.slice(3, 5).map((subcategory) => (
-                            <SubcategoryItem
-                              key={subcategory.id}
-                              subcategory={subcategory}
-                              onClick={() => {
-                                setIsCatalogOpen(false);
-                                setHoveredCategoryId(null);
-                                setClickedCategoryId(null);
-                              }}
-                            />
-                          ))}
-                        </nav>
-                      </div>
-                    )}
+                    <nav className={`grid grid-cols-2 sm:grid-cols-2 gap-x-4 gap-y-4`}>
 
-                    {subcategories.length === 6 && (
-                      <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4`}>
-                        {subcategories.map((subcategory) => (
-                          <SubcategoryItem
-                            key={subcategory.id}
-                            subcategory={subcategory}
-                            onClick={() => {
-                              setIsCatalogOpen(false);
-                              setHoveredCategoryId(null);
-                              setClickedCategoryId(null);
-                            }}
-                          />
-                        ))}
-                      </nav>
-                    )}
+                      {currentSubcategories.map((subcategory) => (
 
-                    {subcategories.length === 7 && (
-                      <div className="flex flex-col gap-y-4">
-                        <nav className={`grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4 place-items-center`}>
-                          {subcategories.slice(0, 4).map((subcategory) => (
-                            <SubcategoryItem
-                              key={subcategory.id}
-                              subcategory={subcategory}
-                              onClick={() => {
-                                setIsCatalogOpen(false);
-                                setHoveredCategoryId(null);
-                                setClickedCategoryId(null);
-                              }}
-                            />
-                          ))}
-                        </nav>
-                        <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4 place-items-center`}>
-                          {subcategories.slice(4, 7).map((subcategory) => (
-                            <SubcategoryItem
-                              key={subcategory.id}
-                              subcategory={subcategory}
-                              onClick={() => {
-                                setIsCatalogOpen(false);
-                                setHoveredCategoryId(null);
-                                setClickedCategoryId(null);
-                              }}
-                            />
-                          ))}
-                        </nav>
-                      </div>
-                    )}
+                        <SubcategoryItem
 
-                    {subcategories.length === 8 && (
-                      <nav className={`grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4`}>
-                        {subcategories.map((subcategory) => (
-                          <SubcategoryItem
-                            key={subcategory.id}
-                            subcategory={subcategory}
-                            onClick={() => {
-                              setIsCatalogOpen(false);
-                              setHoveredCategoryId(null);
-                              setClickedCategoryId(null);
-                            }}
-                          />
-                        ))}
-                      </nav>
-                    )}
+                          key={subcategory.id}
 
-                    {subcategories.length > 8 && (
-                      <nav className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-4`}>
-                        {subcategories.map((subcategory) => (
-                          <SubcategoryItem
-                            key={subcategory.id}
-                            subcategory={subcategory}
-                            onClick={() => {
-                              setIsCatalogOpen(false);
-                              setHoveredCategoryId(null);
-                              setClickedCategoryId(null);
-                            }}
-                          />
-                        ))}
-                      </nav>
-                    )}
-                  </>
-                ) : (hoveredCategoryId !== null || clickedCategoryId !== null) ? (
-                  <div className="text-sm text-gray-500">No subcategories found for this category.</div>
-                ) : (
-                  <div className="text-sm text-gray-500"></div>
-                )}
-              </div>
-            </div>
+                          subcategory={subcategory}
 
-            {/* Mobile View - Using Custom Dropdown */}
-            <div className="md:hidden flex flex-col gap-4">
-              {isLoading ? (
-                <div className="text-sm text-gray-500">Loading categories...</div>
-              ) : error ? (
-                <div className="text-sm text-red-500">{error}</div>
-              ) : categories.length > 0 && (
-                <div className="relative w-full" ref={mobileDropdownRef}>
-                  {/* The visible part of the custom select */}
-                  <button
-                    type="button"
-                    className="py-2 px-3 pe-9 block w-full border border-gray-200 rounded-lg text-sm text-left focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 relative"
-                    onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
-                    aria-expanded={isMobileDropdownOpen}
-                  >
-                    {mobileSelectedCategoryName}
-                    <div className="absolute inset-y-0 right-0 flex items-center pe-3 pointer-events-none">
-                      <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                  </button>
+                          onClick={() => {
 
-                  {/* The actual dropdown list */}
-                  {isMobileDropdownOpen && (
-                    <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
-                      <ul className="py-1">
-                        {/* Option for "Select a category" */}
-                        <li
-                          className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer dark:text-neutral-300 dark:hover:bg-neutral-700"
-                          onClick={() => handleMobileCategorySelect({ id: null, name: 'Select a category' })}
-                        >
-                          Select a category
-                        </li>
-                        
-                    
-                        {categories.map((category) => (
-                          <li
-                            key={category.id}
-                            className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer ${mobileSelectedCategoryId === category.id ? 'bg-blue-50 dark:bg-blue-900' : ''} dark:text-neutral-300 dark:hover:bg-neutral-700`}
-                            onClick={() => handleMobileCategorySelect(category)}
-                          >
-                            {category.name}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
+                            setIsCatalogOpen(false);
+
+                            setHoveredCategoryId(null);
+
+                            setClickedCategoryId(null);
+
+                          }}
+
+                        />
+
+                      ))}
+
+                    </nav>
+
                   )}
-                </div>
-              )}
 
-              {/* Subcategories for Mobile View - remains largely the same */}
-              {(mobileSelectedCategoryId || (!isLoading && !error && categories.length > 0 && mobileSelectedCategoryId === null && subcategories.length === 0)) && (
-                <div className="w-full mt-4">
-                  {isSubcategoriesLoading ? (
-                    <div className="text-sm text-gray-500">Loading subcategories...</div>
-                  ) : subcategoriesError ? (
-                    <div className="text-sm text-red-500">{subcategoriesError}</div>
-                  ) : subcategories.length > 0 ? (
+
+
+                  {currentSubcategories.length === 5 && (
+
+                    <div className="flex flex-col gap-y-4">
+
+                      <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4 place-items-center`}>
+
+                        {currentSubcategories.slice(0, 3).map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                    <nav className={`grid grid-cols-2 sm:grid-cols-2 gap-x-4 gap-y-4 place-items-center`}>
+
+                        {currentSubcategories.slice(3, 5).map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                      </div>
+                    )}
+
+                    {currentSubcategories.length === 6 && (
+
                     <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4`}>
-                      {subcategories.map((subcategory) => (
+
+                      {currentSubcategories.map((subcategory) => (
+
+                        <SubcategoryItem
+
+                          key={subcategory.id}
+
+                          subcategory={subcategory}
+
+                          onClick={() => {
+
+                            setIsCatalogOpen(false);
+
+                            setHoveredCategoryId(null);
+
+                            setClickedCategoryId(null);
+
+                          }}
+
+                        />
+
+                      ))}
+
+                    </nav>
+
+                  )}
+
+                     {currentSubcategories.length === 7 && (
+
+                    <div className="flex flex-col gap-y-4">
+
+                      <nav className={`grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4 place-items-center`}>
+
+                        {currentSubcategories.slice(0, 4).map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                     <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4 place-items-center`}>
+
+                        {currentSubcategories.slice(4, 7).map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                    
+              
+                    </div>
+                     )}
+
+                   {currentSubcategories.length === 8 && (
+
+                    <nav className={`grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4`}>
+
+                      {currentSubcategories.map((subcategory) => (
+
+                        <SubcategoryItem
+
+                          key={subcategory.id}
+
+                          subcategory={subcategory}
+
+                          onClick={() => {
+
+                            setIsCatalogOpen(false);
+
+                            setHoveredCategoryId(null);
+
+                            setClickedCategoryId(null);
+
+                          }}
+
+                        />
+
+                      ))}
+
+                    </nav>
+                  )}
+                  {currentSubcategories.length > 8 && (
+
+                    <nav className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-4`}>
+                      {currentSubcategories.map((subcategory) => (
                         <SubcategoryItem
                           key={subcategory.id}
                           subcategory={subcategory}
                           onClick={() => {
                             setIsCatalogOpen(false);
-                            setMobileSelectedCategoryId(null);
-                            setMobileSelectedCategoryName('Select a category'); // Reset name
+                            setHoveredCategoryId(null);
+
+                            setClickedCategoryId(null);
                           }}
                         />
                       ))}
                     </nav>
-                  ) : (mobileSelectedCategoryId !== null) ? (
-                    <div className="text-sm text-gray-500">No subcategories found for this category.</div>
-                  ) : (
-                    <div className="text-sm text-gray-500"></div>
+                 
                   )}
-                </div>
+                 </>
+
+              ) : (hoveredCategoryId !== null || clickedCategoryId !== null) ? (
+
+                <div className="text-sm text-gray-500">No subcategories found for this category.</div>
+
+              ) : (
+
+                <div className="text-sm text-gray-500"></div>
               )}
             </div>
           </div>
+           {/* Mobile View - Using Custom Dropdown */}
+
+          <div className="md:hidden flex flex-col gap-4">
+
+            {isLoading ? (
+
+              <div className="text-sm text-gray-500">Loading categories...</div>
+
+            ) : error ? (
+
+              <div className="text-sm text-red-500">{error}</div>
+
+            ) : categories.length > 0 && (
+
+              <div className="relative w-full" ref={mobileDropdownRef}>
+
+                <button
+
+                  type="button"
+
+                  className="py-2 px-3 pe-9 block w-full border border-gray-200 rounded-lg text-sm text-left focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 relative"
+
+                  onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
+
+                  aria-expanded={isMobileDropdownOpen}
+
+                >
+
+                  {mobileSelectedCategoryName}
+
+                  <div className="absolute inset-y-0 right-0 flex items-center pe-3 pointer-events-none">
+
+                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+
+                      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+
+                    </svg>
+
+                  </div>
+
+                </button>
+
+
+
+                {isMobileDropdownOpen && (
+
+                  <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
+
+                    <ul className="py-1">
+
+                      <li
+
+                        className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer dark:text-neutral-300 dark:hover:bg-neutral-700"
+
+                        onClick={() => handleMobileCategorySelect({ id: null, name: 'Select a category' })}
+
+                      >
+
+                        Select a category
+
+                      </li>
+
+                      {categories.map((category) => (
+
+                        <li
+
+                          key={category.id}
+
+                          className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer ${mobileSelectedCategoryId === category.id ? 'bg-blue-50 dark:bg-blue-900' : ''} dark:text-neutral-300 dark:hover:bg-neutral-700`}
+
+                          onClick={() => handleMobileCategorySelect(category)}
+
+                        >
+
+                          {category.name}
+
+                        </li>
+
+                      ))}
+
+                    </ul>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            )}
+
+            {(mobileSelectedCategoryId || (!isLoading && !error && categories.length > 0 && mobileSelectedCategoryId === null && currentSubcategories.length === 0)) && (
+              <div className="w-full mt-4">
+
+                {isSubcategoriesLoading ? (
+
+                  <div className="text-sm text-gray-500">Loading subcategories...</div>
+
+                ) : subcategoriesError ? (
+
+                  <div className="text-sm text-red-500">{subcategoriesError}</div>
+
+                ) : currentSubcategories.length > 0 ? (
+
+                  <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4`}>
+
+                    {currentSubcategories.map((subcategory) => (
+
+                      <SubcategoryItem
+
+                        key={subcategory.id}
+
+                        subcategory={subcategory}
+
+                        onClick={() => {
+
+                          setIsCatalogOpen(false);
+
+                          setMobileSelectedCategoryId(null); // Reset mobile selection on link click
+
+                          setMobileSelectedCategoryName('Select a category');
+
+                        }}
+
+                      />
+                       ))}
+
+                  </nav>
+
+                ) : (mobileSelectedCategoryId !== null) ? (
+
+                  <div className="text-sm text-gray-500">No subcategories found for this category.</div>
+
+                ) : (
+
+                  <div className="text-sm text-gray-500"></div>
+
+                )}
+
+              </div>
+
+            )}
+
+          </div>
         </div>
-      )}
+      </div>
     
 </div> 
     {/* <!-- <div className="max-w-[85rem] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-1">
