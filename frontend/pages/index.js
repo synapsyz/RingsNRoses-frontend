@@ -4,10 +4,26 @@
 // import { Html, Head, Main, NextScript } from 'next/document';
 // import '../styles/globals.css';
 import Script from 'next/script';
-import { useEffect, useState } from "react";
+
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
+import React, { useState, useEffect, useRef, useCallback } from 'react'; // Added useCallback
+import axios from 'axios';
+
+let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+const api_url = getApiUrl();
+const api = axios.create({
+  baseURL: `${api_url}/api/v1`,
+  headers: {
+    ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
+  },
+});
 export const metadata = {
   title: 'Rings N Roses',
   description:
@@ -73,25 +89,8 @@ export default function Home() {
     minutes: 0,
     seconds: 0,
   });
-
-
-useEffect(() => {
-  const hasRefreshed = sessionStorage.getItem('hasRefreshed');
-
-  if (!hasRefreshed) {
-    sessionStorage.setItem('hasRefreshed', 'true');
-    setTimeout(() => {
-      window.location.reload();
-    }, 1500);
-  } else {
-    sessionStorage.removeItem('hasRefreshed');
-  }
-}, []);
-
-
-
-
   useEffect(() => {
+    
   // Check if the date exists in session data
   if (!session?.user?.customer_profile?.event_date) {
     console.error("Event date not found in session");
@@ -140,6 +139,231 @@ useEffect(() => {
       window.HSCarousel.autoInit(el);
     }
   };
+const [categories, setCategories] = useState([]);
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const headerContainerRef = useRef(null);
+  const mobileDropdownRef = useRef(null); // Ref for the custom mobile dropdown
+
+  const [hoveredCategoryId, setHoveredCategoryId] = useState(null);
+  const [clickedCategoryId, setClickedCategoryId] = useState(null);
+  const [mobileSelectedCategoryId, setMobileSelectedCategoryId] = useState(null);
+  const [mobileSelectedCategoryName, setMobileSelectedCategoryName] = useState('Select a category'); // For custom dropdown display
+  const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false); // State for custom dropdown
+
+   // New state for caching subcategories
+
+  const [subcategoriesCache, setSubcategoriesCache] = useState({});
+  const [currentSubcategories, setCurrentSubcategories] = useState([]); // State to hold currently displayed subcategories
+  const [isSubcategoriesLoading, setIsSubcategoriesLoading] = useState(false);
+  const [subcategoriesError, setSubcategoriesError] = useState(null);
+
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Effect to determine mobile view
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // Tailwind's 'md' breakpoint is 768px
+    };
+
+    handleResize(); // Set initial state
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Effect to fetch main categories when the catalog opens
+  useEffect(() => {
+    if (categories.length === 0 && !isLoading) {
+      setIsLoading(true);
+      setError(null);
+      api
+        .get('/categories')
+        .then((response) => {
+          setCategories(response.data.results);
+           // Set initial hovered/clicked/mobile selected category if needed
+
+          if (response.data.results.length > 0) {
+
+            if (isMobile) {
+
+              setMobileSelectedCategoryId(response.data.results[0].id);
+
+              setMobileSelectedCategoryName(response.data.results[0].name);
+
+            } else {
+
+              setHoveredCategoryId(response.data.results[0].id);
+
+              setClickedCategoryId(response.data.results[0].id);
+
+            }
+
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching categories:', err);
+          setError('Failed to load categories. Please try again.');
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
+  }, [categories.length, isLoading, isMobile]);
+
+  // Effect to fetch subcategories based on hovered, clicked, or mobile selected category
+  useEffect(() => {
+    const idToFetch = isMobile && mobileSelectedCategoryId !== null
+      ? mobileSelectedCategoryId
+      : hoveredCategoryId !== null
+      ? hoveredCategoryId
+      : clickedCategoryId;
+
+    if (idToFetch) {
+       // Check if subcategories are already in cache
+
+      if (subcategoriesCache[idToFetch]) {
+
+        setCurrentSubcategories(subcategoriesCache[idToFetch]);
+
+        setIsSubcategoriesLoading(false);
+
+        setSubcategoriesError(null);
+
+        return; // Exit early as data is cached
+
+      }
+      setIsSubcategoriesLoading(true);
+      setSubcategoriesError(null);
+      api.get(`/categories/${idToFetch}/subcategories/`)
+        .then(response => {
+          const fetchedSubcategories = response.data.results;
+
+          setCurrentSubcategories(fetchedSubcategories);
+
+          // Store fetched subcategories in cache
+
+          setSubcategoriesCache(prevCache => ({
+
+            ...prevCache,
+
+            [idToFetch]: fetchedSubcategories,
+
+          }));
+        })
+        .catch(err => {
+          console.error('Error fetching subcategories for category', idToFetch, ':', err);
+          setSubcategoriesError('Failed to load subcategories for this category.');
+          setCurrentSubcategories([]);
+        })
+        .finally(() => {
+          setIsSubcategoriesLoading(false);
+        });
+    } else {
+      setCurrentSubcategories([]);
+      setSubcategoriesError(null);
+    }
+  }, [hoveredCategoryId, clickedCategoryId, mobileSelectedCategoryId, isMobile, subcategoriesCache]);
+
+  // Effect to close the catalog section AND the custom mobile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isCatalogOpen &&
+        headerContainerRef.current &&
+        !headerContainerRef.current.contains(event.target)
+      ) {
+        setIsCatalogOpen(false);
+        setHoveredCategoryId(null);
+        setClickedCategoryId(null);
+        setMobileSelectedCategoryId(null);
+        setMobileSelectedCategoryName('Select a category');
+        setIsMobileDropdownOpen(false); // Close the custom dropdown
+      }
+
+      // Also handle closing the custom dropdown if it's open and click is outside it
+      if (isMobileDropdownOpen && mobileDropdownRef.current && !mobileDropdownRef.current.contains(event.target)) {
+        setIsMobileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCatalogOpen, isMobileDropdownOpen]); // Dependency on isMobileDropdownOpen
+
+  const toggleCatalog = () => {
+    setIsCatalogOpen(!isCatalogOpen);
+    if (!isCatalogOpen) {
+
+      if (categories.length > 0) {
+
+        if (isMobile) {
+
+          // If no mobile category selected yet, default to first
+
+          if (mobileSelectedCategoryId === null) {
+
+            setMobileSelectedCategoryId(categories[0].id);
+
+            setMobileSelectedCategoryName(categories[0].name);
+
+          }
+
+        } else {
+
+          // If no desktop category selected yet, default to first
+
+          if (hoveredCategoryId === null && clickedCategoryId === null) {
+
+            setHoveredCategoryId(categories[0].id);
+
+            setClickedCategoryId(categories[0].id);
+
+          }
+
+        }
+
+      }
+    }
+  };
+
+  // Handler for custom dropdown selection
+  const handleMobileCategorySelect = useCallback((category) => {
+    setMobileSelectedCategoryId(category.id);
+    setMobileSelectedCategoryName(category.name);
+    setIsMobileDropdownOpen(false); // Close dropdown after selection
+  }, []); // No dependencies, can be memoized
+
+  const IMAGE_SIZE = 100;
+
+  const SubcategoryItem = ({ subcategory, onClick }) => (
+    <Link
+      key={subcategory.id}
+      href={`/categories/${subcategory.category.id}/subcategories/${subcategory.id}`}
+      className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-800 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+      onClick={onClick}
+    >
+      {subcategory.image_url ? (
+        <Image
+          src={subcategory.image_url}
+          alt={subcategory.name}
+          width={IMAGE_SIZE}
+          height={IMAGE_SIZE}
+          className="rounded-full object-cover mb-4 w-[100px] h-[100px]"
+        />
+      ) : (
+        <div
+          className="rounded-full bg-gray-300 flex items-center justify-center mb-2 w-[100px] h-[100px]"
+        >
+          <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L20 20m-6-6l2-2m-2-2L14 4"></path>
+          </svg>
+        </div>
+      )}
+      <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
+    </Link>
+  );
 
   return (
         
@@ -243,10 +467,13 @@ useEffect(() => {
         </ul>
       </div>
     </div>
-    
+   <div
+      ref={headerContainerRef}
+      className="max-w-[85rem] basis-full w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 z-30 relative bg-white dark:bg-neutral-900"
+    >
 
-    <div className="max-w-[85rem] basis-full w-full mx-auto py-3 px-4 sm:px-6 lg:px-8">
-      <div className="w-full flex md:flex-nowrap md:items-center gap-2 lg:gap-6">
+    <div className="max-w-[85rem] basis-full w-full mx-auto py-3 px-4 sm:px-6 lg:px-8 dark:bg-neutral-900">
+      <div className="w-full flex md:flex-nowrap md:items-center gap-2 lg:gap-6 ">
         
         <div className="order-1 md:w-auto flex items-center gap-x-1">
           <div className="hidden sm:block">
@@ -280,1385 +507,126 @@ useEffect(() => {
         </div>
         <div className="md:w-full order-2 md:grow md:w-auto">
           <div className="relative flex basis-full items-center gap-x-1 md:gap-x-3">
-            <div className="hs-dropdown [--adaptive:none] [--auto-close:inside] md:inline-block">
+            <div className="font-inter">
               <button
-  id="hs-pro-shmnctdm"
-  type="button"
-  className="hs-dropdown-toggle relative py-[7px] sm:py-2 sm:py-2.5 px-3 flex items-center gap-x-1.5 text-sm text-start border border-transparent text-white rounded-full disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden"
-  style={{
-    backgroundColor: '#E91E63',
-  }}
-  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#d81b60')}
-  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E91E63')}
-  aria-haspopup="menu"
-  aria-expanded="false"
-  aria-label="Dropdown"
->
-  <svg
-    className="hs-dropdown-open:hidden shrink-0 size-4"
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="4" x2="20" y1="12" y2="12" />
-    <line x1="4" x2="20" y1="6" y2="6" />
-    <line x1="4" x2="20" y1="18" y2="18" />
-  </svg>
-  <svg
-    className="hs-dropdown-open:block hidden shrink-0 size-4"
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M18 6 6 18" />
-    <path d="m6 6 12 12" />
-  </svg>
-  Catalog
-</button>
-
-              <div className="hs-dropdown-menu hs-dropdown-open:opacity-100 opacity-0 w-full hidden z-20 top-full start-0 min-w-60 bg-white shadow-xl before:absolute before:-top-4 before:start-0 before:w-full before:h-5 dark:bg-neutral-900 dark:border-neutral-700" role="menu" aria-orientation="vertical" aria-labelledby="hs-pro-shmnctdm">
-                <div className="max-w-[85rem] w-full mx-auto py-2 md:py-4 px-4 sm:px-6 lg:px-8">
-                  <select id="hs-catalog-sidebar-nav-select" className="hidden" data-hs-select='{
-                    "placeholder": "Select option...",
-                    "toggleTag": "<button type=\"button\" aria-expanded=\"false\"><span className=\"me-2\" data-icon></span><span className=\"text-gray-800 dark:text-neutral-200 \" data-title></span></button>",
-                    "toggleClasses": "hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-2 px-3 pe-9 flex items-center text-nowrap w-full cursor-pointer bg-gray-100 text-gray-800 rounded-lg text-start text-sm dark:bg-neutral-800 dark:text-neutral-200",
-                    "wrapperClasses": "sm:hidden mb-4",
-                    "dropdownClasses": "mt-2 z-50 w-full max-h-72 p-1 space-y-0.5 bg-white border border-gray-200 rounded-lg shadow-xl overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500 dark:bg-neutral-900 dark:border-neutral-700",
-                    "optionClasses": "hs-selected:bg-gray-100 dark:hs-selected:bg-neutral-800 py-2 px-3 w-full text-sm text-gray-800 cursor-pointer hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:text-neutral-200 dark:focus:bg-neutral-800",
-                    "optionTemplate": "<div className=\"flex items-center\"><div className=\"me-3\" data-icon></div><div className=\"text-gray-800 dark:text-neutral-200 \" data-title></div></div>",
-                    "extraMarkup": "<div className=\"absolute top-1/2 end-3 -translate-y-1/2\"><svg className=\"shrink-0 size-3.5 text-gray-500 dark:text-neutral-500 \" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m7 15 5 5 5-5\"/><path d=\"m7 9 5-5 5 5\"/></svg></div>"
-                  }'>
-                    <option value="#mega-menu-catalog-tab-1" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"/><path d=\"M12 18h.01\"/></svg>"
-                    }' selected>Venue</option>
-                    <option value="#mega-menu-catalog-tab-2" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z\"/></svg>"
-                    }'>Bride &amp; Groom Essentials</option>
-                    <option value="#mega-menu-catalog-tab-3" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 20h10\"/><path d=\"M10 20c5.5-2.5.8-6.4 3-10\"/><path d=\"M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z\"/><path d=\"M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z\"/></svg>"
-                    }'>Catering &amp; Food</option>
-                    <option value="#mega-menu-catalog-tab-4" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 12h.01\"/><path d=\"M15 12h.01\"/><path d=\"M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5\"/><path d=\"M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1\"/></svg>"
-                    }'>Decor &amp; Setup</option>
-                    <option value="#mega-menu-catalog-tab-5" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 6h3\"/><path d=\"M17 6h.01\"/><rect width=\"18\" height=\"20\" x=\"3\" y=\"2\" rx=\"2\"/><circle cx=\"12\" cy=\"13\" r=\"5\"/><path d=\"M12 18a2.5 2.5 0 0 0 0-5 2.5 2.5 0 0 1 0-5\"/></svg>"
-                    }'>Entertainment</option>
-                    <option value="#mega-menu-catalog-tab-6" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11.1 7.1a16.55 16.55 0 0 1 10.9 4\"/><path d=\"M12 12a12.6 12.6 0 0 1-8.7 5\"/><path d=\"M16.8 13.6a16.55 16.55 0 0 1-9 7.5\"/><path d=\"M20.7 17a12.8 12.8 0 0 0-8.7-5 13.3 13.3 0 0 1 0-10\"/><path d=\"M6.3 3.8a16.55 16.55 0 0 0 1.9 11.5\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/></svg>"
-                    }'>Photography &amp; Videography</option>
-                    <option value="#mega-menu-catalog-tab-7" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M10 18a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H5a3 3 0 0 1-3-3 1 1 0 0 1 1-1z\"/><path d=\"M13 10H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1l-.81 3.242a1 1 0 0 1-.97.758H8\"/><path d=\"M14 4h3a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3\"/><path d=\"M18 6h4\"/><path d=\"m5 10-2 8\"/><path d=\"m7 18 2-8\"/></svg>"
-                    }'>Invitations &amp; Stationery</option>
-                    <option value="#mega-menu-catalog-tab-8" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z\"/><path d=\"M10 2c1 .5 2 2 2 5\"/></svg>"
-                    }'>Logistics</option>
-                    <option value="#mega-menu-catalog-tab-9" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z\"/><path d=\"m8.5 8.5 7 7\"/></svg>"
-                    }'>Gifts &amp; Return Favors</option>
-                    <option value="#mega-menu-catalog-tab-10" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M11.25 16.25h1.5L12 17z\"/><path d=\"M16 14v.5\"/><path d=\"M4.42 11.247A13.152 13.152 0 0 0 4 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444a11.702 11.702 0 0 0-.493-3.309\"/><path d=\"M8 14v.5\"/><path d=\"M8.5 8.5c-.384 1.05-1.083 2.028-2.344 2.5-1.931.722-3.576-.297-3.656-1-.113-.994 1.177-6.53 4-7 1.923-.321 3.651.845 3.651 2.235A7.497 7.497 0 0 1 14 5.277c0-1.39 1.844-2.598 3.767-2.277 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5\"/></svg>"
-                    }'>Event Managers</option>
-                    <option value="#mega-menu-catalog-tab-11" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20\"/><path d=\"M8 11h8\"/><path d=\"M8 7h6\"/></svg>"
-                    }'>Makeup &amp; Styling</option>
-                    <option value="#mega-menu-catalog-tab-12" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"4\" cy=\"4\" r=\"2\"/><path d=\"m14 5 3-3 3 3\"/><path d=\"m14 10 3-3 3 3\"/><path d=\"M17 14V2\"/><path d=\"M17 14H7l-5 8h20Z\"/><path d=\"M8 14v8\"/><path d=\"m9 14 5 8\"/></svg>"
-                    }'>Sound &amp; Lighting</option>
-                    <option value="#mega-menu-catalog-tab-13" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M19 9V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v3\"/><path d=\"M3 16a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z\"/><path d=\"M5 18v2\"/><path d=\"M19 18v2\"/></svg>"
-                    }'>Rentals</option>
-                    <option value="#mega-menu-catalog-tab-14" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 3h12l4 6-10 13L2 9Z\"/><path d=\"M11 3 8 9l4 13 4-13-3-6\"/><path d=\"M2 9h20\"/></svg>"
-                    }'>Legal &amp; Documentation</option>
-                    <option value="#mega-menu-catalog-tab-15" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"6\" cy=\"15\" r=\"4\"/><circle cx=\"18\" cy=\"15\" r=\"4\"/><path d=\"M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2\"/><path d=\"M2.5 13 5 7c.7-1.3 1.4-2 3-2\"/><path d=\"M21.5 13 19 7c-.7-1.3-1.5-2-3-2\"/></svg>"
-                    }'>Childcare &amp; Elderly Assitance</option>
-                    <option value="#mega-menu-catalog-tab-16" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><line x1=\"6\" x2=\"10\" y1=\"11\" y2=\"11\"/><line x1=\"8\" x2=\"8\" y1=\"9\" y2=\"13\"/><line x1=\"15\" x2=\"15.01\" y1=\"12\" y2=\"12\"/><line x1=\"18\" x2=\"18.01\" y1=\"10\" y2=\"10\"/><path d=\"M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z\"/></svg>"
-                    }'>Cleaning &amp; Maintenance</option>
-                    <option value="#mega-menu-catalog-tab-17" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13\"/><path d=\"m8 6 2-2\"/><path d=\"m18 16 2-2\"/><path d=\"m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17\"/><path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/></svg>"
-                    }'>Stationery</option>
-                    <option value="#mega-menu-catalog-tab-18" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4\"/><path d=\"M14 13.12c0 2.38 0 6.38-1 8.88\"/><path d=\"M17.29 21.02c.12-.6.43-2.3.5-3.02\"/><path d=\"M2 12a10 10 0 0 1 18-6\"/><path d=\"M2 16h.01\"/><path d=\"M21.8 16c.2-2 .131-5.354 0-6\"/><path d=\"M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2\"/><path d=\"M8.65 22c.21-.66.45-1.32.57-2\"/><path d=\"M9 6.8a6 6 0 0 1 9 5.2v2\"/></svg>"
-                    }'>Digital Goods</option>
-                    <option value="#mega-menu-catalog-tab-19" data-hs-select-option='{
-                      "icon": "<svg className=\"shrink-0 size-4\" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9 18V5l12-2v13\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><circle cx=\"18\" cy=\"16\" r=\"3\"/></svg>"
-                    }'>Music</option>
-                  </select>
-
-                  <div className="flex">
-                    <div className="hidden sm:block sm:pe-4 w-96 h-[75dvh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
-                      <div id="hs-catalog-sidebar-nav-tabs" className="flex flex-col gap-y-1" aria-label="Tabs" role="tablist" aria-orientation="horizontal" data-hs-tabs='{
-                        "eventType": "hover",
-                        "preventNavigationResolution": "sm"
-                      }'>
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 active" id="mega-menu-catalog-tab-item-1" aria-selected="true" data-hs-tab="#mega-menu-catalog-tab-1" aria-controls="mega-menu-catalog-tab-1" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-map-pinned-icon lucide-map-pinned"><path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 0 1-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0 1 12 0"/><circle cx="12" cy="8" r="2"/><path d="M8.714 14h-3.71a1 1 0 0 0-.948.683l-2.004 6A1 1 0 0 0 3 22h18a1 1 0 0 0 .948-1.316l-2-6a1 1 0 0 0-.949-.684h-3.712"/></svg>
-
-
-                          Venue
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* {/* <!-- End Link --> */} 
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-2" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-2" aria-controls="mega-menu-catalog-tab-2" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-shirt-icon lucide-shirt"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
-                          Bride &amp; Groom Essentials
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-3" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-3" aria-controls="mega-menu-catalog-tab-3" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-hand-platter-icon lucide-hand-platter"><path d="M12 3V2"/><path d="m15.4 17.4 3.2-2.8a2 2 0 1 1 2.8 2.9l-3.6 3.3c-.7.8-1.7 1.2-2.8 1.2h-4c-1.1 0-2.1-.4-2.8-1.2l-1.302-1.464A1 1 0 0 0 6.151 19H5"/><path d="M2 14h12a2 2 0 0 1 0 4h-2"/><path d="M4 10h16"/><path d="M5 10a7 7 0 0 1 14 0"/><path d="M5 14v6a1 1 0 0 1-1 1H2"/></svg>
-                          Catering &amp; Food
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-4" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-4" aria-controls="mega-menu-catalog-tab-4" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-flower-icon lucide-flower"><circle cx="12" cy="12" r="3"/><path d="M12 16.5A4.5 4.5 0 1 1 7.5 12 4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 1 1 4.5 4.5 4.5 4.5 0 1 1-4.5 4.5"/><path d="M12 7.5V9"/><path d="M7.5 12H9"/><path d="M16.5 12H15"/><path d="M12 16.5V15"/><path d="m8 8 1.88 1.88"/><path d="M14.12 9.88 16 8"/><path d="m8 16 1.88-1.88"/><path d="M14.12 14.12 16 16"/></svg>
-                          Decor &amp; Setup
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-5" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-5" aria-controls="mega-menu-catalog-tab-5" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-drama-icon lucide-drama"><path d="M10 11h.01"/><path d="M14 6h.01"/><path d="M18 6h.01"/><path d="M6.5 13.1h.01"/><path d="M22 5c0 9-4 12-6 12s-6-3-6-12c0-2 2-3 6-3s6 1 6 3"/><path d="M17.4 9.9c-.8.8-2 .8-2.8 0"/><path d="M10.1 7.1C9 7.2 7.7 7.7 6 8.6c-3.5 2-4.7 3.9-3.7 5.6 4.5 7.8 9.5 8.4 11.2 7.4.9-.5 1.9-2.1 1.9-4.7"/><path d="M9.1 16.5c.3-1.1 1.4-1.7 2.4-1.4"/></svg>
-                          Entertainment
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-6" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-6" aria-controls="mega-menu-catalog-tab-6" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-camera-icon lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>Photography &amp; Videography
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-7" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-7" aria-controls="mega-menu-catalog-tab-7" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-mail-check-icon lucide-mail-check"><path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="m16 19 2 2 4-4"/></svg>
-                          Invitations &amp; Stationery
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-9" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-9" aria-controls="mega-menu-catalog-tab-9" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-gift-icon lucide-gift"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>
-                          Gifts &amp; Return Favors
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-  
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-11" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-11" aria-controls="mega-menu-catalog-tab-11" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-brush-icon lucide-brush"><path d="m11 10 3 3"/><path d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z"/><path d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031"/></svg>
-                          Makeup &amp; Styling
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                        <a className="hs-tab-active:bg-gray-100 dark:hs-tab-active:bg-neutral-800 py-2.5 px-2 w-full flex items-center gap-x-2 text-start font-medium text-sm bg-white text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" id="mega-menu-catalog-tab-item-13" aria-selected="false" data-hs-tab="#mega-menu-catalog-tab-13" aria-controls="mega-menu-catalog-tab-13" role="tab" href="#">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-hand-coins-icon lucide-hand-coins"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17"/><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 16 6 6"/><circle cx="16" cy="9" r="2.9"/><circle cx="6" cy="5" r="3"/></svg>
-                          Rentals
-                          <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m9 18 6-6-6-6" />
-                          </svg>
-                        </a>
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-   
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-                      
-                        {/* <!-- End Link --> */}
-
-                        {/* <!-- Link --> */}
-
-                        {/* <!-- End Link --> */}
-                        {/* <!-- Link --> */}
-
-                        {/* <!-- End Link --> */}
-                      </div>
-                    </div>
-                    {/* <!-- End Sidebar --> */}
-
-                    {/* <!-- Content --> */}
-                    <div className="pe-4 sm:px-10 w-full h-[75dvh] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
-                      
-                      {/* <!-- Tab --> */}
-                        {/* <!-- Grid --> */}
-                        <div id="mega-menu-catalog-tab-1" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-1">
-                          {/* <!-- Grid --> */}
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-6">
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.venuebookingz.com/24118-1720587040-wm-league-hotels-banquet-chennai-1.jpg" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Banquet Halls</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.unexplora.com/wp-content/uploads/2020/11/Untitled-design-85.jpg" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Resorts</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://cdn0.weddingwire.in/vendor/4599/3_2/960/jpg/wedding-venue-aj-garden-outdoor-space-1_15_364599-161640601569768.jpeg" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Outdoor Lawns & Gardens</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.kalkifashion.com/blogs/wp-content/uploads/2023/01/Top-7-Destination-Wedding-Locations-in-India.jpg" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Destination Venues</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://media.weddingz.in/images/ce4bb19da8f580022371692fda5715b5/thinking-of-a-beach-wedding-check-out-the-best-beach-wedding-venues-in-goa-2.jpg" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Beachside Venues</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://media.weddingz.in/photologue/1490602150941/palace-wedding-venues-in-india-gajner-palace.PNG" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Heritage Properties</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://imagewedz.oyoroomscdn.com/medium/photologue/images/diamond-banquet-chembur-mumbai-4.jpeg" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Community Halls</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.brides.com/thmb/6rWBPzOU1FKL8U4JJWdxTh7v4-8=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/J0GNM_v_QLTPspmntIY9Wx0-blZ0KWIyAGTfiPDU7Vz73PGoHrCJhs8u9UmLiQvm3_tX_NmoFw1ylvOHf_c7M-S112OA0R0X2CuTxIhgaEscCQgLwczPt6ACGKFjcopy-df74a973bac843b69df2ff927153bc12.jpg" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Rooftop Venues</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                           
-                          </div>
-                          {/* <!-- Grid --> */}
-                        </div>
-                        {/* <!-- End Grid --> */}
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                        {/* <!-- Grid --> */}
-                        <div id="mega-menu-catalog-tab-2" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-2">
-                          {/* <!-- Grid --> */}
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1726828501829-9188cde81755?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Phones</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1616763355603-9755a640a287?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Computers</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1666401565408-9b6b0741f0d6?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Home</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Laptops</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1698729616468-5b2f627df845?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Watches</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1662731340335-e5485bd50268?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Tablets</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1522401195795-1d580bb06720?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Cameras</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1594155187705-bd33d893961c?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">TVs</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1532543758257-0f4e06e08aec?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Optical Devices</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1542549237432-a176cb9d5e5e?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Game Consoles</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1628329567705-f8f7150c3cff?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Headphones</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1618482914248-29272d021005?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Security Systems</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">PC Accessories</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1631052941794-2a6e26d4ac17?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Drones</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1657734240363-356201c49b15?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">VRs</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-                          </div>
-                          {/* <!-- Grid --> */}
-                        </div>
-                        {/* <!-- End Grid --> */}
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                        {/* <!-- Grid --> */}
-                        <div id="mega-menu-catalog-tab-3" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-3">
-                          {/* <!-- Grid --> */}
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1726828501829-9188cde81755?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Phones</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1616763355603-9755a640a287?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Computers</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1666401565408-9b6b0741f0d6?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Home</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Laptops</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1698729616468-5b2f627df845?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Watches</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1662731340335-e5485bd50268?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Tablets</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1522401195795-1d580bb06720?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Cameras</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1594155187705-bd33d893961c?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">TVs</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1532543758257-0f4e06e08aec?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Optical Devices</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1542549237432-a176cb9d5e5e?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                                <div className="absolute -top-0.5 end-0.5">
-                                  <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                                </div>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Game Consoles</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1628329567705-f8f7150c3cff?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Headphones</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1618482914248-29272d021005?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Security Systems</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">PC Accessories</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1631052941794-2a6e26d4ac17?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Drones</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-  
-                            {/* <!-- Item --> */}
-                            <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                              <div className="relative shrink-0">
-                                <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1657734240363-356201c49b15?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              </div>
-                              <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">VRs</span>
-                            </a>
-                            {/* <!-- End Item --> */}
-                          </div>
-                          {/* <!-- Grid --> */}
-                        </div>
-                        {/* <!-- End Grid --> */}
-                      {/* <!-- End Tab --> */}
-
-                      <div id="mega-menu-catalog-tab-2" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-2">
-                        {/* <!-- Grid --> */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1726828501829-9188cde81755?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Phones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1616763355603-9755a640a287?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Computers</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1666401565408-9b6b0741f0d6?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Home</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Laptops</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1698729616468-5b2f627df845?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Watches</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1662731340335-e5485bd50268?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Tablets</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1522401195795-1d580bb06720?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Cameras</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1594155187705-bd33d893961c?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">TVs</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1532543758257-0f4e06e08aec?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Optical Devices</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1542549237432-a176cb9d5e5e?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Game Consoles</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1628329567705-f8f7150c3cff?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Headphones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1618482914248-29272d021005?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Security Systems</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">PC Accessories</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1631052941794-2a6e26d4ac17?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Drones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1657734240363-356201c49b15?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">VRs</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-                        </div>
-                        {/* <!-- Grid --> */}
-                      </div>
-
-                      <div id="mega-menu-catalog-tab-2" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-2">
-                        {/* <!-- Grid --> */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1726828501829-9188cde81755?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Phones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1616763355603-9755a640a287?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Computers</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1666401565408-9b6b0741f0d6?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Home</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Laptops</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1698729616468-5b2f627df845?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Watches</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1662731340335-e5485bd50268?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Tablets</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1522401195795-1d580bb06720?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Cameras</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1594155187705-bd33d893961c?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">TVs</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1532543758257-0f4e06e08aec?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Optical Devices</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1542549237432-a176cb9d5e5e?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Game Consoles</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1628329567705-f8f7150c3cff?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Headphones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1618482914248-29272d021005?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Security Systems</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">PC Accessories</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1631052941794-2a6e26d4ac17?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Drones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1657734240363-356201c49b15?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">VRs</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-                        </div>
-                        {/* <!-- Grid --> */}
-                      </div>
-
-                       <div id="mega-menu-catalog-tab-2" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-2">
-                        {/* <!-- Grid --> */}
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-6">
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1726828501829-9188cde81755?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Phones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1616763355603-9755a640a287?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Computers</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1666401565408-9b6b0741f0d6?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Home</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Laptops</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1698729616468-5b2f627df845?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Smart Watches</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1662731340335-e5485bd50268?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Tablets</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1522401195795-1d580bb06720?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Cameras</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1594155187705-bd33d893961c?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">TVs</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1532543758257-0f4e06e08aec?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Optical Devices</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1542549237432-a176cb9d5e5e?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                              <div className="absolute -top-0.5 end-0.5">
-                                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-900 dark:text-emerald-500">Hot</span>
-                              </div>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Game Consoles</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1628329567705-f8f7150c3cff?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Headphones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1618482914248-29272d021005?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Security Systems</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">PC Accessories</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1631052941794-2a6e26d4ac17?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Drones</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-
-                          {/* <!-- Item --> */}
-                          <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
-                            <div className="relative shrink-0">
-                              <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.unsplash.com/photo-1657734240363-356201c49b15?q=80&w=180&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Product Image"/>
-                            </div>
-                            <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">VRs</span>
-                          </a>
-                          {/* <!-- End Item --> */}
-                        </div>
-                        {/* <!-- Grid --> */}
-                      </div>
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-9" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-9">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-10" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-10">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-11" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-11">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-12" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-12">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-13" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-13">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-14" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-14">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-15" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-15">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-16" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-16">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-17" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-17">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-18" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-18">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-
-                      {/* <!-- Tab --> */}
-                      <div id="mega-menu-catalog-tab-19" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-19">
-                        {/* <!-- Loading Indicator --> */}
-                        <div className="h-full flex flex-col justify-center items-center text-center">
-                          <span className="py-1.5 inline-flex gap-x-1">
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.2s] dark:bg-neutral-200"></span>
-                            <span className="size-2.5 bg-gray-800 rounded-full animate-[typing_1s_ease-in-out_infinite_0.4s] dark:bg-neutral-200"></span>
-                          </span>
-                          <p className="mt-3 text-sm text-gray-500 dark:text-neutral-500">
-                            This is a placeholder loader.<br/>This conent is empty.
-                          </p>
-                        </div>
-                        {/* <!-- End Loading Indicator --> */}
-                      </div>
-                      {/* <!-- End Tab --> */}
-                    </div>
-                    {/* <!-- End Content --> */}
-                  </div>
-                  {/* <!-- End Grid --> */}
-                </div>
-                {/* <!-- End Container --> */}
-              </div>
-              {/* <!-- End Dropdown Menu --> */}
+                id="catalog-button"
+                type="button"
+                className="py-[7px] sm:py-2 sm:py-2.5 px-3 flex items-center gap-x-1.5 text-sm text-start border border-transparent text-white rounded-full disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden"
+                style={{ backgroundColor: '#E91E63' }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#d81b60')}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E91E63')}
+                aria-expanded={isCatalogOpen}
+                aria-label="Toggle Catalog"
+                onClick={toggleCatalog}
+              >
+                {/* Hamburger/Close Icon */}
+                <svg
+                  className={`${isCatalogOpen ? 'hidden' : 'block'} shrink-0 size-4`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="4" x2="20" y1="12" y2="12" />
+                  <line x1="4" x2="20" y1="6" y2="6" />
+                  <line x1="4" x2="20" y1="18" y2="18" />
+                </svg>
+                <svg
+                  className={`${isCatalogOpen ? 'block' : 'hidden'} shrink-0 size-4`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 6 6 18" />
+                  <path d="m6 6 12 12" />
+                </svg>
+                Catalog
+              </button>
             </div>
             {/* <!-- End Dropdown Link --> */}
 
             <div className="hidden md:block w-full">
               {/* <!-- Search Input --> */}
-              <div className="relative w-full">
-                <input
-  type="text"
-  className="py-1.5 ps-4 sm:py-2.5 pe-10 block w-full bg-white border border-gray-200 text-base sm:text-sm rounded-full focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400"
-  placeholder="Search venues, decorators, makeup artists..."
-/>
-<div className="absolute inset-y-0 end-0 z-10 flex items-center pe-1 sm:pe-1.5">
-                  <button
-  type="button"
-  className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full text-white focus:outline-hidden"
-  style={{
-    backgroundColor: '#E91E63',
-  }}
-  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#d81b60')}
-  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E91E63')}
->
-  <svg
-    className="shrink-0 size-4"
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.3-4.3" />
-  </svg>
-</button>
-
-                </div>
-                <div className="hidden absolute inset-y-0 end-12 flex items-center pointer-events-none z-10 pe-1">
-                  <button type="button" className="inline-flex shrink-0 justify-center items-center size-6 rounded-full text-gray-500 hover:text-emerald-600 focus:outline-hidden focus:text-emerald-600 dark:text-neutral-500 dark:hover:text-emerald-500 dark:focus:text-emerald-500" aria-label="Close">
-                    <span className="sr-only">Close</span>
-                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="m15 9-6 6" />
-                      <path d="m9 9 6 6" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
+             <div className="relative w-full">
+  <input
+    type="text"
+    className="py-1.5 ps-4 sm:py-2.5 pe-10 block w-full bg-white border border-gray-200 text-base sm:text-sm rounded-full 
+               focus:outline-none 
+               focus:border-[#E91E63]     // <--- This now applies to ALL screen sizes
+               focus:ring-1 
+               focus:ring-[#E91E63]       // <--- This now applies to ALL screen sizes
+               disabled:opacity-50 disabled:pointer-events-none 
+               dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400"
+    placeholder="Search venues, decorators, makeup artists..."
+  />
+  <div className="absolute inset-y-0 end-0 z-10 flex items-center pe-1 sm:pe-1.5">
+    <button
+      type="button"
+      className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full text-white focus:outline-hidden"
+      style={{
+        backgroundColor: '#E91E63',
+      }}
+      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#d81b60')}
+      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E91E63')}
+    >
+      <svg
+        className="shrink-0 size-4"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+    </button>
+  </div>
+  <div className="hidden absolute inset-y-0 end-12 flex items-center pointer-events-none z-10 pe-1">
+    <button
+      type="button"
+      className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full text-white focus:outline-hidden"
+      style={{
+        backgroundColor: '#E91E63',
+      }}
+      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#d81b60')}
+      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E91E63')}
+    >
+      <span className="sr-only">Close</span>
+      <svg
+        className="shrink-0 size-4"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="m15 9-6 6" />
+        <path d="m9 9 6 6" />
+      </svg>
+    </button>
+  </div>
+</div>
               {/* <!-- End Search Input --> */}
             </div>
           </div>
@@ -1786,28 +754,28 @@ useEffect(() => {
                         <div className="p-2">
                           {/* <!-- Account Details --> */}
                           <a 
-  className="py-2 px-2.5 flex items-center gap-3 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" 
-  href="../../pro/shop/account.html"
->
-  <img 
-    className="shrink-0 size-10 rounded-full" 
-    src={session.user.profile_picture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} 
-    alt="Avatar"
-    onError={(e) => {
-      e.target.onerror = null; 
-      e.target.src = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
-    }}
-  />
-  
-  <div className="grow">
-    <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-      {session.user.name}
-    </span>
-    <p className="text-xs text-gray-500 dark:text-neutral-500">
-      {session.user.email}
-    </p>
-  </div>
-</a>
+                            className="py-2 px-2.5 flex items-center gap-3 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" 
+                            href="../../pro/shop/account.html"
+                          >
+                            <img 
+                              className="shrink-0 size-10 rounded-full" 
+                              src={session.user.profile_picture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} 
+                              alt="Avatar"
+                              onError={(e) => {
+                                e.target.onerror = null; 
+                                e.target.src = "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png";
+                              }}
+                            />
+                            
+                            <div className="grow">
+                              <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
+                                {session.user.name}
+                              </span>
+                              <p className="text-xs text-gray-500 dark:text-neutral-500">
+                                {session.user.email}
+                              </p>
+                            </div>
+                          </a>
                           {/* <!-- End Account Details --> */}
           
           
@@ -1834,7 +802,6 @@ useEffect(() => {
        
                           {/* <!-- End List --> */}
           
-                          <div className="my-2 mx-2.5 h-px bg-gray-200 dark:bg-neutral-700"></div>
           
                           <p>
                             <button type="button" 
@@ -1882,8 +849,6 @@ useEffect(() => {
     </a>
   </p>
 </div>
-
-
         )}
         {/* <!-- End Widgets --> */}
       </div>
@@ -1891,30 +856,520 @@ useEffect(() => {
       <div className="md:hidden mt-2.5 md:mt-0 w-full">
         {/* <!-- Search Input --> */}
         <div className="relative w-full">
-          <input type="text" className="py-1.5 ps-4 sm:py-2.5 pe-10 block w-full bg-white border-gray-200 text-base sm:text-sm rounded-full focus:outline-hidden focus:border-emerald-600 focus:ring-emerald-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400" placeholder="Search venues, decorators, makeup artists..."></input>
-          <div className="absolute inset-y-0 end-0 z-10 flex items-center pe-1 sm:pe-1.5">
-            <button type="button" className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 focus:outline-hidden focus:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:focus:bg-emerald-600">
-              <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-            </button>
-          </div>
-          <div className="hidden absolute inset-y-0 end-12 flex items-center pointer-events-none z-10 pe-1">
-            <button type="button" className="inline-flex shrink-0 justify-center items-center size-6 rounded-full text-gray-500 hover:text-emerald-600 focus:outline-hidden focus:text-emerald-600 dark:text-neutral-500 dark:hover:text-emerald-500 dark:focus:text-emerald-500" aria-label="Close">
-              <span className="sr-only">Close</span>
-              <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="m15 9-6 6" />
-                <path d="m9 9 6 6" />
-              </svg>
-            </button>
-          </div>
-        </div>
+  <input
+    type="text"
+    className="py-1.5 ps-4 sm:py-2.5 pe-10 block w-full bg-white border-gray-200 text-base sm:text-sm rounded-full focus:outline-hidden focus:border-[#E91E63] focus:ring-[#E91E63] disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400"
+    placeholder="Search venues, decorators, makeup artists..."
+  ></input>
+  <div className="absolute inset-y-0 end-0 z-10 flex items-center pe-1 sm:pe-1.5">
+    <button
+      type="button"
+      className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full bg-[#E91E63] text-white hover:bg-[#D81B60] focus:outline-hidden focus:bg-[#D81B60] dark:bg-[#E91E63] dark:hover:bg-[#D81B60] dark:focus:bg-[#D81B60]"
+    >
+      <svg
+        className="shrink-0 size-4"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+    </button>
+  </div>
+  <div className="hidden absolute inset-y-0 end-12 flex items-center pointer-events-none z-10 pe-1">
+    <button
+      type="button"
+      className="inline-flex shrink-0 justify-center items-center size-6 rounded-full text-gray-500 hover:text-[#E91E63] focus:outline-hidden focus:text-[#E91E63] dark:text-neutral-500 dark:hover:text-[#E91E63] dark:focus:text-[#E91E63]"
+      aria-label="Close"
+    >
+      <span className="sr-only">Close</span>
+      <svg
+        className="shrink-0 size-4"
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="m15 9-6 6" />
+        <path d="m9 9 6 6" />
+      </svg>
+    </button>
+  </div>
+</div>
         {/* <!-- End Search Input --> */}
       </div>
     </div>
+   {/* Expanded Catalog Section - Now always rendered but hidden with CSS */}
 
+      <div
+
+        className={`w-full bg-white shadow-md z-20 absolute top-full left-0 right-0 dark:bg-neutral-900 transition-all duration-30  transform ${
+
+          isCatalogOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible pointer-events-none -translate-y-2'
+
+        }`}
+
+        // You might want to adjust max-height or height for a smooth transition if content can vary greatly
+
+        // For simple opacity/visibility, the above is fine.
+
+      >
+
+        <div className="max-w-[85rem] mx-auto py-4 px-4 sm:px-6 lg:px-8">
+
+          {/* Desktop View */}
+
+          <div className="hidden md:grid grid-cols-[22%_78%] gap-4 min-h-[300px]">
+
+            {/* Categories List (Left 22%) */}
+
+            <div>
+                   {isLoading ? (
+
+                <div className="text-sm text-gray-500">Loading categories...</div>
+
+              ) : error ? (
+
+                <div className="text-sm text-red-500">{error}</div>
+
+              ) : categories.length > 0 ? (
+
+                <nav className="space-y-1">
+
+                  {categories.map((category) => (
+
+                    <button
+
+                      key={category.id}
+
+                      type="button"
+
+                      className={`py-2.5 px-2 w-full flex items-center text-start font-medium text-sm rounded-lg focus:outline-hidden
+
+                        ${clickedCategoryId === category.id ? 'bg-gray-200 text-gray-900' :
+
+                          hoveredCategoryId === category.id ? 'bg-gray-100 text-gray-800' :
+
+                          'bg-white text-gray-800 hover:bg-gray-100'}
+
+                        dark:bg-neutral-900 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800`}
+
+                      onClick={() => {
+
+                        setClickedCategoryId(category.id);
+
+                        setHoveredCategoryId(category.id); // Keep hovered for consistent behavior
+
+                      }}
+
+                      onMouseEnter={() => setHoveredCategoryId(category.id)}
+
+                      onMouseLeave={() => {
+
+                        // Only remove hover if it's not the clicked category
+
+                        if (clickedCategoryId !== category.id) {
+
+                          setHoveredCategoryId(null);
+
+                        }
+
+                      }}
+
+                    >
+
+                      {category.name}
+
+                      <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </button>
+                  ))}
+                </nav>
+              ) : (
+                <div className="text-sm text-gray-500">No categories found.</div>
+
+              )}
+
+            </div>
+
+              {/* Subcategories List (Right 78%) */}
+              <div>
+                {isSubcategoriesLoading ? (
+                  <div className="text-sm text-gray-500">Loading subcategories...</div>
+                ) : subcategoriesError ? (
+                  <div className="text-sm text-red-500">{subcategoriesError}</div>
+                ) : currentSubcategories.length > 0 ? (
+                  <>
+                    {currentSubcategories.length <= 3 && (
+                      <nav className={`grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 place-items-center gap-x-4 gap-y-4`}>
+                        {currentSubcategories.map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                    )}
+
+                     {currentSubcategories.length === 4 && (
+
+                    <nav className={`grid grid-cols-2 sm:grid-cols-2 gap-x-4 gap-y-4`}>
+
+                      {currentSubcategories.map((subcategory) => (
+
+                        <SubcategoryItem
+
+                          key={subcategory.id}
+
+                          subcategory={subcategory}
+
+                          onClick={() => {
+
+                            setIsCatalogOpen(false);
+
+                            setHoveredCategoryId(null);
+
+                            setClickedCategoryId(null);
+
+                          }}
+
+                        />
+
+                      ))}
+
+                    </nav>
+
+                  )}
+
+
+
+                  {currentSubcategories.length === 5 && (
+
+                    <div className="flex flex-col gap-y-4">
+
+                      <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4 place-items-center`}>
+
+                        {currentSubcategories.slice(0, 3).map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                    <nav className={`grid grid-cols-2 sm:grid-cols-2 gap-x-4 gap-y-4 place-items-center`}>
+
+                        {currentSubcategories.slice(3, 5).map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                      </div>
+                    )}
+
+                    {currentSubcategories.length === 6 && (
+
+                    <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4`}>
+
+                      {currentSubcategories.map((subcategory) => (
+
+                        <SubcategoryItem
+
+                          key={subcategory.id}
+
+                          subcategory={subcategory}
+
+                          onClick={() => {
+
+                            setIsCatalogOpen(false);
+
+                            setHoveredCategoryId(null);
+
+                            setClickedCategoryId(null);
+
+                          }}
+
+                        />
+
+                      ))}
+
+                    </nav>
+
+                  )}
+
+                     {currentSubcategories.length === 7 && (
+
+                    <div className="flex flex-col gap-y-4">
+
+                      <nav className={`grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4 place-items-center`}>
+
+                        {currentSubcategories.slice(0, 4).map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                     <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4 place-items-center`}>
+
+                        {currentSubcategories.slice(4, 7).map((subcategory) => (
+                          <SubcategoryItem
+                            key={subcategory.id}
+                            subcategory={subcategory}
+                            onClick={() => {
+                              setIsCatalogOpen(false);
+                              setHoveredCategoryId(null);
+                              setClickedCategoryId(null);
+                            }}
+                          />
+                        ))}
+                      </nav>
+                    
+              
+                    </div>
+                     )}
+
+                   {currentSubcategories.length === 8 && (
+
+                    <nav className={`grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4`}>
+
+                      {currentSubcategories.map((subcategory) => (
+
+                        <SubcategoryItem
+
+                          key={subcategory.id}
+
+                          subcategory={subcategory}
+
+                          onClick={() => {
+
+                            setIsCatalogOpen(false);
+
+                            setHoveredCategoryId(null);
+
+                            setClickedCategoryId(null);
+
+                          }}
+
+                        />
+
+                      ))}
+
+                    </nav>
+                  )}
+                  {currentSubcategories.length > 8 && (
+
+                    <nav className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-4`}>
+                      {currentSubcategories.map((subcategory) => (
+                        <SubcategoryItem
+                          key={subcategory.id}
+                          subcategory={subcategory}
+                          onClick={() => {
+                            setIsCatalogOpen(false);
+                            setHoveredCategoryId(null);
+
+                            setClickedCategoryId(null);
+                          }}
+                        />
+                      ))}
+                    </nav>
+                 
+                  )}
+                 </>
+
+              ) : (hoveredCategoryId !== null || clickedCategoryId !== null) ? (
+
+                <div className="text-sm text-gray-500">No subcategories found for this category.</div>
+
+              ) : (
+
+                <div className="text-sm text-gray-500"></div>
+              )}
+            </div>
+          </div>
+           {/* Mobile View - Using Custom Dropdown */}
+
+          <div className="md:hidden flex flex-col gap-4">
+
+            {isLoading ? (
+
+              <div className="text-sm text-gray-500">Loading categories...</div>
+
+            ) : error ? (
+
+              <div className="text-sm text-red-500">{error}</div>
+
+            ) : categories.length > 0 && (
+
+              <div className="relative w-full" ref={mobileDropdownRef}>
+
+                <button
+
+                  type="button"
+
+                  className="py-2 px-3 pe-9 block w-full border border-gray-200 rounded-lg text-sm text-left focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600 relative"
+
+                  onClick={() => setIsMobileDropdownOpen(!isMobileDropdownOpen)}
+
+                  aria-expanded={isMobileDropdownOpen}
+
+                >
+
+                  {mobileSelectedCategoryName}
+
+                  <div className="absolute inset-y-0 right-0 flex items-center pe-3 pointer-events-none">
+
+                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+
+                      <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+
+                    </svg>
+
+                  </div>
+
+                </button>
+
+
+
+                {isMobileDropdownOpen && (
+
+                  <div className="absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
+
+                    <ul className="py-1">
+
+                      <li
+
+                        className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer dark:text-neutral-300 dark:hover:bg-neutral-700"
+
+                        onClick={() => handleMobileCategorySelect({ id: null, name: 'Select a category' })}
+
+                      >
+
+                        Select a category
+
+                      </li>
+
+                      {categories.map((category) => (
+
+                        <li
+
+                          key={category.id}
+
+                          className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer ${mobileSelectedCategoryId === category.id ? 'bg-blue-50 dark:bg-blue-900' : ''} dark:text-neutral-300 dark:hover:bg-neutral-700`}
+
+                          onClick={() => handleMobileCategorySelect(category)}
+
+                        >
+
+                          {category.name}
+
+                        </li>
+
+                      ))}
+
+                    </ul>
+
+                  </div>
+
+                )}
+
+              </div>
+
+            )}
+
+            {(mobileSelectedCategoryId || (!isLoading && !error && categories.length > 0 && mobileSelectedCategoryId === null && currentSubcategories.length === 0)) && (
+              <div className="w-full mt-4">
+
+                {isSubcategoriesLoading ? (
+
+                  <div className="text-sm text-gray-500">Loading subcategories...</div>
+
+                ) : subcategoriesError ? (
+
+                  <div className="text-sm text-red-500">{subcategoriesError}</div>
+
+                ) : currentSubcategories.length > 0 ? (
+
+                  <nav className={`grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-4`}>
+
+                    {currentSubcategories.map((subcategory) => (
+
+                      <SubcategoryItem
+
+                        key={subcategory.id}
+
+                        subcategory={subcategory}
+
+                        onClick={() => {
+
+                          setIsCatalogOpen(false);
+
+                          setMobileSelectedCategoryId(null); // Reset mobile selection on link click
+
+                          setMobileSelectedCategoryName('Select a category');
+
+                        }}
+
+                      />
+                       ))}
+
+                  </nav>
+
+                ) : (mobileSelectedCategoryId !== null) ? (
+
+                  <div className="text-sm text-gray-500">No subcategories found for this category.</div>
+
+                ) : (
+
+                  <div className="text-sm text-gray-500"></div>
+
+                )}
+
+              </div>
+
+            )}
+
+          </div>
+        </div>
+      </div>
+    
+</div> 
     {/* <!-- <div className="max-w-[85rem] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-1">
       <div className="relative flex basis-full items-center gap-x-1">
         <div className="flex flex-row items-center gap-x-1 overflow-x-auto [&::-webkit-scrollbar]:h-0">
