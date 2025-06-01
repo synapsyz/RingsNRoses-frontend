@@ -1,10 +1,16 @@
+// pages/_app.js or pages/_app.tsx
+
 import { useEffect } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import '../styles/globals.css';
 
-function MyApp({ Component, pageProps: { session, ...pageProps } }) {
+export default function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   useEffect(() => {
-    import('@preline/overlay');
+    import('preline').then(() => {
+      if (typeof window !== 'undefined') {
+        window.HSCarousel?.autoInit();
+      }
+    });
   }, []);
 
   return (
@@ -13,5 +19,3 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
     </SessionProvider>
   );
 }
-
-export default MyApp;
