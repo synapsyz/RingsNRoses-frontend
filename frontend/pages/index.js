@@ -2101,7 +2101,7 @@ useEffect(() => {
 
     
     {/* <!-- Slider --> */}
-    <div class="py-4 w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
+    <div className="py-4 w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
         <div
           data-hs-carousel='{"isInfiniteLoop": true}'
           className="relative hs-carousel overflow-hidden rounded-xl bg-gray-100 dark:bg-neutral-800 h-96" style={{ height: '40rem'}}
@@ -2115,16 +2115,16 @@ useEffect(() => {
                   alt="Hero Image"
                 />
                 <div className="relative z-10 text-center w-full h-full max-w-lg mx-auto px-12 flex flex-col justify-center items-center">
-                  <div class="bg-black/40 rounded-xl p-6">
-                    <p class="text-sm md:text-base uppercase text-white">
+                  <div className="bg-black/40 rounded-xl p-6">
+                    <p className="text-sm md:text-base uppercase text-white">
                       Up to 30% Off on Dream Venues!
                     </p>
                 
-                    <h2 class="mt-2 font-semibold text-2xl sm:text-2xl lg:text-4xl text-white">
+                    <h2 className="mt-2 font-semibold text-2xl sm:text-2xl lg:text-4xl text-white">
                       Book the vibe, not just the venue.
                     </h2>
                 
-                    <div class="mt-7">
+                    <div className="mt-7">
                       <span
   className="py-2 px-3 font-semibold text-sm text-gray-800 rounded-full"
   style={{ backgroundColor: '#E91E63' }}
@@ -4201,11 +4201,11 @@ useEffect(() => {
           <h4 className="mb-3 font-medium text-sm text-gray-800 dark:text-neutral-200">Company</h4>
 
           <ul className="grid space-y-2">
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">About Preline</a></li>
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Affiliate &amp; Influencer: Earn Commission</a></li>
+            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">About RingsNroses </a></li>
+            {/* <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Affiliate &amp; Influencer: Earn Commission</a></li> */}
             <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Contact us</a></li>
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Press</a></li>
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Preline's Tree Planting Program</a></li>
+            {/* <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Press</a></li>
+            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Preline's Tree Planting Program</a></li> */}
           </ul>
         </div>
         {/* <!-- End Col --> */}
@@ -4214,10 +4214,10 @@ useEffect(() => {
           <h4 className="mb-3 font-medium text-sm text-gray-800 dark:text-neutral-200">Customer service</h4>
 
           <ul className="grid space-y-2">
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Return and refund policy</a></li>
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Intellectual property policy</a></li>
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Shipping info</a></li>
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Report suspicious activity</a></li>
+            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Privacy policy</a></li>
+            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Refund policy</a></li>
+            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Cookie Policy</a></li>
+            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#"></a></li>
           </ul>
         </div>
         {/* <!-- End Col --> */}
@@ -4228,9 +4228,9 @@ useEffect(() => {
           <ul className="grid space-y-2">
             <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Support center &amp; FAQ</a></li>
             <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Safety center</a></li>
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Preline purchase protection</a></li>
+            {/* <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#"></a></li> */}
             <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Sitemap</a></li>
-            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Partner with Preline</a></li>
+            <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#"></a></li>
           </ul>
         </div>
         {/* <!-- End Col --> */}
@@ -4238,7 +4238,7 @@ useEffect(() => {
         <div className="space-y-10">
           <div className="space-y-10">
             <div>
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">Download the Preline App</h4>
+              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">Download the RingsNroses App</h4>
 
               {/* <!-- Social Brands --> */}
               <div className="mt-2 -mx-3 flex flex-col gap-y-2">
@@ -4334,11 +4334,11 @@ useEffect(() => {
     </div>
 
     <div className="w-full max-w-[85rem] pb-10 mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="mb-5 md:mb-10">
-        <h4 className="mb-3 font-medium text-sm text-gray-800 dark:text-neutral-200">We accept</h4>
+      {/* <div className="mb-5 md:mb-10">
+        <h4 className="mb-3 font-medium text-sm text-gray-800 dark:text-neutral-200">We accept</h4> */}
 
         {/* <!-- Cards --> */}
-        <div className="flex flex-wrap gap-x-2">
+        {/* <div className="flex flex-wrap gap-x-2">
           <svg className="w-12 h-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 32" width="56" height="32" fill="none">
             <path d="M34.482 9a8.17 8.17 0 0 1 3.052.577l-.463 2.926-.308-.143a5.638 5.638 0 0 0-2.534-.52c-1.343 0-1.946.591-1.96 1.168 0 .635.73 1.053 1.92 1.673 1.96.966 2.868 2.148 2.855 3.69C37.016 21.184 34.692 23 31.122 23c-1.526-.015-2.996-.347-3.794-.721l.476-3.043.448.217c1.106.505 1.834.72 3.192.72.98 0 2.03-.418 2.043-1.325 0-.592-.447-1.024-1.763-1.688-1.288-.649-3.01-1.73-2.982-3.676.014-2.639 2.38-4.484 5.74-4.484ZM21.798 22.798H25.2l2.128-13.552h-3.402l-2.128 13.552Z" fill="#00579F" />
             <path clip-rule="evenodd" d="M46.255 9.246h-2.631c-.812 0-1.428.245-1.779 1.124l-5.053 12.428h3.57l.714-2.033h4.368c.098.476.406 2.033.406 2.033H49L46.255 9.246Zm-4.2 8.75 1.36-3.79c-.007.01.038-.116.104-.305.098-.28.243-.693.343-.993l.237 1.167s.645 3.244.785 3.922h-2.828Z" fill="#00579F" fill-rule="evenodd" />
@@ -4371,15 +4371,15 @@ useEffect(() => {
             <path d="M56 20c-1.492 1.035-12.661 8.428-32 12h28.85c1.74 0 3.15-1.39 3.15-3.104V20Z" fill="#F47216" />
             <rect height="31" rx="5.5" stroke="currentColor" className="stroke-gray-300 dark:stroke-neutral-600" width="55" x=".5" y=".5" />
           </svg>
-        </div>
+        </div> */}
         {/* <!-- End Cards --> */}
-      </div>
+      {/* </div> */}
 
       {/* <!-- List --> */}
       <ul className="flex flex-wrap items-center whitespace-nowrap gap-3">
         <li className="inline-flex items-center relative text-xs text-gray-500 pe-3.5 last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-0 after:inline-block after:size-[3px] after:bg-gray-400 after:rounded-full after:-translate-y-1/2 dark:text-neutral-500 dark:after:bg-neutral-600">
           <p className="text-xs text-gray-500 dark:text-neutral-500">
-            © 2025 Preline Labs.
+            © 2025 RingsNroses.
           </p>
         </li>
         <li className="inline-flex items-center relative text-xs text-gray-500 pe-3.5 last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-0 after:inline-block after:size-[3px] after:bg-gray-400 after:rounded-full after:-translate-y-1/2 dark:text-neutral-500 dark:after:bg-neutral-600">
@@ -5102,4 +5102,3 @@ useEffect(() => {
   );
  
 }
-
