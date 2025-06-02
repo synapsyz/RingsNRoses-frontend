@@ -893,18 +893,58 @@ export default function Signup() {
 
 
                 <div className="hidden lg:block relative justify-center items-center w-full h-full">
+<div className="mt-28 ml-32 w-[650px] h-[350px] rounded-3xl overflow-hidden">
   <video
     src="./Signup_video.mp4" // Replace with your actual video path
-    className="object-contain max-w-full max-h-full"
+    className="w-full h-full object-cover"
     autoPlay
     loop
     muted
     playsInline
   />
 </div>
+<footer>
+                <div className="mt-16 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-500 gap-1">
+                    <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+                        <Link href="/vendor/signup" className="hover:underline">Register your business</Link>
+                        <Link href="#" className="hover:underline">Contact us</Link>
+                        <Link href="#" className="hover:underline">Terms & privacy</Link>
+                        <Link href="#" className="hover:underline">Your Privacy Choices</Link>
+                        <Link href="#" className="hover:underline">About us</Link>
+                    </div>
+                    <div className="flex items-center justify-center gap-x-2 mt-2">
+                        <p className="text-gray-500 text-sm dark:text-neutral-500">© {new Date().getFullYear()} RingsNRoses</p>
+                        <button
+                            type="button"
+                            onClick={toggleTheme}
+                            className="text-xs text-gray-500 dark:text-neutral-500 hover:underline flex items-center justify-center space-x-1"
+                        >
+                            {theme === "dark" ? (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                                    </svg>
+                                    <span>Dark Mode</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="4" />
+                                        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                                    </svg>
+                                    <span>Light Mode</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </footer>
+
+
+</div>
 
             </div>
-            <footer>
+            {/* <footer>
                 <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-500 gap-1">
                     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
                         <Link href="/vendor/signup" className="hover:underline">Register your business</Link>
@@ -940,7 +980,7 @@ export default function Signup() {
                     </div>
                 </div>
                 <div className="mt-4"></div>
-            </footer>
+            </footer> */}
         </>
     );
 }
