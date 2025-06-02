@@ -459,36 +459,45 @@ export default function Signup() {
         return selectedPhoneCountryCode.code + phoneNumber;
     };
 
-    // Main signup submission handler
-    const handleSignup = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
 
-        try {
-            const payload = {
-                email: formData.email,
-                password: formData.password,
-                name: formData.name,
-                phone: getFullPhoneNumber(), 
-            };
-            const res = await api.post("/signup/customer/", payload,
-               {
-               headers: {
-                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
-                   }
-               });
+const handleSignup = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-            const { access, refresh, email, user_id } = res.data;
-            console.log("Herer",res.data);
-            sessionStorage.setItem("accessToken", access);
-            sessionStorage.setItem("refreshToken", refresh);
-            sessionStorage.setItem("user_email", email);
-            sessionStorage.setItem("user_id", user_id);
+  try {
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+      name: formData.name,
+      phone: getFullPhoneNumber(),
+    };
 
-            router.push("/"); // Use Next.js router for navigation
-        } catch (err) {
-  const errorData = err?.response?.data;
+    const res = await api.post("/signup/customer/", payload, {
+      headers: {
+        ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+      },
+    });
+
+    console.log("Signup success:", res.data);
+
+    // ✅ Immediately log them in using next-auth
+    const loginRes = await signIn("credentials", {
+      redirect: false,
+      email: formData.email,
+      password: formData.password,
+      user_type: "customer", // or "vendor" based on form
+    });
+
+    if (loginRes.ok) {
+      router.push("/"); // Redirect to home or dashboard
+    } else {
+      setError("Login failed after signup.");
+    }
+  } catch (err) {
+    console.error("Signup error:", err);
+    setError("Signup failed. Please try again.");
+      const errorData = err?.response?.data;
 
   if (errorData && typeof errorData === 'object') {
     const errorKeys = Object.keys(errorData);
@@ -515,11 +524,10 @@ export default function Signup() {
     console.error("Unexpected error:", err);
     setError("An unexpected error occurred. Please try again.");
   }
-}
- finally {
-            setLoading(false);
-        }
-    };
+  } finally {
+    setLoading(false);
+  }
+};
 
     const customStyles = {
         control: (provided) => ({

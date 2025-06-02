@@ -81,8 +81,12 @@ function TabsSync() {
   return null; // This component only applies side effects
 }
 export default function Home() {
+
   const { data: session, status } = useSession();
   const user = session?.user;
+
+  console.log(session);
+  console.log(user);
 
 useEffect(() => {
   if (status !== "authenticated") return;
@@ -129,7 +133,7 @@ useEffect(() => {
   }
 
   // Parse the date from session (assuming format like "2025-06-28T00:00:00")
-  const targetDate = new Date(session.user.customer_profile.event_date).getTime();
+  const targetDate = new Date(session.user?.customer_profile?.event_date).getTime();
 
   // Handle invalid dates
   if (isNaN(targetDate)) {
@@ -1516,12 +1520,12 @@ const [categories, setCategories] = useState([]);
 
       <div className="flex-1 flex flex-col gap-2">
 <div className="flex items-center gap-2">
-  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user.customer_profile.groom_name}</h2>
+  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user?.customer_profile?.groom_name}</h2>
   <h2 className="text-lg font-bold text-gray-800 dark:text-white">&</h2>
-<h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user.customer_profile.bride_name}</h2>
+<h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user?.customer_profile?.bride_name}</h2>
 </div>
 <p className="text-l text-gray-500 dark:text-neutral-300">
-  {new Date(session.user.customer_profile.event_date).toLocaleDateString('en-GB', {
+  {new Date(session.user?.customer_profile?.event_date).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
