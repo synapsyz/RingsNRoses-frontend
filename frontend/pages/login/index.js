@@ -12,6 +12,8 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [user_type, setUserType] = useState("customer");
   const [theme, setTheme] = useState("light");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 const api_url = process.env.PROD_URL
   useEffect(() => {
@@ -41,6 +43,9 @@ const api_url = process.env.PROD_URL
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setError("");
     const res = await signIn("credentials", {
       redirect: false,
       email,
