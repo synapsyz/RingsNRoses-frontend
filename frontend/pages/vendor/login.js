@@ -1,13 +1,14 @@
 "use client";
 
 import Head from 'next/head';
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ErrorAlert from "./error"; // adjust the path
 
 export default function Login() {
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +16,13 @@ export default function Login() {
   const [theme, setTheme] = useState("light");
   const [errors, setErrors] = useState([]);
   const router = useRouter();
+
+  
+  useEffect(() => {
+      if (status === "authenticated") {
+        router.push("/"); // Change this to your desired page
+      }
+    }, [status, router]);
 
   useEffect(() => {
     const root = window.document.documentElement;

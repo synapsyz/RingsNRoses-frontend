@@ -1,12 +1,13 @@
 // pages/index.js
 "use client";
 import Head from 'next/head';
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Login() {
+  const { data: session, status } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -15,7 +16,16 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-const api_url = process.env.PROD_URL
+  const api_url = process.env.PROD_URL
+
+
+    useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/"); // Change this to your desired page
+    }
+  }, [status, router]);
+
+
   useEffect(() => {
     const root = window.document.documentElement;
     if (theme === "dark") {

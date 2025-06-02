@@ -5,6 +5,9 @@ import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+
+
 let api_url;
 let isNgrok
 isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -24,6 +27,7 @@ const api = axios.create({
                    }
 });
 export default function Signup() {
+    const { data: session, status } = useSession();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const router = useRouter();
@@ -35,6 +39,12 @@ export default function Signup() {
         business_name: "",
     });
 
+
+    useEffect(() => {
+          if (status === "authenticated") {
+            router.push("/"); // Change this to your desired page
+          }
+        }, [status, router]);
 
     const handleSignup = async (e) => {
         e.preventDefault();

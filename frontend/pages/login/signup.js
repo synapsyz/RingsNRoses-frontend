@@ -3,10 +3,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import Head from 'next/head';
 import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import LocationSelector from "@/components/LocationSelector"; // adjust path as needed
+
 let isNgrok
 isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? false
@@ -270,6 +272,16 @@ const COUNTRY_DATA = [
 
 export default function Signup() {
     const router = useRouter();
+    const { data: session, status } = useSession();
+
+
+    useEffect(() => {
+        if (status === "authenticated") {
+        router.push("/"); // Change this to your desired page
+        }
+    }, [status, router]);
+
+
    const [email, setemailError] = useState(null);
     const [phoneExist, setphoneError] = useState(null);
     // Form data state
@@ -468,12 +480,13 @@ export default function Signup() {
                });
 
             const { access, refresh, email, user_id } = res.data;
+            console.log("Herer",res.data);
             sessionStorage.setItem("accessToken", access);
             sessionStorage.setItem("refreshToken", refresh);
             sessionStorage.setItem("user_email", email);
             sessionStorage.setItem("user_id", user_id);
 
-            router.push("/dashboard"); // Use Next.js router for navigation
+            router.push("/"); // Use Next.js router for navigation
         } catch (err) {
   const errorData = err?.response?.data;
 
