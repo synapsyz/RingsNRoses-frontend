@@ -658,7 +658,7 @@ export default function Signup() {
                                                         required
                                                         minLength={MIN_PASSWORD_LENGTH}
                                                     />
-                                                    <button
+                                                   <button
                                                         type="button"
                                                         onClick={() => setShowPassword((prev) => !prev)}
                                                         className="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
