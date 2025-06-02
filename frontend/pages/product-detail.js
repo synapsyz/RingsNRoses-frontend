@@ -4,12 +4,35 @@ import Head from 'next/head';
 import Script from 'next/script';
 import debounce from 'lodash/debounce';
 // import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import axios from "axios";
+
+
+import { createContext, useContext, useEffect, useState } from 'react';
 
 
 export default function FacilitiesSection() {
   const [expanded, setExpanded] = useState(false);
   const [expanded1, setExpandedfacilities] = useState(false);
+
+  const [venueData, setVenueData] = useState(null); // To store API response
+
+  useEffect(() => {
+    // Fetch data on component mount
+    axios
+      .get("https://run.mocky.io/v3/fcfc3e7b-b9b1-42aa-a0f6-4e9c66281879")
+      .then((res) => {
+        setVenueData(res.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("API error:", err);
+        setError("Failed to load venue data.");
+        setLoading(false);
+      });
+  }, []);
+
+  console.log(venueData)
+  
   useEffect(() => {
     // Content switch logic
     function contentToSwitch() {
@@ -59,6 +82,7 @@ export default function FacilitiesSection() {
     function onLoad() {
       (function () {
         const tabsId = 'hs-pro-reviews-tabs';
+        // window.HSStaticMethods.HSTabs.init()
 
         // Make sure HSTabs and HSScrollNav are available globally
         if (!window.HSTabs || !window.HSScrollNav) return;
@@ -105,7 +129,7 @@ export default function FacilitiesSection() {
   }, []);
   useEffect(() => {
     if (typeof window !== 'undefined' && window.HSSelect) {
-      window.HSSelect.init(); // or similar init if using Preline
+      // window.HSSelect.init(); // or similar init if using Preline
     }
   }, []);
   useEffect(() => {
@@ -2171,7 +2195,7 @@ in your heart permanently.`;
                     {/* <!-- Product Details --> */}
                     <div className="lg:ps-12 h-full flex flex-col">
                       <h1 className="font-semibold text-2xl text-gray-800 dark:text-neutral-200">
-                        VM Grand Mahal
+                        {venueData.name}
                       </h1>
 
                       {/* <!-- Badge Group --> */}
