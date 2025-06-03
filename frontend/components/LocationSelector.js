@@ -35,38 +35,48 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
     }
 
     const fetchCountries = async () => {
-      try {
-        const res = await fetch(api_url + `/api/v1/locations/countries/`, {
-          headers: {
-            ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
-          },
-        });
-        const data = await res.json();
-        const formattedCountries = data.results.map((country) => ({
-          value: country.code,
-          label: country.name,
-        }));
-        setCountries(formattedCountries);
+  try {
+    let allCountries = [];
+    let nextUrl = api_url + `/api/v1/locations/countries/`;
 
-        // Set default country to India if available and not already set by user location
-        const defaultCountry = formattedCountries.find(
-          (country) => country.value === 'IN'
-        );
-        if (defaultCountry) {
-          setSelectedCountry(defaultCountry);
-        }
-      } catch (error) {
-        console.error('Failed to fetch countries:', error);
-      }
-    };
+    while (nextUrl) {
+      const res = await fetch(nextUrl, {
+        headers: {
+          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
+        },
+      });
+
+      const data = await res.json();
+      allCountries = [...allCountries, ...data.results];
+      nextUrl = data.next; // Will be null if it's the last page
+    }
+
+    const formattedCountries = allCountries.map((country) => ({
+      value: country.code,
+      label: country.name,
+    }));
+    setCountries(formattedCountries);
+
+    // Set default country to India if available and not already set by user location
+    const defaultCountry = formattedCountries.find(
+      (country) => country.value === 'IN'
+    );
+    if (defaultCountry) {
+      setSelectedCountry(defaultCountry);
+    }
+  } catch (error) {
+    console.error('Failed to fetch countries:', error);
+  }
+};
+
 
     const getUserLocation = async () => {
       try {
-        // const res = await fetch('https://ipinfo.io/json');
-        // const data = await res.json();
-        const countryCode = 'IN'; // Hardcoded for now, will be dynamic from ipinfo.io
-        const region = 'Telangana';
-        const city = 'Hyderabad';
+        const res = await fetch('https://ipinfo.io/json');
+        const data = await res.json();
+        const countryCode = data.country || 'IN';
+        const region = data.region;
+        const city = data.city;
 
         // Set the country based on detected location, then fetch states
         const initialCountry = countries.find(

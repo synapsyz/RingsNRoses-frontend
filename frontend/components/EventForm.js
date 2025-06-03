@@ -291,9 +291,9 @@ const EventForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-gray-100/70 dark:bg-neutral-800/70 backdrop-blur-sm">
+    <div className="min-h-screen flex items-center justify-center p-6  dark:bg-neutral-800/70 backdrop-blur-sm">
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-2xl mx-auto bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-6 relative">
             <ul className="relative flex flex-row gap-x-2 mb-8">
               {[1, 2, 3].map((index) => (
