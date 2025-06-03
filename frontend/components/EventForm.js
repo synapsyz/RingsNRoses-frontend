@@ -1,42 +1,25 @@
-// App.js
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react'; // Import useSession
-import axios from 'axios'; // Import axios
+import { useSession } from 'next-auth/react'; 
+import axios from 'axios';
+import LocationSelector from '@/components/LocationSelector'; 
 
-// Define your location mapping
-// IMPORTANT: These IDs (1, 2, 3, 4) MUST match the primary keys of your Location objects in the backend database.
-const LOCATION_OPTIONS = [
-  { id: 1, name: 'Grand Ballroom' },
-  { id: 2, name: 'Garden Venue' },
-  { id: 3, name: 'Beach Resort' },
-  { id: 4, name: 'City Hall' },
-  // Add more locations as needed, ensuring their IDs match your backend
-];
-
-// --- Axios Configuration ---
-// Determine if it's a development environment (e.g., for Ngrok skip header)
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 
-// Get the base API URL based on the environment
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? process.env.NEXT_PUBLIC_API_LOCALHOST // e.g., 'http://127.0.0.1:8000'
-    : process.env.NEXT_PUBLIC_HOST; // e.g., 'https://your-production-api.com'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST 
+    : process.env.NEXT_PUBLIC_HOST; 
 };
 
 const api_url = getApiUrl();
-
-// Create an Axios instance for client-side API calls
 const api = axios.create({
-  baseURL: `${api_url}/api/v1`, // This will now be http://127.0.0.1:8000/api/v1 or your production URL
+  baseURL: `${api_url}/api/v1`, 
   headers: {
     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
   },
 });
-// --- End Axios Configuration ---
 
-export default function App() {
-  // Destructure `update` from useSession. `update` is used to trigger a session refresh.
+const EventForm = () => {
   const { data: session, status, update } = useSession();
 
   const [step, setStep] = useState(1);
@@ -44,74 +27,91 @@ export default function App() {
 
   const [formData, setFormData] = useState({
     eventDate: '',
-    eventLocation: '', // This will now store the ID (e.g., 1, 2, 3)
+    eventLocation: null,
+    eventLocationName: '',
     groomName: '',
     brideName: '',
   });
 
-  // `showModal` controls the visibility of the pop-up form.
   const [showModal, setShowModal] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // This effect determines whether to show the modal based on the user's session data.
-  // It runs on initial load and whenever the `session` or `status` changes.
-  useEffect(() => {
-    // Only proceed if session status is not 'loading' (i.e., it's authenticated or unauthenticated).
-    if (status !== 'loading') {
-      setIsLoading(false); // End loading state once session status is determined.
+  const fetchLocationNameById = async (locationId) => {
+    if (!locationId) return;
+    try {
+      const response = await api.get(`/locations/${locationId}/`);
+      if (response.data && response.data.name) {
+        setFormData((prev) => ({
+          ...prev,
+          eventLocationName: response.data.name,
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to fetch location name by ID:', error.response?.data || error.message);
+      setFormData((prev) => ({
+        ...prev,
+        eventLocationName: 'Unknown Location',
+      }));
+    }
+  };
 
-      // Check if session data and customer profile are available.
+  useEffect(() => {
+    if (status !== 'loading') {
+      setIsLoading(false);
       if (session && session.user && session.user.customer_profile) {
         const customerProfile = session.user.customer_profile;
-
-        // CRITICAL LOGIC FOR HIDING/SHOWING THE FORM:
-        // If event_date is null, the form should be shown.
         if (customerProfile.event_date === null) {
-          setShowModal(true); // Show the pop-up form.
-          // Pre-fill form data with any existing profile data (even if null, set to empty string).
+          setShowModal(true);
           setFormData({
             eventDate: customerProfile.event_date || '',
-            eventLocation: customerProfile.event_location || '',
+            eventLocation: customerProfile.event_location || null,
+            eventLocationName: '',
             groomName: customerProfile.groom_name || '',
             brideName: customerProfile.bride_name || '',
           });
+          if (customerProfile.event_location) {
+            fetchLocationNameById(customerProfile.event_location);
+          }
         } else {
-          // If event_date is NOT null (meaning it has been successfully filled),
-          // the form should be hidden. This is how it prevents reappearance.
           setShowModal(false);
+          setFormData({
+            eventDate: customerProfile.event_date || '',
+            eventLocation: customerProfile.event_location || null,
+            eventLocationName: '',
+            groomName: customerProfile.groom_name || '',
+            brideName: customerProfile.bride_name || '',
+          });
+          if (customerProfile.event_location) {
+            fetchLocationNameById(customerProfile.event_location);
+          }
         }
       } else {
-        // If session data or customer profile is not available (e.g., not logged in), hide the modal.
         setShowModal(false);
         console.warn("Session user data or customer profile is not fully available or user is not logged in.");
       }
     }
-  }, [session, status]); // Dependency array: re-run when 'session' or 'status' changes.
+  }, [session, status]);
 
-
-  // Handles changes in form input fields.
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Special handling for eventLocation to ensure it's stored as a number (ID).
-    if (name === "eventLocation") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value === '' ? '' : Number(value), // Convert to number, keep empty string for "Select"
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Validation for Step 1: Ensures Event Date and Event Location are filled.
+  const handleLocationSelected = (selectedLocationData) => {
+    setFormData((prev) => ({
+      ...prev,
+      eventLocation: selectedLocationData.id,
+      eventLocationName: selectedLocationData.location,
+    }));
+    setShowLocationModal(false);
+  };
+
   const isStep1Valid = () => {
-    return formData.eventDate !== '' && formData.eventLocation !== '';
+    return formData.eventDate !== '' && formData.eventLocation !== null;
   };
 
-  // Moves to the next step of the multi-step form.
   const goNext = () => {
-    // Validate Step 1 before proceeding.
     if (step === 1 && !isStep1Valid()) {
       alert('Please fill in both Event Date and Event Location to proceed.');
       return;
@@ -121,21 +121,18 @@ export default function App() {
     }
   };
 
-  // Moves to the previous step of the multi-step form.
   const goBack = () => {
     if (step > 1) {
       setStep((prev) => prev - 1);
     }
   };
 
-  // Allows skipping Step 2 (Couple's Names).
   const goSkip = () => {
     if (step === 2) {
       setStep((prev) => prev + 1);
     }
   };
 
-  // Handles the final submission of the form data to the backend API.
   const handleSubmit = async () => {
     const accessToken = session?.accessToken;
 
@@ -144,30 +141,25 @@ export default function App() {
       return;
     }
 
-    // Prepare data for API: send null for empty date/location.
     const eventDateToSend = formData.eventDate === '' ? null : formData.eventDate;
-    const eventLocationToSend = formData.eventLocation === '' ? null : formData.eventLocation;
+    const eventLocationToSend = formData.eventLocation;
 
     const dataToSend = {
       event_date: eventDateToSend,
-      event_location: eventLocationToSend, // Send the numerical ID.
+      event_location: eventLocationToSend,
       groom_name: formData.groomName,
       bride_name: formData.brideName,
     };
     try {
-      // Make the PUT request to update the customer profile.
       const response = await api.put('/customer-profile/update/', dataToSend, {
         headers: {
-          'Authorization': `Bearer ${accessToken}`, // Include the access token for authentication.
+          'Authorization': `Bearer ${accessToken}`,
         },
       });
 
       console.log('Form Submitted Successfully!', response.data);
       alert('Form submitted successfully!');
-      
-      // Force a session refresh to get the updated profile data
       await update();
-
       reset();
     } catch (error) {
       console.error('API Error:', error.response?.data || error.message);
@@ -176,18 +168,17 @@ export default function App() {
     }
   };
 
-  // Resets the form to its initial state.
   const reset = () => {
     setStep(1);
     setFormData({
       eventDate: '',
-      eventLocation: '',
+      eventLocation: null,
+      eventLocationName: '',
       groomName: '',
       brideName: '',
     });
   };
 
-  // Renders the content for each step of the multi-step form.
   const renderStepContent = (current) => {
     switch (current) {
       case 1:
@@ -211,20 +202,32 @@ export default function App() {
               <label htmlFor="eventLocation" className="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">
                 Event Location:
               </label>
-              <select
-                id="eventLocation"
-                name="eventLocation"
-                value={formData.eventLocation}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#E91E63] focus:border-[#E91E63] dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200"
-              >
-                <option value="">Select a location</option>
-                {LOCATION_OPTIONS.map((option) => (
-                  <option key={option.id} value={option.id}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-2">
+                <span className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#E91E63] focus:border-[#E91E63] dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 text-left">
+                  {formData.eventLocationName || 'Select a location'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowLocationModal(true)}
+                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-[#E91E63] rounded-md dark:text-[#E91E63] dark:hover:bg-neutral-700 focus:outline-none"
+                  title="Change Location"
+                >
+                  <svg
+                    className="size-4 mr-1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
+                    <circle cx="12" cy="9" r="3"></circle>
+                  </svg>
+                  <u>Change</u>
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -263,12 +266,6 @@ export default function App() {
           </div>
         );
       case 3:
-        // For preview, map the numerical ID back to the human-readable name for display.
-        const selectedLocation = LOCATION_OPTIONS.find(
-          (option) => option.id === formData.eventLocation
-        );
-        const displayLocation = selectedLocation ? selectedLocation.name : 'Not provided';
-
         return (
           <div className="flex flex-col space-y-4 w-full max-w-md mx-auto p-4 text-gray-800 dark:text-neutral-200">
             <h3 className="text-lg font-semibold mb-2">Preview Your Details</h3>
@@ -277,7 +274,7 @@ export default function App() {
                 <strong className="text-[#E91E63]">Event Date:</strong> {formData.eventDate || 'Not provided'}
               </p>
               <p className="mb-2">
-                <strong className="text-[#E91E63]">Event Location:</strong> {displayLocation}
+                <strong className="text-[#E91E63]">Event Location:</strong> {formData.eventLocationName || 'Not provided'}
               </p>
               <p className="mb-2">
                 <strong className="text-[#E91E63]">Groom's Name:</strong> {formData.groomName || 'Not provided'}
@@ -293,20 +290,11 @@ export default function App() {
     }
   };
 
-  // Main render logic:
   return (
     <div className="min-h-screen flex items-center justify-center p-6 bg-gray-100/70 dark:bg-neutral-800/70 backdrop-blur-sm">
-      {/* Main content that will be visible when the modal is closed */}
-      
-
-      
-
-      {/* Render the modal overlay and content if `showModal` is true */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-          {/* Modal Content container, preserving existing form styles. */}
           <div className="w-full max-w-2xl mx-auto bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-6 relative">
-            {/* Stepper Navigation */}
             <ul className="relative flex flex-row gap-x-2 mb-8">
               {[1, 2, 3].map((index) => (
                 <li
@@ -354,15 +342,11 @@ export default function App() {
                 </li>
               ))}
             </ul>
-            {/* Stepper Content Area */}
             <div className="mt-5 sm:mt-8">
               <div className="p-4 h-auto min-h-48 bg-gray-50 dark:bg-neutral-800 flex justify-center items-center border border-dashed border-gray-200 dark:border-neutral-700 rounded-xl">
                 {renderStepContent(step)}
               </div>
-
-              {/* Action Buttons (Back, Skip, Next, Submit, Reset) */}
               <div className="mt-5 flex justify-between items-center gap-x-2">
-                {/* Back button - hidden on step 1 */}
                 {step > 1 && (
                   <button
                     type="button"
@@ -384,12 +368,8 @@ export default function App() {
                     Back
                   </button>
                 )}
-
-                {/* Spacer to align buttons when 'Back' is hidden */}
                 {step === 1 && <div className="w-1/4" />}
-
                 <div className="flex items-center gap-x-2">
-                  {/* Skip button - visible only on Step 2 */}
                   {step === 2 && (
                     <button
                       type="button"
@@ -411,17 +391,14 @@ export default function App() {
                       </svg>
                     </button>
                   )}
-
-                  {/* Next button - visible on steps before the last step (1 and 2) */}
                   {step < totalSteps && (
                     <button
                       type="button"
                       onClick={goNext}
-                      // Disable next button on step 1 if validation fails
                       disabled={step === 1 && !isStep1Valid()}
                       className={`py-2 px-3 inline-flex items-center gap-x-1 text-sm font-medium rounded-lg border border-transparent
-                                    ${step === 1 && !isStep1Valid() ? 'bg-[#E91E63] opacity-60 cursor-not-allowed' : 'bg-[#E91E63] hover:bg-[#C2185B]'}
-                                    text-white transition-colors duration-200`}
+                                  ${step === 1 && !isStep1Valid() ? 'bg-[#E91E63] opacity-60 cursor-not-allowed' : 'bg-[#E91E63] hover:bg-[#C2185B]'}
+                                  text-white transition-colors duration-200`}
                     >
                       Next
                       <svg
@@ -438,8 +415,6 @@ export default function App() {
                       </svg>
                     </button>
                   )}
-
-                  {/* Submit button - visible only on the last step (Step 3) */}
                   {step === totalSteps && (
                     <button
                       type="button"
@@ -449,8 +424,6 @@ export default function App() {
                       Submit
                     </button>
                   )}
-
-                  {/* Reset button - visible only on the last step (Step 3) */}
                   {step === totalSteps && (
                     <button
                       type="button"
@@ -466,6 +439,13 @@ export default function App() {
           </div>
         </div>
       )}
+      <LocationSelector
+        isOpen={showLocationModal}
+        onClose={() => setShowLocationModal(false)}
+        onSave={handleLocationSelected}
+      />
     </div>
   );
-}
+};
+
+export default EventForm;

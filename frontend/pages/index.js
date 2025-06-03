@@ -10,7 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect, useRef, useCallback } from 'react'; // Added useCallback
 import axios from 'axios';
-
+import EventForm from '@/components/EventForm'; 
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -346,9 +346,6 @@ const [categories, setCategories] = useState([]);
           }
 
         } else {
-
-          // If no desktop category selected yet, default to first
-
           if (hoveredCategoryId === null && clickedCategoryId === null) {
 
             setHoveredCategoryId(categories[0].id);
@@ -669,7 +666,7 @@ const [categories, setCategories] = useState([]);
         {/* <!-- End Search --> */}
 
         {/* <!-- Widgets --> */}
-        { user ? (
+        {status === "authenticated" && user ? (
           <>
 <div className="order-2 md:order-3 ms-auto lg:ms-0">
           <div className="flex justify-end items-center gap-x-2">
@@ -1506,12 +1503,21 @@ const [categories, setCategories] = useState([]);
   {/* <!-- ========== END HEADER ========== --> */}
 
   {/* <!-- ========== MAIN CONTENT ========== --> */}
-  <main id="content">
-    
-
-    
+  <main id="content">  
+     {status === "authenticated" && session?.user?.customer_profile?.event_date === null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with blur effect - MODIFIED OPAQUE CLASS HERE */}
+          <div className="absolute inset-0 bg-opacity-0 backdrop-blur-sm"></div> 
+          
+          {/* EventForm on top */}
+          <div className="relative z-10 w-full max-w-lg md:max-w-xl lg:max-w-2xl">
+            <EventForm /> 
+          </div>
+        </div>
+      )}
 <div className="py-10 w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
 {/* <!-- Stats Grid --> */}
+ 
   {status === "authenticated" && user &&(
   <>
 <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-2">
@@ -3679,6 +3685,7 @@ const [categories, setCategories] = useState([]);
 
       </div>
     </div>
+    
     {/* <!-- End Explore Interests --> */}
   </main>
   {/* <!-- ========== END MAIN CONTENT ========== --> */}
