@@ -23,7 +23,12 @@ const HeroCarousel = () => {
     setIsLoading(true);
     console.log(api_url+"/api/v1/hero-sections/")
     axios
-      .get(api_url+"/api/v1/hero-sections/")
+      axios
+      .get(`${api_url}/api/v1/hero-sections/`, {
+        headers: {
+          ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
+        },
+      })
       .then((response) => {
         // Ensure you're getting an array, default to empty array if not
         setHeroSections(response.data?.results || response.data || []);
