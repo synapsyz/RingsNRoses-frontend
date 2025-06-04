@@ -11,6 +11,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
+import HeroCarousel from "@/components/HeroCarousel"; // adjust path as needed
+
 
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
@@ -21,18 +23,7 @@ const getApiUrl = () => {
 const api_url = getApiUrl();
 
 
-const HeroCarousel = dynamic(() => import('@/components/HeroCarousel'), {
-  ssr: true,
-  loading: () => <div className="min-h-60 flex flex-col bg-white border border-gray-200 shadow-2xs rounded-xl dark:bg-neutral-800 dark:border-neutral-700 dark:shadow-neutral-700/70">
-  <div className="flex flex-auto flex-col justify-center items-center p-4 md:p-5">
-    <div className="flex justify-center">
-      <div className="animate-spin inline-block size-6 border-3 border-current border-t-transparent text-blue-600 rounded-full dark:text-blue-500" role="status" aria-label="loading">
-        <span className="sr-only">Loading...</span>
-      </div>
-    </div>
-  </div>
-</div>,
-});
+
 
 const api = axios.create({
   baseURL: `${api_url}/api/v1`,
@@ -99,15 +90,6 @@ function TabsSync() {
 export default function Home() {
 
     const router = useRouter();
-  const [componentKey, setComponentKey] = useState(0);
-
-  // Every time the route changes, re-render the carousel
-  useEffect(() => {
-    const handleRouteChange = () => setComponentKey(prev => prev + 1);
-
-    router.events.on('routeChangeComplete', handleRouteChange);
-    return () => router.events.off('routeChangeComplete', handleRouteChange);
-  }, [router.events]);
 
   const { data: session, status } = useSession();
   const user = session?.user;
@@ -1619,7 +1601,7 @@ const [categories, setCategories] = useState([]);
 
     
     {/* <!-- Slider --> */}
-<HeroCarousel key={componentKey} />
+<HeroCarousel />
     {/* <!-- End Slider --> */}
 </div>
 
