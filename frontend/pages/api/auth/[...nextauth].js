@@ -1,8 +1,7 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-let api_url;
-let isNgrok = true;
+const isNgrok = true;
 
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -10,7 +9,38 @@ const getApiUrl = () => {
     : process.env.NEXT_PUBLIC_HOST;
 };
 
-api_url = getApiUrl();
+const api_url = getApiUrl();
+
+async function refreshAccessToken(refreshToken, user_type) {
+  try {
+    const endpoint =
+      user_type === "vendor"
+        ? `${api_url}/api/v1/vendor/token/refresh/`
+        : `${api_url}/api/v1/customer/token/refresh/`;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+      },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data?.detail || "Failed to refresh token");
+
+    return {
+      accessToken: data.access,
+      refreshToken: data.refresh || refreshToken,
+      accessTokenExpires: Date.now() + 15 * 60 * 1000,
+    };
+  } catch (error) {
+    console.error("Token refresh error:", error);
+    return null;
+  }
+}
 
 export const authOptions = {
   providers: [
@@ -33,18 +63,27 @@ export const authOptions = {
           throw new Error("Invalid user type. Must be customer or vendor.");
         }
 
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
-          },
-          body: JSON.stringify({ email, password }),
-        });
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+            },
+            body: JSON.stringify({ email, password }),
+          });
 
-        const data = await res.json();
+          const data = await res.json();
 
-        if (res.ok && data.access) {
+          if (!res.ok || !data.access) {
+            throw new Error(
+              data.detail ||
+              data.non_field_errors?.[0] ||
+              data.message ||
+              "Login failed. Please check your credentials."
+            );
+          }
+
           return {
             id: data.user_id || email,
             name: data.name || email,
@@ -53,15 +92,12 @@ export const authOptions = {
             accessToken: data.access,
             refreshToken: data.refresh,
             full_user: data.user || {},
+            accessTokenExpires: Date.now() + 15 * 60 * 1000,
           };
+        } catch (err) {
+          console.error("Authorize error:", err);
+          throw new Error("Login failed. Try again later.");
         }
-
-        throw new Error(
-          data.detail ||
-          data.non_field_errors?.[0] ||
-          data.message ||
-          "Login failed. Please check your credentials."
-        );
       },
     }),
   ],
@@ -74,12 +110,28 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
+      // On first login
       if (user) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.user_type = user.user_type;
         token.user = user.full_user || {};
+        token.accessTokenExpires = user.accessTokenExpires;
       }
+
+      // Token expired
+      if (Date.now() > token.accessTokenExpires) {
+        const refreshed = await refreshAccessToken(token.refreshToken, token.user_type);
+
+        if (refreshed) {
+          token.accessToken = refreshed.accessToken;
+          token.refreshToken = refreshed.refreshToken;
+          token.accessTokenExpires = refreshed.accessTokenExpires;
+        } else {
+          console.warn("Refresh token failed. Forcing logout.");
+        }
+      }
+
       return token;
     },
 

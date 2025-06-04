@@ -5,6 +5,9 @@ import Link from "next/link";
 import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import { useRouter } from "next/navigation";
+import { signIn, useSession } from "next-auth/react";
+
+
 let api_url;
 let isNgrok
 isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -24,6 +27,7 @@ const api = axios.create({
                    }
 });
 export default function Signup() {
+    const { data: session, status } = useSession();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const router = useRouter();
@@ -36,40 +40,54 @@ export default function Signup() {
     });
 
 
-    const handleSignup = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
+    useEffect(() => {
+          if (status === "authenticated") {
+            router.push("/"); // Change this to your desired page
+          }
+        }, [status, router]);
 
-        try {
-            const payload = {
+
+
+
+const handleSignup = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+
+  try {
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+      name: formData.name,
+      phone: getFullPhoneNumber(),
+      business_name: formData.business_name,
+
+    };
+
+    const res = await api.post("/signup/vendor/", payload, {
+      headers: {
+        ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+      },
+    });
+
+    console.log("Vendor signup success:", res.data);
+
+    const loginRes = await signIn("credentials", {
                 email: formData.email,
                 password: formData.password,
                 name: formData.name,
-                business_name: formData.business_name,
                 phone: getFullPhoneNumber(),
+                user_type: "vendor",
+    });
 
-
-            };
-           const res = await api.post(
-               "/signup/vendor/",
-               payload,
-               {
-                headers: {
-                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
-                   }
-               }
-           );
-
-            const { access, refresh, email, user_id } = res.data;
-            sessionStorage.setItem("accessToken", access);
-            sessionStorage.setItem("refreshToken", refresh);
-            sessionStorage.setItem("user_email", email);
-            sessionStorage.setItem("user_id", user_id);
-
-            router.push("/dashboard"); // Use Next.js router for navigation
-        } catch (err) {
-            console.error("Signup error:", err.response?.data || err.message);
+    if (res.ok) {
+      router.push("/dashboard"); // Or vendor dashboard: /vendor/dashboard
+    } else {
+      setError("Login failed after vendor signup.");
+    }
+  } catch (err) {
+    console.error("Vendor signup error:", err);
+    console.error("Signup error:", err.response?.data || err.message);
 
             let errorKey = Object.keys(err.response?.data)
             let errorValue = Object.values(err.response?.data)
@@ -84,10 +102,13 @@ export default function Signup() {
             }
             // Display a more user-friendly error message
             setError(err.response?.data?.detail || err.response?.data?.message || "Signup failed. Please check your inputs.");
-        } finally {
-            setLoading(false);
-        }
-    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
     // const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);

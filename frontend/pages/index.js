@@ -81,9 +81,44 @@ function TabsSync() {
   return null; // This component only applies side effects
 }
 export default function Home() {
+
   const { data: session, status } = useSession();
   const user = session?.user;
-  const [timeLeft, setTimeLeft] = useState({
+
+  console.log(session);
+  console.log(user);
+
+useEffect(() => {
+  if (status !== "authenticated") return;
+
+  const eventDate = session?.user?.customer_profile?.event_date;
+  if (!eventDate) return;
+
+  const target = new Date(eventDate).getTime();
+
+  const interval = setInterval(() => {
+    const now = new Date().getTime();
+    const distance = target - now;
+
+    if (distance < 0) {
+      clearInterval(interval);
+      return;
+    }
+
+    setTimeLeft({
+      days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((distance % (1000 * 60)) / 1000),
+    });
+  }, 1000);
+
+  return () => clearInterval(interval);
+}, [session, status]);
+
+  
+  console.log(user);
+    const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
     minutes: 0,
@@ -98,7 +133,7 @@ export default function Home() {
   }
 
   // Parse the date from session (assuming format like "2025-06-28T00:00:00")
-  const targetDate = new Date(session.user.customer_profile.event_date).getTime();
+  const targetDate = new Date(session.user?.customer_profile?.event_date).getTime();
 
   // Handle invalid dates
   if (isNaN(targetDate)) {
@@ -426,7 +461,7 @@ const [categories, setCategories] = useState([]);
   <li className="inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
     <button type="button" className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-overlay="#hs-pro-shmnrsm">
       <img className="shrink-0 size-3.5 rounded-full" src="./assets/vendor/svg-country-flags/png250px/in.png" alt="English"/>
-      Chennai
+      Chennai 
     </button>
   </li> 
 
@@ -741,6 +776,7 @@ const [categories, setCategories] = useState([]);
                       </span>
                     </button>
                     {/* <!-- End Cart Button Icon --> */}
+          
           
                     {/* <!-- Account Button Icon --> */}
                     <div className="hs-dropdown [--auto-close:inside] [--placement:bottom-right] relative inline-flex">
@@ -1484,12 +1520,12 @@ const [categories, setCategories] = useState([]);
 
       <div className="flex-1 flex flex-col gap-2">
 <div className="flex items-center gap-2">
-  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user.customer_profile.groom_name}</h2>
+  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user?.customer_profile?.groom_name}</h2>
   <h2 className="text-lg font-bold text-gray-800 dark:text-white">&</h2>
-<h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user.customer_profile.bride_name}</h2>
+<h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user?.customer_profile?.bride_name}</h2>
 </div>
 <p className="text-l text-gray-500 dark:text-neutral-300">
-  {new Date(session.user.customer_profile.event_date).toLocaleDateString('en-GB', {
+  {new Date(session.user?.customer_profile?.event_date).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
