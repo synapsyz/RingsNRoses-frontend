@@ -12,13 +12,38 @@ export default function ProductDetail() {
   const [expanded1, setExpandedfacilities] = useState(false);
   const [loading, setLoading] = useState(false);
   const [venueData, setVenueData] = useState(null); // To store API response
+  const [showContent, setShowContent] = useState(false);
+const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    // Load saved theme from localStorage
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+      setIsDark(true)
+    }
+  }, [])
+
+  const toggleTheme = () => {
+    const html = document.documentElement
+    if (html.classList.contains('dark')) {
+      html.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
+      setIsDark(false)
+    } else {
+      html.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
+      setIsDark(true)
+    }
+  }
 
   useEffect(() => {
     // Fetch data on component mount
     axios
-      .get("https://run.mocky.io/v3/6fb8d53d-7003-420c-9f4e-cbefce4189db")
+      .get("https://run.mocky.io/v3/7b1a178e-ec64-4dbf-a414-9273d44d4cc6")
       .then((res) => {
         setVenueData(res.data);
+        setShowContent(true);
         // text =venueData.about
         setLoading(false);
       })
@@ -183,6 +208,7 @@ export default function ProductDetail() {
 
 
   return (
+
     <div>
 
       {/* <!-- JS PLUGINS --> */}
@@ -262,6 +288,8 @@ export default function ProductDetail() {
           `,
         }}
       /> */}
+{showContent ? (
+
       <div className="dark:bg-neutral-900">
         {/* <!-- ========== HEADER ========== -->  */}
         <header className="flex flex-col lg:flex-nowrap z-50 bg-white dark:bg-neutral-900"></header>
@@ -292,7 +320,7 @@ export default function ProductDetail() {
                 </a>
               </li>
               <li className="hidden sm:inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
-                <button type="button" className="hs-dark-mode-active:hidden flex hs-dark-mode items-center gap-x-1.5 text-sm text-gray-500 hover:text-gray-500 focus:outline-hidden focus:text-gray-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-theme-click-value="dark">
+                {/* <button type="button" className="hs-dark-mode-active:hidden flex hs-dark-mode items-center gap-x-1.5 text-sm text-gray-500 hover:text-gray-500 focus:outline-hidden focus:text-gray-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-theme-click-value="dark">
                   <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
                   </svg>
@@ -311,8 +339,24 @@ export default function ProductDetail() {
                     <path d="m19.07 4.93-1.41 1.41"></path>
                   </svg>
                   <span className="sr-only">Light mode</span>
-                </button>
-
+                </button> */}
+    <button
+      onClick={toggleTheme}
+      className="flex items-center gap-x-1.5 text-sm text-gray-500 dark:text-neutral-200 hover:text-gray-700 dark:hover:text-neutral-400"
+    >
+      {isDark ? (
+         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" />
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+        </svg>
+        
+      ) : (
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+        </svg>
+      )}
+      <span className="sr-only">Toggle Theme</span>
+    </button>
               </li>
             </ul>
           </div>
@@ -690,7 +734,7 @@ export default function ProductDetail() {
                             </div>
                           </div>
                           {/* {/* <!-- End Grid -->  */}
-                          {/* {/* <!-- End Tab -->  */}
+                          {/* {/* <!-- End Tab -->  */} 
 
                           {/* {/* <!-- Tab -->  */}
                           {/* {/* <!-- Grid -->  */}
@@ -1348,7 +1392,7 @@ export default function ProductDetail() {
                     </svg>
                   </li>
                   <li className="ps-1.5 flex items-center truncate font-semibold text-gray-800 dark:text-neutral-200 text-sm truncate">
-                    <span className="truncate">VM Garden Mahal</span>
+                    <span className="truncate">{venueData?.name}</span>
                   </li>
                 </ol>
                 {/* <!-- End Breadcrumb --> */}
@@ -1499,7 +1543,7 @@ export default function ProductDetail() {
                           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"></path>
                           <path d="m9 12 2 2 4-4"></path>
                         </svg>
-                        <p className="text-xs text-gray-500 dark:text-neutral-500">
+                        <p className="text-xs text-gray-500 dark:text-neutral-400">
                           All reviews are from verified profiles
                         </p>
                       </div>
@@ -1537,7 +1581,7 @@ export default function ProductDetail() {
                                 Ramaswami
                               </h6>
 
-                              <p className="text-[13px] text-gray-500 dark:text-neutral-500">
+                              <p className="text-[13px] text-gray-500 dark:text-neutral-400">
                                 13 hours ago
                               </p>
                             </div>
@@ -1572,8 +1616,10 @@ export default function ProductDetail() {
                               <img className="shrink-0 size-20 bg-gray-100 rounded-lg dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRt1tsb2kodof5S_jy2VXzcMdt7VRcdJ7ffaQ&s" alt="Review Image" />
                             </div>
 
-                            <p className="mt-3 text-sm text-gray-800 dark:text-neutral-200" />
-                            We recently rented VM Grand Mahal for a family function, and I must say, it exceeded all our expectations. The hall is spacious, well-maintained, and beautifully designed, making it ideal for large gatherings. The air conditioning was perfect, and the lighting setup added a great ambiance to the event.                    </div>
+                            <p className="mt-3 text-sm text-gray-800 dark:text-neutral-200">
+                              We recently rented VM Grand Mahal for a family function, and I must say, it exceeded all our expectations. The hall is spacious, well-maintained, and beautifully designed, making it ideal for large gatherings. The air conditioning was perfect, and the lighting setup added a great ambiance to the event.
+                            </p>
+                          </div>
                         </div>
                         {/* <!-- End Review --> */}
 
@@ -1585,7 +1631,7 @@ export default function ProductDetail() {
                                 Sam
                               </h6>
 
-                              <p className="text-[13px] text-gray-500 dark:text-neutral-500">
+                              <p className="text-[13px] text-gray-500 dark:text-neutral-400">
                                 5 days ago
                               </p>
                             </div>
@@ -1620,7 +1666,8 @@ export default function ProductDetail() {
                             </div>
 
                             <p className="mt-3 text-sm text-gray-800 dark:text-neutral-200">
-                              The management was extremely cooperative and professional throughout the booking process and on the event day. They provided all the necessary support – from stage setup to cleanliness and parking arrangements. Our guests were very impressed with the overall atmosphere and convenience.                      </p>
+                              The management was extremely cooperative and professional throughout the booking process and on the event day. They provided all the necessary support – from stage setup to cleanliness and parking arrangements. Our guests were very impressed with the overall atmosphere and convenience.                    
+                              </p>
                           </div>
                         </div>
                         {/* <!-- End Review --> */}
@@ -1940,16 +1987,17 @@ export default function ProductDetail() {
 
                     {/* <!-- Collapse --> */}
                     <div className="mt-10">
-                      <h2 className="text-xl font-semibold mb-4">Services Offered</h2>
-                      <p className="text-gray-700 leading-relaxed">
+                      <h2 className="text-xl font-semibold text-sm text-gray-800 dark:text-neutral-200 mb-4">Services Offered</h2>
+                      {/* <p className="text-gray-700 leading-relaxed">
+                       */}<p className="mt-3 text-sm text-gray-800 dark:text-neutral-200">
                         VM Grand Mahal is a beautifull area to host all your functions, from pre-wedding ceremonies. The abundance of establishments  offered by them  is mentioned below:
                       </p>
 
                       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 sm:gap-x-10 lg:gap-y-12 lg:gap-x-16">
                         {/* <!-- Icon Block --> */}
                         {venueData?.services?.map((feature, index) => (
-                          <div key={index} className="flex gap-3">
-                            <img src={feature?.icon} alt={feature?.label} className="w-5 h-5" />
+                          <div key={index} className="flex gap-3 text-gray-800 dark:text-neutral-200">
+                            <img src={feature?.iconDark} alt={feature?.label} className="w-5 h-5 filter dark:invert" />
                             <span>{feature?.label}</span>
 
                           </div>
@@ -1958,10 +2006,10 @@ export default function ProductDetail() {
                       </div>
 
 
-                      <div className="max-w-4xl mx-auto">
+                      <div className="max-w-4xl mx-auto text-gray-800 dark:text-neutral-200">
                         <h2 className="text-2xl font-bold mb-2">About</h2>
 
-                        <div className="flex items-center text-sm text-gray-500 mb-4 space-x-2">
+                        <div className="flex items-center text-sm text-gray-400 mb-4 space-x-2">
                           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 3a.75.75 0 00-.75.75v.75H8a2 2 0 00-2 2v1.5a2 2 0 002 2h8a2 2 0 002-2V7.5a2 2 0 00-2-2h-1V3.75a.75.75 0 00-.75-.75h-5.5zM6 11.25v6.5A3.25 3.25 0 009.25 21h5.5A3.25 3.25 0 0018 17.75v-6.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75z" />
                           </svg>
@@ -1975,7 +2023,7 @@ export default function ProductDetail() {
                  */}
                         <div>
                           <p
-                            className={`text-gray-700 leading-relaxed ${!expanded ? "line-clamp-2" : ""
+                            className={`text-gray-800 dark:text-neutral-200 leading-relaxed ${!expanded ? "line-clamp-2" : ""
                               }`}
                           >
                             {venueData?.about}
@@ -2006,7 +2054,7 @@ export default function ProductDetail() {
                         <div className="mt-10">
                           <h2 className="text-xl font-semibold mb-4">Facilities and Capacity</h2>
                           {facilityText.map((facilityText, idx) => (
-                            <p key={idx} className={`text-gray-700 leading-relaxed mb-2 ${expanded1 ? '' : 'line-clamp-1'} transition-all`}>
+                            <p key={idx} className={`text-gray-800 dark:text-neutral-200 leading-relaxed mb-2 ${expanded1 ? '' : 'line-clamp-1'} transition-all`}>
                               {facilityText}
                             </p>
                           ))}
@@ -2120,7 +2168,12 @@ export default function ProductDetail() {
 
                       {/* <!-- Badge Group --> */}
                       <div className="mt-2 flex items-center gap-2 mb-4">
-                        <img src="https://cdn-icons-png.flaticon.com/128/684/684809.png" alt="Location Icon" className="w-5 h-5 mr-2 text-gray-500" />
+                        {/* <img src="https://cdn-icons-png.flaticon.com/128/684/684809.png" alt="Location Icon" className="w-5 h-5 mr-2 text-gray-500"/> */}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-gray-800 dark:text-neutral-200">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+
+                        </svg>
                         <a href="#" className="text-blue-600 hover:underline">{venueData?.location?.address},<br />{venueData?.location?.city}</a>
                       </div>
                       {/* <!-- End Badge Group --> */}
@@ -2187,7 +2240,11 @@ export default function ProductDetail() {
                     has-disabled:after:bg-[linear-gradient(to_right_bottom,transparent_calc(50%-1px),var(--color-gray-200)_calc(50%-1px),var(--color-gray-200)_50%,transparent_50%)]
                     dark:has-disabled:after:bg-[linear-gradient(to_right_bottom,transparent_calc(50%-1px),var(--color-neutral-700)_calc(50%-1px),var(--color-neutral-700)_50%,transparent_50%)] ">
                             <input type="radio" id="hs-pro-shmfdsr-pro" className="hidden bg-transparent border-gray-200 text-emerald-600 focus:ring-white focus:ring-offset-0 dark:text-emerald-500 dark:border-neutral-700 dark:focus:ring-neutral-900" name="hs-pro-shmfdsr" />
-                            <img className="shrink-0 size-10 rounded-md" src="https://cdn-icons-png.flaticon.com/128/4812/4812872.png" alt="Product Image" />
+                            {/* <img className="shrink-0 size-10 rounded-md" src="https://cdn-icons-png.flaticon.com/128/4812/4812872.png" alt="Product Image" /> */}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-gray-800 dark:text-neutral-200 ">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
+                            </svg>
+
                             <span className="grow truncate">
                               <span className="block font-semibold truncate">
                                 Early Booking Discount
@@ -2217,7 +2274,7 @@ export default function ProductDetail() {
                                   <span className="font-semibold text-3xl text-gray-800 dark:text-neutral-200">
                                     ₹135000 <span className="text-xl">INR</span>
                                   </span>
-                                  <span className="text-gray-500 dark:text-neutral-500">
+                                  <span className="text-gray-500 dark:text-neutral-400">
                                     <s>₹150000</s>
                                   </span>
                                 </div>
@@ -2249,7 +2306,7 @@ export default function ProductDetail() {
                                   <div className="absolute inset-y-0 start-0 flex items-center ps-2.5">
                                     <span className="text-l text-gray-800 dark:text-neutral-200">Date:</span>
                                   </div>
-
+                                 
                                   <input
                                     type="date"
                                     style={{ 'width': '215px !important' }}
@@ -2269,8 +2326,10 @@ export default function ProductDetail() {
 
                                 {/* <!-- Buy now button (25%) --> */}
                                 <button type="button" className="w-1/4 py-2.5 px-4 inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-emerald-600 text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-emerald-50 dark:border-emerald-500 dark:text-emerald-500 dark:hover:bg-emerald-950 dark:focus:bg-emerald-950">
-                                  <img className="shrink-0 size-6 rounded-md" src="https://cdn-icons-png.flaticon.com/128/126/126509.png" alt="Product Image" />
-
+                                
+                                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6 text-gray-800 dark:text-neutral-200">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 3.75v4.5m0-4.5h-4.5m4.5 0-6 6m3 12c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 0 0-.38 1.21 12.035 12.035 0 0 0 7.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 0 1 1.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 0 1-2.25 2.25h-2.25Z" />
+                                  </svg>
                                 </button>
                               </div>
 
@@ -2280,9 +2339,20 @@ export default function ProductDetail() {
                             {/* <!-- Card List --> */}
                             <div className="p-5 divide-y divide-gray-200 dark:divide-neutral-700">
                               {/* <!-- Card List Item --> */}
-                              <div className="py-4 first:pt-0 last:pb-0 flex gap-x-3">
-                                <img className="shrink-0 size-6 rounded-md" src="https://cdn-icons-png.flaticon.com/128/857/857681.png" alt="Product Image" />
-
+                              <div className="py-4 first:pt-0 last:pb-0 flex gap-x-3 ">
+                                {/* <img className="shrink-0 size-6 rounded-md" src="https://cdn-icons-png.flaticon.com/128/857/857681.png" alt="Product Image" /> */}
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  height="24px"
+                                  viewBox="0 -960 960 960"
+                                  width="24px"
+                                  className="text-gray-800 dark:text-neutral-200"
+                                >
+                                  <path
+                                    fill="currentColor"
+                                    d="M280-80v-366q-51-14-85.5-56T160-600v-280h80v280h40v-280h80v280h40v-280h80v280q0 56-34.5 98T360-446v366h-80Zm400 0v-320H560v-280q0-83 58.5-141.5T760-880v800h-80Z"
+                                  />
+                                </svg>
 
                                 <div className="grow">
                                   <h2 className="font-medium text-l text-gray-800 dark:text-neutral-200">
@@ -2293,12 +2363,13 @@ export default function ProductDetail() {
                                   <div className="mt-1.5 flex flex-col gap-y-0.5">
                                     {/* <!-- Item --> */}
                                     <div className="flex items-center gap-x-1">
-                                      <span className="text-sm text-gray-500 dark:text-neutral-500">
+                                      <span className="text-sm text-gray-500 dark:text-neutral-400">
                                         Types:
                                       </span>
                                       <div>
                                         {venueData?.is_veg_available&& venueData?.is_non_veg_available && (
                                         <button type="button" className="flex items-center gap-x-1 text-start font-medium text-sm text-emerald-600 underline-offset-4 hover:underline focus:outline-hidden focus:underline dark:text-neutral-200 dark:hover:text-neutral-300 dark:focus:text-neutral-300">
+                                          
                                           Veg & Non-veg
                                         </button>
                                         )}
@@ -2328,8 +2399,11 @@ export default function ProductDetail() {
 
                               {/* <!-- Card List Item --> */}
                               <div className="py-4 first:pt-0 last:pb-0 flex gap-x-3">
-                                <img className="shrink-0 size-6 rounded-md" src="https://cdn-icons-png.flaticon.com/128/14772/14772872.png" alt="Product Image" />
+                                {/* <img className="shrink-0 size-6 rounded-md" src="https://cdn-icons-png.flaticon.com/128/14772/14772872.png" alt="Product Image" /> */}
 
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-12 text-gray-800 dark:text-neutral-200 ">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+</svg>
 
                                 <div className="grow">
                                   <h2 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2337,7 +2411,7 @@ export default function ProductDetail() {
                                   </h2>
 
                                   <div className="mt-1.5">
-                                    <p className="text-sm text-gray-500 dark:text-neutral-500">
+                                    <p className="text-sm text-gray-800 dark:text-neutral-200">
                                       The VM Grand Hall can accommodate anywhere from 20 to 1,000 guests, making it perfect for both intimate gatherings and grand celebrations.
                                     </p>
                                   </div>
@@ -2347,8 +2421,17 @@ export default function ProductDetail() {
 
                               {/* <!-- Card List Item --> */}
                               <div className="py-4 first:pt-0 last:pb-0 flex gap-x-3">
-                                <img className="shrink-0 size-6 rounded-md" src="https://cdn-icons-png.flaticon.com/128/15817/15817392.png" alt="Product Image" />
-
+                                {/* <img className="shrink-0 size-6 rounded-md" src="https://cdn-icons-png.flaticon.com/128/15817/15817392.png" alt="Product Image" /> */}
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  height="24px"
+                                  viewBox="0 -960 960 960"
+                                  width="24px"
+                                  className="text-gray-800 dark:text-neutral-200"
+                                  fill="currentColor"
+                                >
+                                  <path d="M560-564v-68q33-14 67.5-21t72.5-7q26 0 51 4t49 10v64q-24-9-48.5-13.5T700-600q-38 0-73 9.5T560-564Zm0 220v-68q33-14 67.5-21t72.5-7q26 0 51 4t49 10v64q-24-9-48.5-13.5T700-380q-38 0-73 9t-67 27Zm0-110v-68q33-14 67.5-21t72.5-7q26 0 51 4t49 10v64q-24-9-48.5-13.5T700-490q-38 0-73 9.5T560-454ZM260-320q47 0 91.5 10.5T440-278v-394q-41-24-87-36t-93-12q-36 0-71.5 7T120-692v396q35-12 69.5-18t70.5-6Zm260 42q44-21 88.5-31.5T700-320q36 0 70.5 6t69.5 18v-396q-33-14-68.5-21t-71.5-7q-47 0-93 12t-87 36v394Zm-40 118q-48-38-104-59t-116-21q-42 0-82.5 11T100-198q-21 11-40.5-1T40-234v-482q0-11 5.5-21T62-752q46-24 96-36t102-12q58 0 113.5 15T480-740q51-30 106.5-45T700-800q52 0 102 12t96 36q11 5 16.5 15t5.5 21v482q0 23-19.5 35t-40.5 1q-37-20-77.5-31T700-240q-60 0-116 21t-104 59ZM280-494Z" />
+                                </svg>
 
                                 <div className="grow">
                                   <h2 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
@@ -2589,10 +2672,10 @@ export default function ProductDetail() {
                       <span className="font-semibold text-emerald-600 dark:text-emerald-500">
                         ₹90000 <span className="text-sm">INR</span>
                       </span>
-                      <span className="text-sm text-gray-500 dark:text-neutral-500">
+                      <span className="text-sm text-gray-500 dark:text-neutral-400">
                         <s>₹100000</s>
                       </span>
-                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
+                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-400 flex items-center gap-x-1">
                         300-450
                         <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                           <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
@@ -2676,10 +2759,10 @@ export default function ProductDetail() {
                       <span className="font-semibold text-emerald-600 dark:text-emerald-500">
                         ₹150000 <span className="text-sm">INR</span>
                       </span>
-                      <span className="text-sm text-gray-500 dark:text-neutral-500">
+                      <span className="text-sm text-gray-500 dark:text-neutral-400">
                         <s>₹175000</s>
                       </span>
-                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
+                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-400 flex items-center gap-x-1">
                         100-150
                         <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                           <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
@@ -2759,7 +2842,7 @@ export default function ProductDetail() {
                       <span className="font-semibold text-emerald-600 dark:text-emerald-500">
                         ₹120000 <span className="text-sm">INR</span>
                       </span>
-                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
+                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-400 flex items-center gap-x-1">
                         400-500
                         <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                           <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
@@ -2839,10 +2922,10 @@ export default function ProductDetail() {
                       <span className="font-semibold text-emerald-600 dark:text-emerald-500">
                         ₹200000 <span className="text-sm">INR</span>
                       </span>
-                      <span className="text-sm text-gray-500 dark:text-neutral-500">
+                      <span className="text-sm text-gray-500 dark:text-neutral-400">
                         <s>₹225000</s>
                       </span>
-                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
+                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-400 flex items-center gap-x-1">
                         200-250
                         <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                           <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
@@ -2926,10 +3009,10 @@ export default function ProductDetail() {
                       <span className="font-semibold text-emerald-600 dark:text-emerald-500">
                         ₹90000 <span className="text-sm">INR</span>
                       </span>
-                      <span className="text-sm text-gray-500 dark:text-neutral-500">
+                      <span className="text-sm text-gray-500 dark:text-neutral-400">
                         <s>₹100000</s>
                       </span>
-                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
+                      <span className="ms-auto text-sm text-gray-500 dark:text-neutral-400 flex items-center gap-x-1">
                         600-850
                         <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                           <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
@@ -3083,6 +3166,9 @@ export default function ProductDetail() {
         </div>
         {/* <!-- End Regional Settings Modal --> */}
       </div>
+     ) : (
+        <p>Loading content...</p> // optional loader
+      )}
       {/* <!-- Regional Settings Modal --> */}
       <div
         id="hs-pro-shmnlcm"
@@ -3526,5 +3612,6 @@ export default function ProductDetail() {
       {/* <!-- ========== END SECONDARY CONTENT ========== --> */}
 
     </div>
-  );
+
+                              )
 }
