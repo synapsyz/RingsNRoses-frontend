@@ -22,7 +22,7 @@ const HeroCarousel = () => {
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get(api_url+"/hero-sections/")
+      .get(api_url+"/api/v1/hero-sections/")
       .then((response) => {
         // Ensure you're getting an array, default to empty array if not
         setHeroSections(response.data?.results || response.data || []);
