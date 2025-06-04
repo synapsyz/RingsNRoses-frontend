@@ -7,10 +7,22 @@ const HeroCarousel = () => {
   const [heroSections, setHeroSections] = useState([]);
   const [isLoading, setIsLoading] = useState(true); // Optional: for loading state
 
+  let api_url;
+  let isNgrok
+  isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
+      ? false
+      : true
+  const getApiUrl = () => {
+    return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+      ? process.env.NEXT_PUBLIC_API_LOCALHOST
+      : process.env.NEXT_PUBLIC_HOST;
+  };
+  api_url = getApiUrl()
+
   useEffect(() => {
     setIsLoading(true);
     axios
-      .get("http://127.0.0.1:8000/api/v1/hero-sections/")
+      .get(api_url+"/hero-sections/")
       .then((response) => {
         // Ensure you're getting an array, default to empty array if not
         setHeroSections(response.data?.results || response.data || []);
