@@ -21,6 +21,7 @@ const HeroCarousel = () => {
 
   useEffect(() => {
     setIsLoading(true);
+    console.log(api_url+"/api/v1/hero-sections/")
     axios
       .get(api_url+"/api/v1/hero-sections/")
       .then((response) => {
@@ -39,7 +40,7 @@ const HeroCarousel = () => {
   useEffect(() => {
     const initializePreline = async () => {
       if (typeof window !== "undefined" && heroSections.length > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 50)); // 50-100ms
+        await new Promise((resolve) => setTimeout(resolve, 500)); // 50-100ms
 
         if (window.HSStaticMethods?.autoInit) {
           // console.log("Initializing Preline components via HSStaticMethods.autoInit()");
