@@ -84,6 +84,98 @@ export default function Home() {
 
   const { data: session, status } = useSession();
   const user = session?.user;
+const accessToken = session?.accessToken;
+  const [dataFromLocalStorage, setDataFromLocalStorage] = useState(null);
+  // ... (other state like 'status')
+
+
+  useEffect(() => {
+    const loadData = async () => {
+      let dataToSet = null; // Variable to hold the data that will be set in state
+
+      // 1. Try to load from localStorage
+      const storedEventDataString = localStorage.getItem('eventFormData');
+      console.log("useEffect - storedEventDataString from localStorage:", storedEventDataString);
+
+      if (storedEventDataString) {
+        try {
+          dataToSet = JSON.parse(storedEventDataString);
+          console.log("useEffect - parsedData from localStorage:", dataToSet);
+        } catch (error) {
+          console.error("useEffect - Error parsing eventFormData from localStorage:", error);
+          // dataToSet remains null, will proceed to API call
+        }
+      }
+
+      // 2. If no data from localStorage, try fetching from API
+      if (dataToSet === null) {
+        console.log("useEffect - No valid data in localStorage, attempting to fetch from API.");
+        if (accessToken) { // Only attempt API call if accessToken is available
+          try {
+            // Replace 'apiClient.put' with your actual API call method (e.g., get.put, axios.put)
+            // Define what 'dataToSendForProfileFetch' should be.
+            // If this PUT request is meant to fetch data, its body might be empty or specific.
+            const dataToSendForProfileFetch = {}; // Example: an empty object or specific payload
+
+            console.log("useEffect - Calling API /customer-profile/update/");
+            const response = await await api.put( // Or your `get.put`
+              '/customer-profile/update/',
+              dataToSendForProfileFetch,
+              {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                },
+              }
+            );
+
+            // Assuming the data you want is in response.data
+            dataToSet = response.data;
+            console.log("useEffect - Data fetched from API:", dataToSet);
+
+            // Optionally, save the fetched data back to localStorage for next time
+            if (dataToSet) {
+              localStorage.setItem('eventFormData', JSON.stringify(dataToSet));
+              console.log("useEffect - Fetched data also saved to localStorage.");
+            }
+
+          } catch (apiError) {
+            console.error("useEffect - Error fetching data from API:", apiError);
+            // dataToSet remains null if API call fails
+          }
+        } else {
+          console.log("useEffect - No accessToken available, skipping API call.");
+          // dataToSet remains null
+        }
+      }
+
+      // 3. Update the state with whatever data was resolved (from localStorage, API, or null)
+      setDataFromLocalStorage(dataToSet);
+      // This log will show the state value from the *previous* render, not the 'dataToSet' immediately.
+      // To see the updated state, log 'dataFromLocalStorage' in the component body or another useEffect.
+      console.log("useEffect - dataFromLocalStorage (immediately after setDataFromLocalStorage call):", dataFromLocalStorage);
+    };
+
+    loadData();
+
+    // The setTimeout for auth simulation can remain if it serves another purpose
+    // For instance, if it updates an authentication 'status' which then triggers other UI changes.
+    // It doesn't directly interact with the data loading logic above unless 'status' was a dependency.
+    const authTimer = setTimeout(() => {
+      // Example: setStatus("authenticated");
+      // If this timeout is purely for simulating a delay and does nothing, it can be removed.
+    }, 1000);
+
+    return () => {
+      clearTimeout(authTimer); // Clean up the timer if the component unmounts
+    };
+
+  }, [accessToken, setDataFromLocalStorage]); // Dependency array
+  // - Add accessToken: if the token changes, we might need to re-fetch.
+  // - setDataFromLocalStorage: React guarantees setters from useState are stable,
+  //   but including it satisfies exhaustive-deps lint rule if enabled. It's optional.
+
+  // Log outside useEffect to see the updated state after render
+  console.log("Component Body - dataFromLocalStorage (after render):", dataFromLocalStorage);
 
   console.log(session);
   console.log(user);
@@ -91,7 +183,7 @@ export default function Home() {
 useEffect(() => {
   if (status !== "authenticated") return;
 
-  const eventDate = session?.user?.customer_profile?.event_date;
+  const eventDate = dataFromLocalStorage?.event_date;
   if (!eventDate) return;
 
   const target = new Date(eventDate).getTime();
@@ -127,13 +219,13 @@ useEffect(() => {
   useEffect(() => {
     
   // Check if the date exists in session data
-  if (!session?.user?.customer_profile?.event_date) {
+  if (!dataFromLocalStorage?.event_date) {
     console.error("Event date not found in session");
     return;
   }
 
   // Parse the date from session (assuming format like "2025-06-28T00:00:00")
-  const targetDate = new Date(session.user?.customer_profile?.event_date).getTime();
+  const targetDate = new Date(dataFromLocalStorage?.event_date).getTime();
 
   // Handle invalid dates
   if (isNaN(targetDate)) {
@@ -167,7 +259,7 @@ useEffect(() => {
   updateCountdown(); // Initial run
 
   return () => clearInterval(timerInterval); // Cleanup on unmount
-}, [session?.user?.customer_profile?.event_date]); // Add dependency
+}, [dataFromLocalStorage?.event_date]); // Add dependency
     const handlePrelineLoad = () => {
     const el = document.querySelector('[data-hs-carousel]');
     if (el && window.HSCarousel) {
@@ -195,7 +287,10 @@ const [categories, setCategories] = useState([]);
   const [subcategoriesError, setSubcategoriesError] = useState(null);
 
   const [isMobile, setIsMobile] = useState(false);
+  
 
+  // THIS IS THE CRUCIAL LOG (presumably index.js:88 for you)
+  console.log("dataFromLocalStorage (in component body, AFTER RENDER):",dataFromLocalStorage);
   // Effect to determine mobile view
   useEffect(() => {
     const handleResize = () => {
@@ -368,6 +463,51 @@ const [categories, setCategories] = useState([]);
   }, []); // No dependencies, can be memoized
 
   const IMAGE_SIZE = 100;
+
+  // Assuming 'signOut' is imported or available in your component's scope
+// e.g., import { signOut } from "next-auth/react";
+
+// If you have React state tied to localStorage, ensure you have access to its setter
+// For example, if 'dataFromLocalStorage' and 'setDataFromLocalStorage' are in this component:
+// const [dataFromLocalStorage, setDataFromLocalStorage] = useState(null);
+// Or if it's managed by a context/global state, get the dispatcher/setter.
+
+
+const handleLogoutClick = async () => {
+  console.log("Logout process started...");
+
+  // 1. Clear the specific localStorage item
+  localStorage.removeItem('eventFormData');
+  console.log("'eventFormData' removed from localStorage.");
+
+  // 2. Reset any related React state
+  // If you have a React state variable that was mirroring this localStorage data,
+  // reset it so the UI updates correctly without needing a page reload.
+  // Example:
+  // if (typeof setDataFromLocalStorage === 'function') {
+  //   setDataFromLocalStorage(null);
+  //   console.log("Related React state (dataFromLocalStorage) reset to null.");
+  // }
+  // Also reset any other user-specific state if needed.
+
+  try {
+    // 3. Call the original signOut function from your authentication library
+    // The redirect: false option means the page won't automatically redirect.
+    // The signOut function might update the session state managed by your auth library.
+    await signOut({ redirect: false }); // Using await if signOut returns a Promise
+    console.log("Authentication signOut successful (no redirect).");
+
+    // At this point, the auth library (e.g., NextAuth.js) should have updated its
+    // session status. Your UI should react to this change (e.g., show login screen).
+    // If you need to manually update a local 'isAuthenticated' flag that isn't
+    // automatically handled by your auth library's hooks (like useSession), do it here.
+    // e.g., setLocalAuthStatus(false);
+
+  } catch (error) {
+    console.error("Error during sign out process:", error);
+    // Handle any errors from the signOut operation itself
+  }
+};
 
   const SubcategoryItem = ({ subcategory, onClick }) => (
     <Link
@@ -838,7 +978,7 @@ const [categories, setCategories] = useState([]);
           
                           <p>
                             <button type="button" 
-                            onClick={() => signOut({ redirect: false })}
+                            onClick={handleLogoutClick}
                             className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 hover:text-red-500 focus:outline-hidden focus:bg-gray-100 focus:text-red-500 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:hover:text-red-500 dark:focus:text-red-500">
                               <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -1403,108 +1543,11 @@ const [categories, setCategories] = useState([]);
       </div>
     
 </div> 
-    {/* <!-- <div className="max-w-[85rem] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-1">
-      <div className="relative flex basis-full items-center gap-x-1">
-        <div className="flex flex-row items-center gap-x-1 overflow-x-auto [&::-webkit-scrollbar]:h-0">
-          <div className="hs-dropdown [--strategy:absolute] [--adaptive:none] [--auto-close:inside] md:[--trigger:hover] md:inline-block group">
-            <button id="hs-pro-shmnpgdm" type="button" className="hs-dropdown-toggle relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 group-hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition dark:text-neutral-200 dark:hover:bg-neutral-700 dark:group-hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
-                <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
-                <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
-              </svg>
-              Pages
-              <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-
-            <div className="hs-dropdown-menu hs-dropdown-open:opacity-100 w-56 transition-[opacity,margin] duration opacity-0 hidden z-10 bg-white rounded-xl shadow-lg before:absolute before:-top-4 before:start-0 before:w-full before:h-5 dark:bg-neutral-950" role="menu" aria-orientation="vertical" aria-labelledby="hs-pro-shmnpgdm">
-              <div className="p-1 space-y-0.5">
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 bg-gray-100 dark:bg-neutral-800" href="./index.html">
-                  Home
-                </a>
-
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 " href="./listing.html">
-                  Listing
-                </a>
-
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 " href="./categories.html">
-                  Categories
-                </a>
-
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 " href="./product-detail">
-                  Product Detail
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" x2="5" y1="5" y2="19" />
-              <circle cx="6.5" cy="6.5" r="2.5" />
-              <circle cx="17.5" cy="17.5" r="2.5" />
-            </svg>
-            Sales
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7 10v12" />
-              <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
-            </svg>
-            Best Sellers
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 16h6" />
-              <path d="M19 13v6" />
-              <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" />
-              <path d="m7.5 4.27 9 5.15" />
-              <polyline points="3.29 7 12 12 20.71 7" />
-              <line x1="12" x2="12" y1="22" y2="12" />
-            </svg>
-            New Arrivals
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
-              <path d="M8 11h8" />
-              <path d="M8 7h6" />
-            </svg>
-            Books
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" />
-            </svg>
-            Clothing
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="8" width="18" height="4" rx="1" />
-              <path d="M12 8v13" />
-              <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
-              <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" />
-            </svg>
-            Gift Cards
-          </a>
-        </div>
- 
-      </div>
-    </div>
-  </header>
-  End Nav --> */}
   {/* <!-- ========== END HEADER ========== --> */}
 
   {/* <!-- ========== MAIN CONTENT ========== --> */}
-  <main id="content">  
-     {status === "authenticated" && session?.user?.customer_profile?.event_date === null && (
+  <main id="content"> 
+     {status === "authenticated" && dataFromLocalStorage && dataFromLocalStorage?.event_date == null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop with blur effect - MODIFIED OPAQUE CLASS HERE */}
           <div className="absolute inset-0 bg-opacity-0 backdrop-blur-sm"></div> 
@@ -1526,12 +1569,12 @@ const [categories, setCategories] = useState([]);
 
       <div className="flex-1 flex flex-col gap-2">
 <div className="flex items-center gap-2">
-  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user?.customer_profile?.groom_name}</h2>
+  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{dataFromLocalStorage?.groom_name}</h2>
   <h2 className="text-lg font-bold text-gray-800 dark:text-white">&</h2>
-<h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user?.customer_profile?.bride_name}</h2>
+<h2 className="text-lg font-bold text-gray-800 dark:text-white">{dataFromLocalStorage?.bride_name}</h2>
 </div>
 <p className="text-l text-gray-500 dark:text-neutral-300">
-  {new Date(session.user?.customer_profile?.event_date).toLocaleDateString('en-GB', {
+  {new Date(dataFromLocalStorage?.event_date).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

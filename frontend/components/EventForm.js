@@ -1,26 +1,28 @@
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react'; 
+import { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import axios from 'axios';
-import LocationSelector from '@/components/LocationSelector'; 
+import LocationSelector from '@/components/LocationSelector';
 
+// ... (isNgrok, getApiUrl, api_url, api constants remain the same) ...
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? process.env.NEXT_PUBLIC_API_LOCALHOST 
-    : process.env.NEXT_PUBLIC_HOST; 
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
 };
 
 const api_url = getApiUrl();
 const api = axios.create({
-  baseURL: `${api_url}/api/v1`, 
+  baseURL: `${api_url}/api/v1`,
   headers: {
     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
   },
 });
 
+
 const EventForm = () => {
-  const { data: session, status, update } = useSession();
+  const { data: session, status, update } = useSession(); // Session still used for auth in handleSubmit
 
   const [step, setStep] = useState(1);
   const totalSteps = 3;
@@ -33,11 +35,11 @@ const EventForm = () => {
     brideName: '',
   });
 
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // Default to false, useEffect will decide
   const [showLocationModal, setShowLocationModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // For initial local storage check
 
-  const fetchLocationNameById = async (locationId) => {
+  const fetchLocationNameById = useCallback(async (locationId) => {
     if (!locationId) return;
     try {
       const response = await api.get(`/locations/${locationId}/`);
@@ -45,6 +47,11 @@ const EventForm = () => {
         setFormData((prev) => ({
           ...prev,
           eventLocationName: response.data.name,
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          eventLocationName: 'Location name not found',
         }));
       }
     } catch (error) {
@@ -54,64 +61,86 @@ const EventForm = () => {
         eventLocationName: 'Unknown Location',
       }));
     }
-  };
+  }, []); // api is stable
 
   useEffect(() => {
-    if (status !== 'loading') {
-      setIsLoading(false);
-      if (session && session.user && session.user.customer_profile) {
-        const customerProfile = session.user.customer_profile;
-        if (customerProfile.event_date === null) {
-          setShowModal(true);
-          setFormData({
-            eventDate: customerProfile.event_date || '',
-            eventLocation: customerProfile.event_location || null,
-            eventLocationName: '',
-            groomName: customerProfile.groom_name || '',
-            brideName: customerProfile.bride_name || '',
-          });
-          if (customerProfile.event_location) {
-            fetchLocationNameById(customerProfile.event_location);
-          }
-        } else {
-          setShowModal(false);
-          setFormData({
-            eventDate: customerProfile.event_date || '',
-            eventLocation: customerProfile.event_location || null,
-            eventLocationName: '',
-            groomName: customerProfile.groom_name || '',
-            brideName: customerProfile.bride_name || '',
-          });
-          if (customerProfile.event_location) {
-            fetchLocationNameById(customerProfile.event_location);
-          }
-        }
-      } else {
-        setShowModal(false);
-        console.warn("Session user data or customer profile is not fully available or user is not logged in.");
-      }
-    }
-  }, [session, status]);
+    // This effect primarily drives modal visibility based on local storage
+    setIsLoading(true);
+    let dataFromLocalStorage = null;
+    let sourceDebugInfo = "initial state";
 
-  const handleChange = (e) => {
+    try {
+      const storedEventDataString = localStorage.getItem('eventFormData');
+      if (storedEventDataString) {
+        dataFromLocalStorage = JSON.parse(storedEventDataString);
+      }
+    } catch (error) {
+      console.error("Error reading or parsing eventFormData from local storage:", error);
+      dataFromLocalStorage = null; // Treat as no data in case of error
+    }
+
+    // Check if local storage contains the necessary 'clauses' (event_date and event_location)
+    if (dataFromLocalStorage && dataFromLocalStorage.event_date && dataFromLocalStorage.event_location) {
+      setFormData({
+        eventDate: dataFromLocalStorage.event_date || '',
+        eventLocation: dataFromLocalStorage.event_location || null,
+        eventLocationName: '', // Will be fetched by fetchLocationNameById
+        groomName: dataFromLocalStorage.groom_name || '',
+        brideName: dataFromLocalStorage.bride_name || '',
+      });
+      setShowModal(false); // Data found, hide modal
+      sourceDebugInfo = "local storage (complete)";
+      if (dataFromLocalStorage.event_location) {
+        fetchLocationNameById(dataFromLocalStorage.event_location);
+      }
+    } else {
+      // Required data not in local storage or incomplete, show modal
+      // Initialize form to empty for the modal, or prefill if partial data exists
+      const initialEmptyData = {
+        eventDate: '', eventLocation: null, eventLocationName: '', groomName: '', brideName: '',
+      };
+      if(dataFromLocalStorage){ // If some data existed but was incomplete
+        setFormData({
+            eventDate: dataFromLocalStorage.event_date || '',
+            eventLocation: dataFromLocalStorage.event_location || null,
+            eventLocationName: '',
+            groomName: dataFromLocalStorage.groom_name || '',
+            brideName: dataFromLocalStorage.bride_name || '',
+        });
+        sourceDebugInfo = "local storage (incomplete, showing modal)";
+      } else {
+        setFormData(initialEmptyData);
+        sourceDebugInfo = "no local storage data, showing modal";
+      }
+      setShowModal(true);
+    }
+    console.log(`EventForm initialized. Modal decision source: ${sourceDebugInfo}`);
+    setIsLoading(false);
+  }, [fetchLocationNameById]); // Runs on mount and if fetchLocationNameById changes (which is stable)
+
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleLocationSelected = (selectedLocationData) => {
+  const handleLocationSelected = useCallback((selectedLocationData) => {
     setFormData((prev) => ({
       ...prev,
       eventLocation: selectedLocationData.id,
       eventLocationName: selectedLocationData.location,
     }));
     setShowLocationModal(false);
-  };
+  }, []);
 
-  const isStep1Valid = () => {
+  const closeLocationModal = useCallback(() => {
+    setShowLocationModal(false);
+  }, []);
+
+  const isStep1Valid = useCallback(() => {
     return formData.eventDate !== '' && formData.eventLocation !== null;
-  };
+  }, [formData.eventDate, formData.eventLocation]);
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     if (step === 1 && !isStep1Valid()) {
       alert('Please fill in both Event Date and Event Location to proceed.');
       return;
@@ -119,21 +148,35 @@ const EventForm = () => {
     if (step < totalSteps) {
       setStep((prev) => prev + 1);
     }
-  };
+  }, [step, isStep1Valid]);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     if (step > 1) {
       setStep((prev) => prev - 1);
     }
-  };
+  }, [step]);
 
-  const goSkip = () => {
+  const goSkip = useCallback(() => {
     if (step === 2) {
       setStep((prev) => prev + 1);
     }
-  };
+  }, [step]);
 
-  const handleSubmit = async () => {
+  const reset = useCallback(() => {
+    setStep(1);
+    setFormData({
+      eventDate: '',
+      eventLocation: null,
+      eventLocationName: '',
+      groomName: '',
+      brideName: '',
+    });
+    // setShowModal(true); // Let the main useEffect or handleSubmit control this.
+                        // If reset is from modal, modal should stay open.
+  }, []);
+
+
+  const handleSubmit = useCallback(async () => {
     const accessToken = session?.accessToken;
 
     if (!accessToken) {
@@ -147,9 +190,10 @@ const EventForm = () => {
     const dataToSend = {
       event_date: eventDateToSend,
       event_location: eventLocationToSend,
-      groom_name: formData.groomName,
-      bride_name: formData.brideName,
+      groom_name: formData.groomName.trim() || null,
+      bride_name: formData.brideName.trim() || null,
     };
+
     try {
       const response = await api.put('/customer-profile/update/', dataToSend, {
         headers: {
@@ -159,28 +203,32 @@ const EventForm = () => {
 
       console.log('Form Submitted Successfully!', response.data);
       alert('Form submitted successfully!');
-      await update();
-      reset();
-    } catch (error) {
-      console.error('API Error:', error.response?.data || error.message);
-      alert(`Form submission failed: ${JSON.stringify(error.response?.data || error.message)}`);
-      return;
-    }
-  };
 
-  const reset = () => {
-    setStep(1);
-    setFormData({
-      eventDate: '',
-      eventLocation: null,
-      eventLocationName: '',
-      groomName: '',
-      brideName: '',
-    });
-  };
+      try {
+        localStorage.setItem('eventFormData', JSON.stringify(dataToSend));
+        console.log('Form data saved to local storage:', dataToSend);
+        // After successful save to LS, the condition to show modal is no longer met
+        setShowModal(false); // Explicitly hide modal
+      } catch (storageError) {
+        console.error('Failed to save form data to local storage:', storageError);
+        // Decide if modal should stay open or if API success is enough to hide it
+      }
+
+      await update(); // Refresh session data (next-auth)
+      reset(); // Reset form fields
+      console.log('Reloading the page...');
+      window.location.reload();
+
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Unknown error';
+      console.error('API Error:', error.response?.data || errorMessage);
+      alert(`Form submission failed: ${typeof errorMessage === 'object' ? JSON.stringify(errorMessage) : errorMessage}`);
+    }
+  }, [session, formData, update, reset, setShowModal]); // Added setShowModal to dependencies
 
   const renderStepContent = (current) => {
-    switch (current) {
+    // ... (renderStepContent remains the same)
+          switch (current) {
       case 1:
         return (
           <div className="flex flex-col space-y-4 w-full max-w-md mx-auto p-4">
@@ -290,11 +338,23 @@ const EventForm = () => {
     }
   };
 
+  // Initial loading state for local storage check
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6 dark:bg-neutral-800/70 backdrop-blur-sm">
+        <p className="text-lg text-gray-800 dark:text-neutral-200">Loading event information...</p>
+      </div>
+    );
+  }
+
+  // Main component render
   return (
     <div className="min-h-screen flex items-center justify-center p-6  dark:bg-neutral-800/70 backdrop-blur-sm">
       {showModal && (
+        // ... (Modal JSX remains the same)
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="w-full max-w-2xl mx-auto bg-white dark:bg-neutral-900 rounded-xl shadow-lg p-6 relative">
+            {/* Stepper */}
             <ul className="relative flex flex-row gap-x-2 mb-8">
               {[1, 2, 3].map((index) => (
                 <li
@@ -342,10 +402,12 @@ const EventForm = () => {
                 </li>
               ))}
             </ul>
+            {/* Content */}
             <div className="mt-5 sm:mt-8">
               <div className="p-4 h-auto min-h-48 bg-gray-50 dark:bg-neutral-800 flex justify-center items-center border border-dashed border-gray-200 dark:border-neutral-700 rounded-xl">
                 {renderStepContent(step)}
               </div>
+              {/* Buttons */}
               <div className="mt-5 flex justify-between items-center gap-x-2">
                 {step > 1 && (
                   <button
@@ -368,7 +430,8 @@ const EventForm = () => {
                     Back
                   </button>
                 )}
-                {step === 1 && <div className="w-1/4" />}
+                {step === 1 && <div style={{ minWidth: '70px' }} />} {/* Placeholder for alignment when Back is not visible, adjust width as needed */}
+
                 <div className="flex items-center gap-x-2">
                   {step === 2 && (
                     <button
@@ -430,7 +493,7 @@ const EventForm = () => {
                       onClick={reset}
                       className="py-2 px-3 inline-flex items-center gap-x-1 text-sm font-medium rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition-colors duration-200"
                     >
-                      Reset
+                      Reset Form
                     </button>
                   )}
                 </div>
@@ -441,7 +504,7 @@ const EventForm = () => {
       )}
       <LocationSelector
         isOpen={showLocationModal}
-        onClose={() => setShowLocationModal(false)}
+        onClose={closeLocationModal}
         onSave={handleLocationSelected}
       />
     </div>
