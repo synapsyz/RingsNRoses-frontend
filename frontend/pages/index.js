@@ -9,9 +9,13 @@ import Image from 'next/image';
 import Link from 'next/link';
 import React, { useState, useEffect, useRef, useCallback } from 'react'; 
 import axios from 'axios';
+
+import EventForm from '@/components/EventForm'; 
+
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import HeroCarousel from "@/components/HeroCarousel"; // adjust path as needed
+
 
 
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -93,7 +97,7 @@ export default function Home() {
 
   const { data: session, status } = useSession();
   const user = session?.user;
-
+const [selectedCategoryId, setSelectedCategoryId] = useState(1);
   console.log(session);
   console.log(user);
 
@@ -355,9 +359,6 @@ const [categories, setCategories] = useState([]);
           }
 
         } else {
-
-          // If no desktop category selected yet, default to first
-
           if (hoveredCategoryId === null && clickedCategoryId === null) {
 
             setHoveredCategoryId(categories[0].id);
@@ -408,7 +409,27 @@ const [categories, setCategories] = useState([]);
       <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
     </Link>
   );
+useEffect(() => {
+  const themeButtons = document.querySelectorAll('[data-hs-theme-click-value]');
+  themeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mode = btn.getAttribute('data-hs-theme-click-value');
+      if (mode === 'dark') {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  });
 
+  // Initialize theme on load
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.classList.add('dark');
+  }
+}, []);
   return (
         
       
@@ -442,21 +463,7 @@ const [categories, setCategories] = useState([]);
         `}</style>
 
         {/* Theme Script */}
-        <Script id="theme-toggle" strategy="beforeInteractive">
-          {`
-            const html = document.querySelector('html');
-            const isLightOrAuto = localStorage.getItem('hs_theme') === 'light' ||
-              (localStorage.getItem('hs_theme') === 'auto' &&
-              !window.matchMedia('(prefers-color-scheme: dark)').matches);
-            const isDarkOrAuto = localStorage.getItem('hs_theme') === 'dark' ||
-              (localStorage.getItem('hs_theme') === 'auto' &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (isLightOrAuto && html.classList.contains('dark')) html.classList.remove('dark');
-            else if (isDarkOrAuto && html.classList.contains('light')) html.classList.remove('light');
-            else if (isDarkOrAuto && !html.classList.contains('dark')) html.classList.add('dark');
-            else if (isLightOrAuto && !html.classList.contains('light')) html.classList.add('light');
-          `}
-        </Script>
+        
 
       <div className="dark:bg-neutral-900">
         <header className="flex flex-col lg:flex-nowrap z-50 bg-white dark:bg-neutral-900"></header>
@@ -469,7 +476,7 @@ const [categories, setCategories] = useState([]);
 <ul className="flex flex-wrap items-center gap-3">
   <li className="inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
     <button type="button" className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-overlay="#hs-pro-shmnrsm">
-      <img className="shrink-0 size-3.5 rounded-full" src="./assets/vendor/svg-country-flags/png250px/in.png" alt="English"/>
+      <img className="shrink-0 size-3.5 rounded-full" src="in.png" alt="English"/>
       Chennai 
     </button>
   </li> 
@@ -678,7 +685,7 @@ const [categories, setCategories] = useState([]);
         {/* <!-- End Search --> */}
 
         {/* <!-- Widgets --> */}
-        { status === "authenticated" && user ? (
+        {status === "authenticated" && user ? (
           <>
 <div className="order-2 md:order-3 ms-auto lg:ms-0">
           <div className="flex justify-end items-center gap-x-2">
@@ -1515,12 +1522,21 @@ const [categories, setCategories] = useState([]);
   {/* <!-- ========== END HEADER ========== --> */}
 
   {/* <!-- ========== MAIN CONTENT ========== --> */}
-  <main id="content">
-    
-
-    
+  <main id="content">  
+     {status === "authenticated" && session?.user?.customer_profile?.event_date === null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with blur effect - MODIFIED OPAQUE CLASS HERE */}
+          <div className="absolute inset-0 bg-opacity-0 backdrop-blur-sm"></div> 
+          
+          {/* EventForm on top */}
+          <div className="relative z-10 w-full max-w-lg md:max-w-xl lg:max-w-2xl">
+            <EventForm /> 
+          </div>
+        </div>
+      )}
 <div className="py-10 w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
 {/* <!-- Stats Grid --> */}
+ 
   {status === "authenticated" && user &&(
   <>
 <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-2">
@@ -1610,7 +1626,7 @@ const [categories, setCategories] = useState([]);
       {/* <!-- Grid --> */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="/Listing">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://cdn-blog.superprof.com/blog_in/wp-content/uploads/2020/01/in-photo-photo-1.jpg" alt="Product Image"/>
           </div>
@@ -1963,67 +1979,34 @@ const [categories, setCategories] = useState([]);
       </div>
       {/* <!-- End Header --> */}
 
-      <div className="mb-3">
-        {/* <!-- List --> */}
-        <div className="relative flex flex-1 items-center overflow-hidden">
-          <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
-            <button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/11881/11881148.png" alt="Venue" className="shrink-0 size-3.5"/>
-  Venue
-</button>
+     <div className="mb-3">
+    {/* List */}
+    <div className="relative flex flex-1 items-center overflow-hidden">
+      <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              className={`py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full 
+  ${selectedCategoryId === category.id 
+    ? 'bg-[#E91E63] text-white' 
+    : 'bg-white text-gray-500 dark:bg-neutral-900 dark:text-neutral-400'} 
+  border border-gray-200 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 
+  dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600`}
 
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/4514/4514714.png" alt="Bride & Groom Essentials" className="shrink-0 size-3.5"/>
-  Bride &amp; Groom Essentials
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/17845/17845750.png" alt="Catering & Food" className="shrink-0 size-3.5"/>
-  Catering &amp; Food
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/6016/6016756.png" alt="Decor & Setup" className="shrink-0 size-3.5"/>
-  Decor &amp; Setup
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/1773/1773609.png" alt="Entertainment" className="shrink-0 size-3.5"/>
-  Entertainment
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/3249/3249934.png" alt="Photography & Videography" className="shrink-0 size-3.5"/>
-  Photography &amp; Videography
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/6002/6002697.png" alt="Invitations & Stationery" className="shrink-0 size-3.5"/>
-  Invitations &amp; Stationery
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/11622/11622740.png" alt="Gifts & Return Favors" className="shrink-0 size-3.5"/>
-  Gifts &amp; Return Favors
-</button>
-
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/3163/3163173.png" alt="Makeup & Styling" className="shrink-0 size-3.5"/>
-  Makeup &amp; Styling
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/515/515034.png" alt="Rentals" className="shrink-0 size-3.5"/>
-  Rentals
-</button>
-
-          </div>
-
-          <div className="absolute top-0 end-0 h-full w-12 pointer-events-none bg-linear-to-l from-white via-white/90 to-transparent dark:from-neutral-900 dark:via-neutral-900/95"></div>
-        </div>
-        {/* <!-- End List --> */}
+              onClick={() => setSelectedCategoryId(category.id)} // Update selected category on click
+            >
+              {category.name}
+            </button>
+          ))
+        ) : (
+          <div className="text-sm text-gray-500">No categories found.</div>
+        )}
       </div>
+    </div>
+    {/* End List */}
+  </div>
 
       {/* <!-- Grid --> */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-y-10 gap-x-4">
@@ -3558,6 +3541,7 @@ const [categories, setCategories] = useState([]);
 
       </div>
     </div>
+    
     {/* <!-- End Explore Interests --> */}
   </main>
   {/* <!-- ========== END MAIN CONTENT ========== --> */}
