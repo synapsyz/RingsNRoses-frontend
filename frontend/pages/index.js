@@ -678,7 +678,7 @@ const [categories, setCategories] = useState([]);
         {/* <!-- End Search --> */}
 
         {/* <!-- Widgets --> */}
-        { status === "authenticated" && user ? (
+        { user ? (
           <>
 <div className="order-2 md:order-3 ms-auto lg:ms-0">
           <div className="flex justify-end items-center gap-x-2">

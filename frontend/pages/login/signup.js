@@ -459,75 +459,69 @@ export default function Signup() {
         return selectedPhoneCountryCode.code + phoneNumber;
     };
 
+    // Main signup submission handler
+    const handleSignup = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
-const handleSignup = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError(null);
+    try {
+        const payload = {
+            email: formData.email,
+            password: formData.password,
+            name: formData.name,
+            phone: getFullPhoneNumber(), 
+        };
+        const res = await api.post("/signup/customer/", payload, {
+            headers: {
+                ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+            }
+        });
 
-  try {
-    const payload = {
-      email: formData.email,
-      password: formData.password,
-      name: formData.name,
-      phone: getFullPhoneNumber(),
-    };
+        const { access, refresh, user } = res.data;
+        const { email, id: user_id } = user;
 
-    const res = await api.post("/signup/customer/", payload, {
-      headers: {
-        ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
-      },
-    });
+        console.log("Signup response:", res.data);
 
-    console.log("Signup success:", res.data);
+        sessionStorage.setItem("accessToken", access);
+        sessionStorage.setItem("refreshToken", refresh);
+        sessionStorage.setItem("user", JSON.stringify(user));
+        sessionStorage.setItem("user_email", email);
+        sessionStorage.setItem("user_id", user_id);
 
-    // ✅ Immediately log them in using next-auth
-    const loginRes = await signIn("credentials", {
-      redirect: false,
-      email: formData.email,
-      password: formData.password,
-      user_type: "customer", // or "vendor" based on form
-    });
+        router.push("/");
+    } catch (err) {
+        const errorData = err?.response?.data;
 
-    if (loginRes.ok) {
-      router.push("/"); // Redirect to home or dashboard
-    } else {
-      setError("Login failed after signup.");
+        if (errorData && typeof errorData === 'object') {
+            const errorKeys = Object.keys(errorData);
+            const errorValues = Object.values(errorData);
+
+            if (errorKeys.includes('email')) {
+                const index = errorKeys.indexOf('email');
+                setemailError(errorValues[index]?.[0] || 'Invalid email');
+            }
+
+            if (errorKeys.includes('phone')) {
+                const index = errorKeys.indexOf('phone');
+                setphoneError(errorValues[index]?.[0] || 'Invalid phone');
+            }
+
+            setError(
+                errorData?.detail ||
+                errorData?.message ||
+                'Signup failed. Please check your inputs.'
+            );
+            console.error("Signup error:", errorData);
+        } else {
+            console.error("Unexpected error:", err);
+            setError("An unexpected error occurred. Please try again.");
+        }
+    } finally {
+        setLoading(false);
     }
-  } catch (err) {
-    console.error("Signup error:", err);
-    setError("Signup failed. Please try again.");
-      const errorData = err?.response?.data;
-
-  if (errorData && typeof errorData === 'object') {
-    const errorKeys = Object.keys(errorData);
-    const errorValues = Object.values(errorData);
-
-    if (errorKeys.includes('email')) {
-      const index = errorKeys.indexOf('email');
-      setemailError(errorValues[index]?.[0] || 'Invalid email');
-    }
-
-    if (errorKeys.includes('phone')) {
-      const index = errorKeys.indexOf('phone');
-      setphoneError(errorValues[index]?.[0] || 'Invalid phone');
-    }
-
-    setError(
-      errorData?.detail ||
-      errorData?.message ||
-      'Signup failed. Please check your inputs.'
-    );
-    console.error("Signup error:", errorData);
-  } else {
-    // fallback for unexpected error structure
-    console.error("Unexpected error:", err);
-    setError("An unexpected error occurred. Please try again.");
-  }
-  } finally {
-    setLoading(false);
-  }
 };
+
 
     const customStyles = {
         control: (provided) => ({
