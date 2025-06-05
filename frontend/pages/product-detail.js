@@ -6,22 +6,77 @@ import debounce from 'lodash/debounce';
 import axios from "axios";
 import { createContext, useContext, useEffect, useState } from 'react';
 import FavoriteButton from "@/components/FavoriteButton";
+import { useSession } from 'next-auth/react'; // Import useSession
+// const { data: session, status } = useSession();
+const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 
+// Get the base API URL based on the environment
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST // e.g., 'http://127.0.0.1:8000'
+    : process.env.NEXT_PUBLIC_HOST; // e.g., 'https://your-production-api.com'
+};
+
+const api_url = getApiUrl();
+const api = axios.create({
+    baseURL: api_url+"/api/v1", // Adjust this to your backend API base URL
+},
+               {
+                  headers: {
+                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+                   }
+               });
 export default function ProductDetail() {
+  const { data: session, status } = useSession();
+  const [error, setError] = useState(null);
   const [expanded, setExpanded] = useState(false);
   const [expanded1, setExpandedfacilities] = useState(false);
   const [loading, setLoading] = useState(false);
   const [venueData, setVenueData] = useState(null); // To store API response
   const [showContent, setShowContent] = useState(false);
-const [isDark, setIsDark] = useState(false)
-const [isFavorite, setIsFavorite] = useState(false);
-  const handleFavoriteToggle = (newValue) => {
+  const [isDark, setIsDark] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false);
+  const handleFavoriteToggle = async (newValue) => {
+
+    console.log(newValue)
+    try {
+      const accessToken = session?.accessToken;
+
+      if (!accessToken) {
+        alert('Authentication token is missing. Please log in.');
+        return;
+      }
+      if (newValue) {
+        await api.delete('/favorites/', {
+          // uid,
+          // token,
+          accessToken,
+          "content_type": "venue",
+          "object_id": 7
+        });
+      }
+      else {
+        await api.post('/favorites/', {
+          // uid,
+          // token,
+          accessToken,
+          "content_type": "venue",
+          "object_id": 7
+        });
+      }
+     
+
+
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.detail || 'Something went wrong.');
+    }
     console.log("Now favorite:", newValue);
     // Optionally update backend or state here
   };
-const toggleFavorite = () => {
-  setIsFavorite(prev => !prev);
-};
+  const toggleFavorite = () => {
+    setIsFavorite(prev => !prev);
+  };
   useEffect(() => {
     // Load saved theme from localStorage
     const savedTheme = localStorage.getItem('theme')
@@ -46,6 +101,7 @@ const toggleFavorite = () => {
 
   useEffect(() => {
     // Fetch data on component mount
+    // api.get(`//`)
     axios
       .get("https://run.mocky.io/v3/7b1a178e-ec64-4dbf-a414-9273d44d4cc6")
       .then((res) => {
@@ -53,7 +109,7 @@ const toggleFavorite = () => {
         setShowContent(true);
         // text =venueData.about
         setLoading(false);
-      })
+      }) 
       .catch((err) => {
         console.error("API error:", err);
 
@@ -2287,7 +2343,7 @@ const toggleFavorite = () => {
                                 </div>
 
                                   <div>
-<FavoriteButton initialFavorite={false} onToggle={handleFavoriteToggle} />
+                                    <FavoriteButton initialFavorite={false} onToggle={handleFavoriteToggle} />
 
 
 
