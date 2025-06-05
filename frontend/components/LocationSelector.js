@@ -384,7 +384,7 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
     </button>
     <button
       type="button"
-      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+      className="px-4 py-2 text-sm font-medium text-white bg-[#E91E63] rounded hover:bg-[#E91E63]"
       onClick={() => {
         if (onSave) {
           onSave({
