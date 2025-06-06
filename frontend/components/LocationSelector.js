@@ -72,11 +72,11 @@ const LocationSelector = ({ isOpen, onClose, onSave, onChange }) => {
 
     const getUserLocation = async () => {
       try {
-        const res = await fetch('https://ipinfo.io/json');
-        const data = await res.json();
-        const countryCode = data.country || 'IN';
-        const region = data.region;
-        const city = data.city;
+        // const res = await fetch('https://ipinfo.io/json');
+        // const data = await res.json();
+        const countryCode =  'IN';
+        const region = "Telangana";
+        const city = 'Hyderabad';
 
         // Set the country based on detected location, then fetch states
         const initialCountry = countries.find(
