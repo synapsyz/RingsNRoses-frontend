@@ -251,7 +251,7 @@ const EventForm = () => {
                 Event Location:
               </label>
               <div className="flex items-center gap-2">
-                <span className="block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#E91E63] focus:border-[#E91E63] dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 text-left">
+                <span className="block w-full p-2  focus:ring-[#E91E63] focus:border-[#E91E63] dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-200 text-left">
                   {formData.eventLocationName || 'Select a location'}
                 </span>
                 <button

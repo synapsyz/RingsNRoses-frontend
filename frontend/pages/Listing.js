@@ -7,6 +7,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import Image from 'next/image';
 import CategoryItemCard from '@/components/CategoryItemCard';
+ import InfiniteScroll from 'react-infinite-scroll-component';
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -22,6 +23,8 @@ const api = axios.create({
 });
 
 export default function Listing() {
+  const [hasMore, setHasMore] = useState(true);
+  const [nextPageUrl, setNextPageUrl] = useState(null);
      const sliderRef = useRef(null);
      const [categoryItems, setCategoryItems] = useState([]);
      const [categoryItemsCache, setCategoryItemsCache] = useState({});
@@ -35,12 +38,17 @@ const [categories, setCategories] = useState([]);
   const headerContainerRef = useRef(null);
   const mobileDropdownRef = useRef(null); // Ref for the custom mobile dropdown
 const [selectedCategoryId, setSelectedCategoryId] = useState(1); // State to track selected category
+const [categoryName, setCategoryName] = useState('Venues');
  const [subcategoriesMap, setSubcategoriesMap] = useState({});
   const [hoveredCategoryId, setHoveredCategoryId] = useState(null);
   const [clickedCategoryId, setClickedCategoryId] = useState(null);
   const [mobileSelectedCategoryId, setMobileSelectedCategoryId] = useState(null);
   const [mobileSelectedCategoryName, setMobileSelectedCategoryName] = useState('Select a category'); // For custom dropdown display
   const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false); // State for custom dropdown
+const [subcategoryItemsMap, setSubcategoryItemsMap] = useState({});
+  const [selectedCapacity, setSelectedCapacity] = useState(null);
+const [isInfiniteScrollActive, setIsInfiniteScrollActive] = useState(false);
+
 
    // New state for caching subcategories
 
@@ -54,13 +62,42 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1); // State to tra
 const mobileSidebarRef = useRef(null);
   const [isOn, setIsOn] = useState(false); // Manage the toggle's state
 const [selectedFilters, setSelectedFilters] = useState([]);
-
+const[isShowItems, setIsShowItems]=useState(false);
   const handleToggle = () => {
     setIsOn(!isOn);
     // You would typically perform an action here, e.g., filter products by deals
     console.log('Deal toggle is now:', !isOn);
   };
-  
+  const capacities = [
+    { id: "0-100", label: "0-100", min: 0, max: 100 },
+    { id: "100-300", label: "100-300", min: 100, max: 300 },
+    { id: "500-1000", label: "500-1000", min: 500, max: 1000 },
+    { id: "above-1000", label: "Above 1000", min: 1000, max: 99999 },
+  ];
+  // Inside your Listing component
+const fetchMoreData = () => {
+  if (!nextPageUrl && categoryItems.length > 0 && hasMore === true) {
+    setHasMore(false);
+    return;
+  }
+
+  const urlToFetch = nextPageUrl || `/categories/${categoryName.toLowerCase().replace(/\s+/g, '_')}/`;
+
+  api.get(urlToFetch)
+    .then((response) => {
+      const newItems = response.data.results;
+      setCategoryItems((prevItems) => [...prevItems, ...newItems]);
+      setNextPageUrl(response.data.next);
+      if (response.data.next === null) {
+        setHasMore(false);
+      }
+    })
+    .catch((err) => {
+      console.error('Error fetching more items:', err);
+      setHasMore(false);
+    });
+};
+
     useEffect(() => {
         if (categories.length === 0 && !isLoading) {
           setIsLoading(true);
@@ -298,32 +335,64 @@ const [selectedFilters, setSelectedFilters] = useState([]);
     document.documentElement.classList.add('dark');
   }
 }, []);
-useEffect(() => {
-  if (!selectedCategoryId) return;
+  useEffect(() => {
+    // Check if any subcategory is checked
+    const anySubcategoryChecked = Object.values(checkedItems).some(isChecked => isChecked);
 
-  // If category already cached, load from cache
-  if (categoryItemsCache[selectedCategoryId]) {
-    setCategoryItems(categoryItemsCache[selectedCategoryId]);
+    if (anySubcategoryChecked) { // If any subcategory is checked, this effect should not run
+      setCategoryItems([]); // Clear default items if subcategories are selected
+      return;
+    }
+
+    const name = categoryName.toLowerCase().replace(/\s+/g, '_');
+    if (!name) return;
+
+    if (categoryItemsCache[name]) {
+      setCategoryItems(categoryItemsCache[name]);
+      return;
+    }
+
+    api.get(`/categories/${name}/`)
+      .then(response => {
+        const items = response.data.results;
+        setCategoryItems(items);
+
+        setCategoryItemsCache(prev => ({
+          ...prev,
+          [name]: items
+        }));
+      })
+      .catch(err => {
+        console.error(`Failed to fetch items for category ${name}:`, err);
+        setCategoryItems([]);
+      });
+  }, [categoryName, categoryItemsCache, checkedItems]);
+useEffect(() => {
+const name = categoryName.toLowerCase().replace(/\s+/g, '_');
+  if (!name) return;
+
+  if (categoryItemsCache[name]) {
+    setCategoryItems(categoryItemsCache[name]);
     return;
   }
 
-  // Else, fetch from backend
-  api.get(`/categories/${selectedCategoryId}/`)
+  api.get(`/categories/${name}/`)
     .then(response => {
       const items = response.data.results;
       setCategoryItems(items);
 
-      // Store in cache
       setCategoryItemsCache(prev => ({
         ...prev,
-        [selectedCategoryId]: items
+        [name]: items
       }));
     })
     .catch(err => {
-      console.error(`Failed to fetch items for category ${selectedCategoryId}:`, err);
+      console.error(`Failed to fetch items for category ${name}:`, err);
       setCategoryItems([]);
     });
-}, [selectedCategoryId]);
+}, [categoryName]);
+
+
 
 useEffect(() => {
   const handleClickOutside = (event) => {
@@ -362,6 +431,132 @@ useEffect(() => {
     document.body.style.overflow = '';
   };
 }, [isMobileSidebarOpen]);
+
+  // New/Modified useEffect to fetch items for selected subcategories
+
+  useEffect(() => {
+    const selectedSubIds = Object.entries(checkedItems)
+      .filter(([_, isChecked]) => isChecked)
+      .map(([id]) => id);
+
+    if (selectedSubIds.length === 0) {
+      setCategoryItems([]);
+      return;
+    }
+
+    const fetchAndCombineSubcategoryItems = async () => {
+      let allFetchedItems = [];
+      const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
+
+      for (const subId of selectedSubIds) {
+        try {
+          let endpoint = `/categories/${currentCategoryName}/subcategories/${subId}/`;
+          if (selectedCapacity) {
+            endpoint += `?min_capacity=${selectedCapacity.min}&max_capacity=${selectedCapacity.max}`;
+          }
+          const res = await api.get(endpoint);
+          const items = res.data.results || [];
+          allFetchedItems = allFetchedItems.concat(items);
+        } catch (err) {
+          console.error(`Failed to fetch items for subcategory ${subId}:`, err);
+        }
+      }
+      setCategoryItems(allFetchedItems);
+    };
+
+    fetchAndCombineSubcategoryItems();
+  }, [checkedItems, categoryName, selectedCapacity]);
+   useEffect(() => {
+      const name = categoryName.toLowerCase().replace(/\s+/g, '_');
+      if (!name) return;
+  
+      if (categoryItemsCache[name] && !selectedCapacity) {
+        setCategoryItems(categoryItemsCache[name]);
+        return;
+      }
+  
+      let endpoint = `/${name}/`;
+      if (selectedCapacity) {
+        endpoint += `?min_capacity=${selectedCapacity.min}&max_capacity=${selectedCapacity.max}`;
+      }
+  
+      api.get(endpoint)
+        .then(response => {
+          const items = response.data.results;
+          setCategoryItems(items);
+          if (!selectedCapacity) {
+            setCategoryItemsCache(prev => ({
+              ...prev,
+              [name]: items
+            }));
+          }
+        })
+        .catch(err => {
+          console.error(`Failed to fetch items for category ${name}:`, err);
+          setCategoryItems([]);
+        });
+    }, [categoryName, selectedCapacity]);
+useEffect(() => {
+  if (!isShowItems) return;
+
+  const selectedSubIds = Object.entries(checkedItems)
+    .filter(([_, isChecked]) => isChecked)
+    .map(([id]) => id);
+
+  if (selectedSubIds.length === 0) return;
+
+  selectedSubIds.forEach(async (subId) => {
+    const name = categoryName.toLowerCase().replace(/\s+/g, '_');
+    setCategoryName(name);
+    if (subcategoryItemsMap[subId]) return; // Cached
+
+    try {
+      const res = await api.get(`/categories/${name}/subcategories/${subId}/`);
+      const items = res.data.results || [];
+
+      setSubcategoryItemsMap(prev => ({
+        ...prev,
+        [subId]: items,
+      }));
+    } catch (err) {
+      console.error(`Failed to fetch items for subcategory ${subId}`, err);
+    }
+  });
+}, [checkedItems, isShowItems]);
+// Example modification for an existing useEffect that fetches category items
+useEffect(() => {
+  const idToFetchItemsFor = isMobile && mobileSelectedCategoryId !== null
+    ? mobileSelectedCategoryId
+    : clickedCategoryId;
+
+  if (idToFetchItemsFor) {
+    // Reset states when category changes
+    setCategoryItems([]); // Clear existing items when category changes
+    setHasMore(true); // Reset hasMore to true for a new category
+    setNextPageUrl(null); // Reset nextPageUrl for a new category
+
+    // Set loading state if you have one
+    // setIsLoading(true);
+
+    // Initial fetch for the first page
+    api.get(`/categories/${categoryName.toLowerCase().replace(/\s+/g, '_')}/`) // Use your initial API endpoint
+      .then(response => {
+        setCategoryItems(response.data.results);
+        setNextPageUrl(response.data.next); // Store the next page URL
+        if (response.data.next === null) {
+          setHasMore(false); // If no next page, set hasMore to false
+        }
+      })
+      .catch(err => {
+        console.error('Error fetching category items:', err);
+        // setError('Failed to load category items. Please try again.');
+        setHasMore(false); // If initial fetch fails, stop future attempts
+      })
+      // .finally(() => {
+      //   setIsLoading(false);
+      // });
+  }
+}, [clickedCategoryId, mobileSelectedCategoryId, isMobile, categoryName]); // Add categoryName to dependencies
   return (
     <>
       
@@ -1425,34 +1620,37 @@ useEffect(() => {
 
               <div className="grow overflow-hidden lg:ps-4 xl:ps-8">
   {/* List */}
-  <div className="mb-3">
-    {/* List */}
-    <div className="relative flex flex-1 items-center overflow-hidden">
-      <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
-        {categories.length > 0 ? (
-          categories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              className={`py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full 
-  ${selectedCategoryId === category.id 
-    ? 'bg-[#E91E63] text-white' 
-    : 'bg-white text-gray-800 dark:bg-neutral-900 dark:text-neutral-200'} 
-  border border-gray-200 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 
-  dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600`}
-
-              onClick={() => setSelectedCategoryId(category.id)} // Update selected category on click
-            >
-              {category.name}
-            </button>
-          ))
-        ) : (
-          <div className="text-sm text-gray-500">No categories found.</div>
-        )}
+   <div className="mb-3">
+      {/* List */}
+      <div className="relative flex flex-1 items-center overflow-hidden">
+        <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                className={`py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full 
+                  ${selectedCategoryId === category.id 
+                    ? 'bg-[#E91E63] text-white' 
+                    : 'bg-white text-gray-800 dark:bg-neutral-900 dark:text-neutral-200'} 
+                  border border-gray-200 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 
+                  dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600`}
+                onClick={() => {
+                  setSelectedCategoryId(category.id);
+                  setCategoryName(category.name);
+                  setIsShowItems(false);
+                }}
+              >
+                {category.name}
+              </button>
+            ))
+          ) : (
+            <div className="text-sm text-gray-500">No categories found.</div>
+          )}
+        </div>
       </div>
+      {/* End List */}
     </div>
-    {/* End List */}
-  </div>
 </div>
             </div>
           </div>
@@ -1463,7 +1661,7 @@ useEffect(() => {
             <div className="lg:flex">
               <div className="pt-6 lg:pt-0">
   {/* Sidebar */}
-  <div
+    <div
      ref={mobileSidebarRef}
      className={`fixed inset-y-0 start-0 z-[80] w-80 bg-white transform transition-transform duration-300 dark:bg-neutral-900
        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -1491,34 +1689,39 @@ useEffect(() => {
         <div className="p-5 lg:pt-10 lg:ps-0">
           {/* Subcategories Card */}
           <div className="pb-6 mb-6 border-b border-gray-200 last:pb-0 last:mb-0 last:border-b-0 dark:border-neutral-700">
-            <div className="mb-3">
-              <span className="font-medium text-sm text-gray-800 dark:text-neutral-200">Category</span>
-            </div>
+  <div className="mb-3">
+    <span className="font-medium text-sm text-gray-800 dark:text-neutral-200">
+      Category
+    </span>
+  </div>
 
-            {/* Subcategories List */}
-            {subcategories.length > 0 && (
-              <div className="space-y-0.5 mt-4">
-                {subcategories.map((sub) => (
-                  <div key={sub.id} className="flex items-center">
-                    <label
-                      htmlFor={`subcategory-${sub.id}`}
-                      className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`subcategory-${sub.id}`}
-                        checked={checkedItems[sub.id] || false}
-                        onChange={() => handleCheckboxChange(sub.id)}
-                        className="shrink-0 size-4.5 border-gray-300 rounded-sm text-[#E91E63] checked:border-[#E91E63] focus:ring-[#E91E63] disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-[#E91E63] dark:checked:border-[#E91E63] dark:focus:ring-offset-gray-800"
-                      />
-                      <span className="ms-2 text-gray-800 dark:text-neutral-200">{sub.name}</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-            )}
-            {/* End Subcategories List */}
-          </div>
+  {/* Subcategories List */}
+  {subcategories.length > 0 && (
+    <div className="space-y-0.5 mt-4">
+      {subcategories.map((sub) => (
+        <div key={sub.id} className="flex items-center">
+          <label
+            htmlFor={`subcategory-${sub.id}`}
+            className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800"
+          >
+            <input
+              type="checkbox"
+              id={`subcategory-${sub.id}`}
+              checked={!!checkedItems[sub.id]}
+              onChange={() => handleCheckboxChange(sub.id)}
+              className="shrink-0 size-4.5 border-gray-300 rounded-sm text-[#E91E63] checked:border-[#E91E63] focus:ring-[#E91E63] disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-[#E91E63] dark:checked:border-[#E91E63] dark:focus:ring-offset-gray-800"
+            />
+            <span className="ms-2 text-gray-800 dark:text-neutral-200">
+              {sub.name}
+            </span>
+          </label>
+        </div>
+      ))}
+    </div>
+  )}
+  {/* End Subcategories List */}
+</div>
+
           {/* End Subcategories Card */}
 
           {/* Deal Toggle Card */}
@@ -1662,76 +1865,60 @@ useEffect(() => {
           {/* End Price Card */}
 
           {/* Capacity Card (only for selected category ID 1) */}
-          {selectedCategoryId === 1 && (
-            <div className="pb-6 mb-6 border-b border-gray-200 last:pb-0 last:mb-0 last:border-b-0 dark:border-neutral-700">
-              <div className="mb-3">
-                <span className="font-medium text-sm text-gray-800 dark:text-neutral-200">Capacity</span>
+         {selectedCategoryId === 1 && (
+        <div className="pb-6 mb-6 border-b border-gray-200 last:pb-0 last:mb-0 last:border-b-0 dark:border-neutral-700">
+          <div className="mb-3">
+            <span className="font-medium text-sm text-gray-800 dark:text-neutral-200">Capacity</span>
+          </div>
+          <div className="space-y-0.5">
+            {capacities.map(({ id, label, min, max }) => (
+              <div key={id} className="flex items-center">
+                <label
+                  htmlFor={`capacity-${id}`}
+                  className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800"
+                >
+                  <input
+                    type="radio"
+                    name="capacity-range"
+                    id={`capacity-${id}`}
+                    className="shrink-0 size-4.5 border-gray-300 rounded-sm text-[#d81b60] checked:border-[#d81b60] focus:ring-[#d81b60] dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-[#d81b60] dark:checked:border-[#d81b60] dark:focus:ring-offset-gray-800"
+                    checked={selectedCapacity?.id === id}
+                    onChange={() => setSelectedCapacity({ id, label, min, max })}
+                  />
+                  <span className="ms-2 text-gray-800 dark:text-neutral-200">{label}</span>
+                </label>
               </div>
-              <div className="space-y-0.5">
-                {/* Checkbox: 0-100 */}
-                <div className="flex items-center">
-                  <label htmlFor="hs-pro-shmfloc-0-100" className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800">
-                    <input type="checkbox" className="shrink-0 size-4.5 border-gray-300 rounded-sm text-emerald-600 checked:border-emerald-600 focus:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-emerald-500 dark:checked:border-emerald-500 dark:focus:ring-offset-gray-800" id="hs-pro-shmfloc-0-100" />
-                    <span className="ms-2 text-gray-800 dark:text-neutral-200">0-100</span>
-                  </label>
-                </div>
-                {/* End Checkbox */}
-
-                {/* Checkbox: 100-300 */}
-                <div className="flex items-center">
-                  <label htmlFor="hs-pro-shmfloc-100-300" className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800">
-                    <input type="checkbox" className="shrink-0 size-4.5 border-gray-300 rounded-sm text-emerald-600 checked:border-emerald-600 focus:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-emerald-500 dark:checked:border-emerald-500 dark:focus:ring-offset-gray-800" id="hs-pro-shmfloc-100-300" />
-                    <span className="ms-2 text-gray-800 dark:text-neutral-200">100-300</span>
-                  </label>
-                </div>
-                {/* End Checkbox */}
-
-                {/* Checkbox: 500-1000 */}
-                <div className="flex items-center">
-                  <label htmlFor="hs-pro-shmfloc-500-1000" className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800">
-                    <input type="checkbox" className="shrink-0 size-4.5 border-gray-300 rounded-sm text-emerald-600 checked:border-emerald-600 focus:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-emerald-500 dark:checked:border-emerald-500 dark:focus:ring-offset-gray-800" id="hs-pro-shmfloc-500-1000" />
-                    <span className="ms-2 text-gray-800 dark:text-neutral-200">500-1000</span>
-                  </label>
-                </div>
-                {/* End Checkbox */}
-
-                {/* Checkbox: Above 1000 */}
-                <div className="flex items-center">
-                  <label htmlFor="hs-pro-shmfloc-above-1000" className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800">
-                    <input type="checkbox" className="shrink-0 size-4.5 border-gray-300 rounded-sm text-emerald-600 checked:border-emerald-600 focus:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-emerald-500 dark:checked:border-emerald-500 dark:focus:ring-offset-gray-800" id="hs-pro-shmfloc-above-1000" />
-                    <span className="ms-2 text-gray-800 dark:text-neutral-200">Above 1000</span>
-                  </label>
-                </div>
-                {/* End Checkbox */}
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
+        </div>
+      )}
           {/* End Capacity Card */}
-
           {/* Clear Filters Button */}
           <div className="flex items-center gap-x-3">
             <button
     type="button"
     onClick={() => {
-      // Reset all filters
-      setCheckedItems({}); // Reset subcategory checkboxes
-      setIsOn(false); // Reset deal toggle
-      setSelectedCategoryId(1); // Reset to default category
-      // Reset customer reviews checkboxes
-      document.querySelectorAll('input[type="checkbox"][id^="hs-pro-shmfloc"]').forEach((checkbox) => {
-        checkbox.checked = false; // Uncheck all customer review checkboxes
-      });
-      // Reset price checkboxes
-      document.querySelectorAll('input[type="checkbox"][id^="hs-pro-shmfloc-"]').forEach((checkbox) => {
-        checkbox.checked = false; // Uncheck all price checkboxes
-      });
-      // Reset capacity checkboxes if applicable
-      if (selectedCategoryId === 1) {
-        document.querySelectorAll('input[type="checkbox"][id^="hs-pro-shmfloc-"]').forEach((checkbox) => {
-          checkbox.checked = false; // Uncheck all capacity checkboxes
-        });
-      }
-    }}
+  setIsInfiniteScrollActive(false);
+  setNextPageUrl(null);
+  setHasMore(true);
+  setSelectedCapacity(null);          // ✅ clear capacity filter
+  setCheckedItems({});                // ✅ clear subcategory filters
+
+  const name = categoryName.toLowerCase().replace(/\s+/g, '_');
+
+  api.get(`/categories/${name}/`)
+    .then(response => {
+      setCategoryItems(response.data.results);
+      setNextPageUrl(response.data.next);
+    })
+    .catch(err => {
+      console.error('Error resetting category items:', err);
+      setCategoryItems([]);
+    });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}}
+
     className="py-2 px-3 w-full inline-flex justify-center items-center gap-x-1.5 text-sm font-medium rounded-full border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
   >
     <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1743,15 +1930,13 @@ useEffect(() => {
           
 
           {/* Show Items Button */}
-            <button
+            {/* <button
               type="button"
              onClick={() => {
   const filters = [];
 
-  // Deal
   if (isOn) filters.push({ type: "Deal", label: "Deal" });
 
-  // Subcategories
   Object.entries(checkedItems).forEach(([id, isChecked]) => {
     if (isChecked) {
       const sub = subcategories.find((s) => s.id.toString() === id);
@@ -1761,7 +1946,6 @@ useEffect(() => {
     }
   });
 
-  // Star ratings
   const ratings = ["4", "3", "1"];
   ratings.forEach((r) => {
     const el = document.getElementById(`hs-pro-shmfloc-${r}-and-up`);
@@ -1770,7 +1954,6 @@ useEffect(() => {
     }
   });
 
-  // Price
   const prices = [
     { id: "under-150", label: "Under ₹500" },
     { id: "150-300", label: "₹500-₹1000" },
@@ -1782,50 +1965,48 @@ useEffect(() => {
       filters.push({ type: "Price", label });
     }
   });
+if (selectedCategoryId === 1) {
+  const capacities = [
+    { id: "0-100", label: "0-100" },
+    { id: "100-300", label: "100-300" },
+    { id: "500-1000", label: "500-1000" },
+    { id: "above-1000", label: "Above 1000" },
+  ];
+  
+  capacities.forEach(({ id, label }) => {
+    const el = document.getElementById(`capacity-${id}`); 
+    if (el?.checked) {
+      filters.push({ type: "Capacity", label });
+    }
+  });
+}
 
-  // Capacity (only if selectedCategoryId === 1)
-  if (selectedCategoryId === 1) {
-    const capacities = [
-      { id: "0-100", label: "0-100" },
-      { id: "100-300", label: "100-300" },
-      { id: "500-1000", label: "500-1000" },
-      { id: "above-1000", label: "Above 1000" },
-    ];
-    capacities.forEach(({ id, label }) => {
-      const el = document.getElementById(`hs-pro-shmfloc-${id}`);
-      if (el?.checked) {
-        filters.push({ type: "Capacity", label });
-      }
-    });
-  }
 
-  // Update state
   setSelectedFilters(filters);
   console.log("Filters applied:", filters);
-  setCheckedItems({}); // Reset subcategory checkboxes
-      setIsOn(false); // Reset deal toggle
-      setSelectedCategoryId(1); // Reset to default category
-      // Reset customer reviews checkboxes
+  setCheckedItems({}); 
+      setIsOn(false); 
+      setSelectedCategoryId(1); 
       document.querySelectorAll('input[type="checkbox"][id^="hs-pro-shmfloc"]').forEach((checkbox) => {
-        checkbox.checked = false; // Uncheck all customer review checkboxes
+        checkbox.checked = false; 
       });
-      // Reset price checkboxes
       document.querySelectorAll('input[type="checkbox"][id^="hs-pro-shmfloc-"]').forEach((checkbox) => {
-        checkbox.checked = false; // Uncheck all price checkboxes
+        checkbox.checked = false; 
       });
-      // Reset capacity checkboxes if applicable
-      if (selectedCategoryId === 1) {
-        document.querySelectorAll('input[type="checkbox"][id^="hs-pro-shmfloc-"]').forEach((checkbox) => {
-          checkbox.checked = false; // Uncheck all capacity checkboxes
-        });
-      }
-      setIsMobileSidebarOpen(false)
+if (selectedCategoryId === 1) {
+  document.querySelectorAll('input[type="radio"][name="capacity-range"]').forEach((radio) => {
+    radio.checked = false; 
+  });
+}
+
+      setIsMobileSidebarOpen(false);
+      setIsShowItems(true);
 }}
 
               className="py-2 px-3 w-full inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-transparent bg-[#E91E63] text-white hover:bg-[#d81b60] focus:outline-hidden focus:bg-[#E91E63]"
             >
               Show Items
-            </button>
+            </button> */}
          </div>
         </div>
       </div>
@@ -1834,8 +2015,6 @@ useEffect(() => {
   </div>
   {/* End Sidebar */}
 </div>
-
-
               <div className="grow overflow-hidden pb-10 lg:pt-10 lg:ps-4 xl:ps-8">
                 {/* Filter Group */}
                 <div className="pb-3 mb-3 space-y-3 border-b border-gray-200 dark:border-neutral-700">
@@ -1879,17 +2058,106 @@ useEffect(() => {
 
                 </div>
                 {/* End Filter Group */}
-
-                {/* Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
-                  {/* Card */}
-   {categoryItems.map(item => (
-    <CategoryItemCard key={item.id} item={item} />
-  ))}
-
-                  {/* End Card */}
-                  {/* More cards can be added similarly */}
+<div className="flex flex-wrap gap-2">
+                  {selectedFilters.map((filter, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className="py-2 px-3 inline-flex items-center gap-x-2 text-sm rounded-full border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800"
+                    >
+                      {filter.label}
+                      <span
+                        className="ms-1.5 flex flex-col justify-center items-center size-4 bg-white text-[#E91E63] rounded-full hover:bg-white/90 focus:bg-white/90"
+                        onClick={() => {
+                          // Remove specific filter
+                          const newFilters = selectedFilters.filter((_, i) => i !== idx);
+                          setSelectedFilters(newFilters);
+                          // TODO: Also update the related state like isOn, checkboxes, etc.
+                        }}
+                      >
+                        <svg
+                          className="shrink-0 size-2.5"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M18 6 6 18" />
+                          <path d="m6 6 12 12" />
+                        </svg>
+                      </span>
+                    </button>
+                  ))}
                 </div>
+                {/* Grid */}
+                {isInfiniteScrollActive ? (
+  <InfiniteScroll
+    dataLength={categoryItems.length}
+    next={fetchMoreData}
+    hasMore={hasMore}
+    loader={<p className="text-center my-4 text-gray-500">Loading more items...</p>}
+    endMessage={<p className="text-center my-4 text-gray-500">No more items to show.</p>}
+  >
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
+      {categoryItems.map(item => (
+        <CategoryItemCard key={item.id} item={item} />
+      ))}
+    </div>
+  </InfiniteScroll>
+) : (
+  <>
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
+      {categoryItems.map(item => (
+        <CategoryItemCard key={item.id} item={item} />
+      ))}
+    </div>
+
+    {nextPageUrl && (
+      <div className="text-center mt-6">
+        <button
+          className="bg-[#E91E63] hover:bg-[#d81b60] text-white font-medium py-2 px-4 rounded-full"
+          onClick={() => setIsInfiniteScrollActive(true)}
+        >
+          See More
+        </button>
+      </div>
+    )}
+  </>
+)}
+
+{isInfiniteScrollActive && (
+  <div className="text-center mt-6">
+    <button
+      className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-full"
+      onClick={() => {
+        setIsInfiniteScrollActive(false);
+        setNextPageUrl(null);
+        setHasMore(true);
+        const name = categoryName.toLowerCase().replace(/\s+/g, '_');
+
+        api.get(`/categories/${name}/`)
+          .then(response => {
+            setCategoryItems(response.data.results);
+            setNextPageUrl(response.data.next);
+          })
+          .catch(err => {
+            console.error('Error resetting category items:', err);
+            setCategoryItems([]);
+          });
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }}
+    >
+      See Less
+    </button>
+  </div>
+)}
+
                 {/* End Grid */}
               </div>
             </div>
