@@ -281,7 +281,7 @@ const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
   const headerContainerRef = useRef(null);
   const mobileDropdownRef = useRef(null); // Ref for the custom mobile dropdown
-
+const [selectedCategoryId, setSelectedCategoryId] = useState(1);
   const [hoveredCategoryId, setHoveredCategoryId] = useState(null);
   const [clickedCategoryId, setClickedCategoryId] = useState(null);
   const [mobileSelectedCategoryId, setMobileSelectedCategoryId] = useState(null);
