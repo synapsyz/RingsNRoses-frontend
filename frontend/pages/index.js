@@ -4,13 +4,16 @@
 // import { Html, Head, Main, NextScript } from 'next/document';
 // import '../styles/globals.css';
 import Script from 'next/script';
-
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState, useEffect, useRef, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useRef, useCallback } from 'react'; 
 import axios from 'axios';
+import EventForm from '@/components/EventForm'; 
 
+import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router';
+import HeroCarousel from "@/components/HeroCarousel"; // adjust path as needed
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -18,6 +21,10 @@ const getApiUrl = () => {
     : process.env.NEXT_PUBLIC_HOST;
 };
 const api_url = getApiUrl();
+
+
+
+
 const api = axios.create({
   baseURL: `${api_url}/api/v1`,
   headers: {
@@ -82,8 +89,102 @@ function TabsSync() {
 }
 export default function Home() {
 
+    const router = useRouter();
+
   const { data: session, status } = useSession();
   const user = session?.user;
+const accessToken = session?.accessToken;
+  const [dataFromLocalStorage, setDataFromLocalStorage] = useState(null);
+  // ... (other state like 'status')
+
+
+  useEffect(() => {
+    const loadData = async () => {
+      let dataToSet = null; // Variable to hold the data that will be set in state
+
+      // 1. Try to load from localStorage
+      const storedEventDataString = localStorage.getItem('eventFormData');
+      console.log("useEffect - storedEventDataString from localStorage:", storedEventDataString);
+
+      if (storedEventDataString) {
+        try {
+          dataToSet = JSON.parse(storedEventDataString);
+          console.log("useEffect - parsedData from localStorage:", dataToSet);
+        } catch (error) {
+          console.error("useEffect - Error parsing eventFormData from localStorage:", error);
+          // dataToSet remains null, will proceed to API call
+        }
+      }
+
+      // 2. If no data from localStorage, try fetching from API
+      if (dataToSet === null) {
+        console.log("useEffect - No valid data in localStorage, attempting to fetch from API.");
+        if (accessToken) { // Only attempt API call if accessToken is available
+          try {
+            // Replace 'apiClient.put' with your actual API call method (e.g., get.put, axios.put)
+            // Define what 'dataToSendForProfileFetch' should be.
+            // If this PUT request is meant to fetch data, its body might be empty or specific.
+            const dataToSendForProfileFetch = {}; // Example: an empty object or specific payload
+
+            console.log("useEffect - Calling API /customer-profile/update/");
+            const response = await await api.put( // Or your `get.put`
+              '/customer-profile/update/',
+              dataToSendForProfileFetch,
+              {
+                headers: {
+                  'Authorization': `Bearer ${accessToken}`,
+                },
+              }
+            );
+
+            // Assuming the data you want is in response.data
+            dataToSet = response.data;
+            console.log("useEffect - Data fetched from API:", dataToSet);
+
+            // Optionally, save the fetched data back to localStorage for next time
+            if (dataToSet) {
+              localStorage.setItem('eventFormData', JSON.stringify(dataToSet));
+              console.log("useEffect - Fetched data also saved to localStorage.");
+            }
+
+          } catch (apiError) {
+            console.error("useEffect - Error fetching data from API:", apiError);
+            // dataToSet remains null if API call fails
+          }
+        } else {
+          console.log("useEffect - No accessToken available, skipping API call.");
+          // dataToSet remains null
+        }
+      }
+
+      // 3. Update the state with whatever data was resolved (from localStorage, API, or null)
+      setDataFromLocalStorage(dataToSet);
+      // This log will show the state value from the *previous* render, not the 'dataToSet' immediately.
+      // To see the updated state, log 'dataFromLocalStorage' in the component body or another useEffect.
+      console.log("useEffect - dataFromLocalStorage (immediately after setDataFromLocalStorage call):", dataFromLocalStorage);
+    };
+
+    loadData();
+
+    // The setTimeout for auth simulation can remain if it serves another purpose
+    // For instance, if it updates an authentication 'status' which then triggers other UI changes.
+    // It doesn't directly interact with the data loading logic above unless 'status' was a dependency.
+    const authTimer = setTimeout(() => {
+      // Example: setStatus("authenticated");
+      // If this timeout is purely for simulating a delay and does nothing, it can be removed.
+    }, 1000);
+
+    return () => {
+      clearTimeout(authTimer); // Clean up the timer if the component unmounts
+    };
+
+  }, [accessToken, setDataFromLocalStorage]); // Dependency array
+  // - Add accessToken: if the token changes, we might need to re-fetch.
+  // - setDataFromLocalStorage: React guarantees setters from useState are stable,
+  //   but including it satisfies exhaustive-deps lint rule if enabled. It's optional.
+
+  // Log outside useEffect to see the updated state after render
+  console.log("Component Body - dataFromLocalStorage (after render):", dataFromLocalStorage);
 
   console.log(session);
   console.log(user);
@@ -91,7 +192,7 @@ export default function Home() {
 useEffect(() => {
   if (status !== "authenticated") return;
 
-  const eventDate = session?.user?.customer_profile?.event_date;
+  const eventDate = dataFromLocalStorage?.event_date;
   if (!eventDate) return;
 
   const target = new Date(eventDate).getTime();
@@ -127,13 +228,13 @@ useEffect(() => {
   useEffect(() => {
     
   // Check if the date exists in session data
-  if (!session?.user?.customer_profile?.event_date) {
+  if (!dataFromLocalStorage?.event_date) {
     console.error("Event date not found in session");
     return;
   }
 
   // Parse the date from session (assuming format like "2025-06-28T00:00:00")
-  const targetDate = new Date(session.user?.customer_profile?.event_date).getTime();
+  const targetDate = new Date(dataFromLocalStorage?.event_date).getTime();
 
   // Handle invalid dates
   if (isNaN(targetDate)) {
@@ -167,7 +268,7 @@ useEffect(() => {
   updateCountdown(); // Initial run
 
   return () => clearInterval(timerInterval); // Cleanup on unmount
-}, [session?.user?.customer_profile?.event_date]); // Add dependency
+}, [dataFromLocalStorage?.event_date]); // Add dependency
     const handlePrelineLoad = () => {
     const el = document.querySelector('[data-hs-carousel]');
     if (el && window.HSCarousel) {
@@ -180,7 +281,7 @@ const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
   const headerContainerRef = useRef(null);
   const mobileDropdownRef = useRef(null); // Ref for the custom mobile dropdown
-
+const [selectedCategoryId, setSelectedCategoryId] = useState(1);
   const [hoveredCategoryId, setHoveredCategoryId] = useState(null);
   const [clickedCategoryId, setClickedCategoryId] = useState(null);
   const [mobileSelectedCategoryId, setMobileSelectedCategoryId] = useState(null);
@@ -195,7 +296,10 @@ const [categories, setCategories] = useState([]);
   const [subcategoriesError, setSubcategoriesError] = useState(null);
 
   const [isMobile, setIsMobile] = useState(false);
+  
 
+  // THIS IS THE CRUCIAL LOG (presumably index.js:88 for you)
+  console.log("dataFromLocalStorage (in component body, AFTER RENDER):",dataFromLocalStorage);
   // Effect to determine mobile view
   useEffect(() => {
     const handleResize = () => {
@@ -346,9 +450,6 @@ const [categories, setCategories] = useState([]);
           }
 
         } else {
-
-          // If no desktop category selected yet, default to first
-
           if (hoveredCategoryId === null && clickedCategoryId === null) {
 
             setHoveredCategoryId(categories[0].id);
@@ -371,6 +472,51 @@ const [categories, setCategories] = useState([]);
   }, []); // No dependencies, can be memoized
 
   const IMAGE_SIZE = 100;
+
+  // Assuming 'signOut' is imported or available in your component's scope
+// e.g., import { signOut } from "next-auth/react";
+
+// If you have React state tied to localStorage, ensure you have access to its setter
+// For example, if 'dataFromLocalStorage' and 'setDataFromLocalStorage' are in this component:
+// const [dataFromLocalStorage, setDataFromLocalStorage] = useState(null);
+// Or if it's managed by a context/global state, get the dispatcher/setter.
+
+
+const handleLogoutClick = async () => {
+  console.log("Logout process started...");
+
+  // 1. Clear the specific localStorage item
+  localStorage.removeItem('eventFormData');
+  console.log("'eventFormData' removed from localStorage.");
+
+  // 2. Reset any related React state
+  // If you have a React state variable that was mirroring this localStorage data,
+  // reset it so the UI updates correctly without needing a page reload.
+  // Example:
+  // if (typeof setDataFromLocalStorage === 'function') {
+  //   setDataFromLocalStorage(null);
+  //   console.log("Related React state (dataFromLocalStorage) reset to null.");
+  // }
+  // Also reset any other user-specific state if needed.
+
+  try {
+    // 3. Call the original signOut function from your authentication library
+    // The redirect: false option means the page won't automatically redirect.
+    // The signOut function might update the session state managed by your auth library.
+    await signOut({ redirect: false }); // Using await if signOut returns a Promise
+    console.log("Authentication signOut successful (no redirect).");
+
+    // At this point, the auth library (e.g., NextAuth.js) should have updated its
+    // session status. Your UI should react to this change (e.g., show login screen).
+    // If you need to manually update a local 'isAuthenticated' flag that isn't
+    // automatically handled by your auth library's hooks (like useSession), do it here.
+    // e.g., setLocalAuthStatus(false);
+
+  } catch (error) {
+    console.error("Error during sign out process:", error);
+    // Handle any errors from the signOut operation itself
+  }
+};
 
   const SubcategoryItem = ({ subcategory, onClick }) => (
     <Link
@@ -399,7 +545,27 @@ const [categories, setCategories] = useState([]);
       <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
     </Link>
   );
+useEffect(() => {
+  const themeButtons = document.querySelectorAll('[data-hs-theme-click-value]');
+  themeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const mode = btn.getAttribute('data-hs-theme-click-value');
+      if (mode === 'dark') {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  });
 
+  // Initialize theme on load
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.classList.add('dark');
+  }
+}, []);
   return (
         
       
@@ -433,21 +599,7 @@ const [categories, setCategories] = useState([]);
         `}</style>
 
         {/* Theme Script */}
-        <Script id="theme-toggle" strategy="beforeInteractive">
-          {`
-            const html = document.querySelector('html');
-            const isLightOrAuto = localStorage.getItem('hs_theme') === 'light' ||
-              (localStorage.getItem('hs_theme') === 'auto' &&
-              !window.matchMedia('(prefers-color-scheme: dark)').matches);
-            const isDarkOrAuto = localStorage.getItem('hs_theme') === 'dark' ||
-              (localStorage.getItem('hs_theme') === 'auto' &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (isLightOrAuto && html.classList.contains('dark')) html.classList.remove('dark');
-            else if (isDarkOrAuto && html.classList.contains('light')) html.classList.remove('light');
-            else if (isDarkOrAuto && !html.classList.contains('dark')) html.classList.add('dark');
-            else if (isLightOrAuto && !html.classList.contains('light')) html.classList.add('light');
-          `}
-        </Script>
+        
 
       <div className="dark:bg-neutral-900">
         <header className="flex flex-col lg:flex-nowrap z-50 bg-white dark:bg-neutral-900"></header>
@@ -460,7 +612,7 @@ const [categories, setCategories] = useState([]);
 <ul className="flex flex-wrap items-center gap-3">
   <li className="inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
     <button type="button" className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-overlay="#hs-pro-shmnrsm">
-      <img className="shrink-0 size-3.5 rounded-full" src="./assets/vendor/svg-country-flags/png250px/in.png" alt="English"/>
+      <img className="shrink-0 size-3.5 rounded-full" src="in.png" alt="English"/>
       Chennai 
     </button>
   </li> 
@@ -478,13 +630,13 @@ const [categories, setCategories] = useState([]);
           </li>
           <li className="hidden sm:inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
             <button type="button" className="hs-dark-mode-active:hidden flex hs-dark-mode items-center gap-x-1.5 text-sm text-gray-500 hover:text-gray-500 focus:outline-hidden focus:text-gray-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-theme-click-value="dark">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
               </svg>
               <span className="sr-only">Dark mode</span>
             </button>
             <button type="button" className="hs-dark-mode-active:flex hidden hs-dark-mode items-center gap-x-1.5 text-sm text-gray-500 hover:text-gray-500 focus:outline-hidden focus:text-gray-500 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-theme-click-value="light">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="4"></circle>
                 <path d="M12 2v2"></path>
                 <path d="M12 20v2"></path>
@@ -651,7 +803,7 @@ const [categories, setCategories] = useState([]);
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="2"
+        strokeWidth="2"
         stroke-linecap="round"
         stroke-linejoin="round"
       >
@@ -669,14 +821,14 @@ const [categories, setCategories] = useState([]);
         {/* <!-- End Search --> */}
 
         {/* <!-- Widgets --> */}
-        { status === "authenticated" && user ? (
+        {status === "authenticated" && user ? (
           <>
 <div className="order-2 md:order-3 ms-auto lg:ms-0">
           <div className="flex justify-end items-center gap-x-2">
                     {/* <!-- Favorites Button Icon --> */}
                     <div className="hs-dropdown [--auto-close:inside] [--placement:bottom-right] relative inline-flex">
                       <button id="hs-pro-dnnd" type="button" className="relative shrink-0 inline-flex justify-center items-center gap-x-2 size-9.5 rounded-full text-gray-800 hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-                        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                         </svg>
                         <span className="flex absolute top-0 end-0 z-10 -mt-1 -me-1">
@@ -763,7 +915,7 @@ const [categories, setCategories] = useState([]);
           
                     {/* <!-- Cart Button Icon --> */}
                     <button type="button" className="relative shrink-0 inline-flex justify-center items-center gap-x-2 size-9.5 rounded-full text-gray-800 hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" data-hs-overlay="#hs-pro-shco">
-                      <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
                         <path d="M3 6h18" />
                         <path d="M16 10a4 4 0 0 1-8 0" />
@@ -819,7 +971,7 @@ const [categories, setCategories] = useState([]);
                           <ul className="flex flex-col space-y-0.5">
                             <li>
                               <a className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="/personal-info.html">
-                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                                   <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                                   <circle cx="12" cy="7" r="4" />
                                 </svg>
@@ -841,9 +993,9 @@ const [categories, setCategories] = useState([]);
           
                           <p>
                             <button type="button" 
-                            onClick={() => signOut({ redirect: false })}
+                            onClick={handleLogoutClick}
                             className="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 hover:text-red-500 focus:outline-hidden focus:bg-gray-100 focus:text-red-500 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:hover:text-red-500 dark:focus:text-red-500">
-                              <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                                 <polyline points="16 17 21 12 16 7" />
                                 <line x1="21" x2="9" y1="12" y2="12" />
@@ -910,7 +1062,7 @@ const [categories, setCategories] = useState([]);
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="2"
+        strokeWidth="2"
         stroke-linecap="round"
         stroke-linejoin="round"
       >
@@ -934,7 +1086,7 @@ const [categories, setCategories] = useState([]);
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="2"
+        strokeWidth="2"
         stroke-linecap="round"
         stroke-linejoin="round"
       >
@@ -1406,112 +1558,25 @@ const [categories, setCategories] = useState([]);
       </div>
     
 </div> 
-    {/* <!-- <div className="max-w-[85rem] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-1">
-      <div className="relative flex basis-full items-center gap-x-1">
-        <div className="flex flex-row items-center gap-x-1 overflow-x-auto [&::-webkit-scrollbar]:h-0">
-          <div className="hs-dropdown [--strategy:absolute] [--adaptive:none] [--auto-close:inside] md:[--trigger:hover] md:inline-block group">
-            <button id="hs-pro-shmnpgdm" type="button" className="hs-dropdown-toggle relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 group-hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition dark:text-neutral-200 dark:hover:bg-neutral-700 dark:group-hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" />
-                <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" />
-                <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" />
-              </svg>
-              Pages
-              <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
 
-            <div className="hs-dropdown-menu hs-dropdown-open:opacity-100 w-56 transition-[opacity,margin] duration opacity-0 hidden z-10 bg-white rounded-xl shadow-lg before:absolute before:-top-4 before:start-0 before:w-full before:h-5 dark:bg-neutral-950" role="menu" aria-orientation="vertical" aria-labelledby="hs-pro-shmnpgdm">
-              <div className="p-1 space-y-0.5">
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 bg-gray-100 dark:bg-neutral-800" href="./index.html">
-                  Home
-                </a>
-
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 " href="./listing.html">
-                  Listing
-                </a>
-
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 " href="./categories.html">
-                  Categories
-                </a>
-
-                <a className="relative group py-2 px-3 flex items-center gap-x-3 text-sm text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 " href="./product-detail">
-                  Product Detail
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="19" x2="5" y1="5" y2="19" />
-              <circle cx="6.5" cy="6.5" r="2.5" />
-              <circle cx="17.5" cy="17.5" r="2.5" />
-            </svg>
-            Sales
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7 10v12" />
-              <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" />
-            </svg>
-            Best Sellers
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M16 16h6" />
-              <path d="M19 13v6" />
-              <path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l2-1.14" />
-              <path d="m7.5 4.27 9 5.15" />
-              <polyline points="3.29 7 12 12 20.71 7" />
-              <line x1="12" x2="12" y1="22" y2="12" />
-            </svg>
-            New Arrivals
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
-              <path d="M8 11h8" />
-              <path d="M8 7h6" />
-            </svg>
-            Books
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" />
-            </svg>
-            Clothing
-          </a>
-
-          <a className="relative py-2 px-3 w-full lg:w-auto flex items-center gap-x-1.5 text-sm whitespace-nowrap text-start text-gray-800 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 after:absolute after:start-1/2 after:bottom-[3px] after:w-4 after:h-[3px] after:bg-emerald-500 after:rounded-full after:-translate-x-1/2 after:transition after:scale-0 dark:text-neutral-200 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-            <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="8" width="18" height="4" rx="1" />
-              <path d="M12 8v13" />
-              <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
-              <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" />
-            </svg>
-            Gift Cards
-          </a>
-        </div>
- 
-      </div>
-    </div>
-  </header>
-  End Nav --> */}
   {/* <!-- ========== END HEADER ========== --> */}
 
   {/* <!-- ========== MAIN CONTENT ========== --> */}
-  <main id="content">
-    
-
-    
+  <main id="content"> 
+     {status === "authenticated" && dataFromLocalStorage && dataFromLocalStorage?.event_date == null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop with blur effect - MODIFIED OPAQUE CLASS HERE */}
+          <div className="absolute inset-0 bg-opacity-0 backdrop-blur-sm"></div> 
+          
+          {/* EventForm on top */}
+          <div className="relative z-10 w-full max-w-lg md:max-w-xl lg:max-w-2xl">
+            <EventForm /> 
+          </div>
+        </div>
+      )}
 <div className="py-10 w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
 {/* <!-- Stats Grid --> */}
+ 
   {status === "authenticated" && user &&(
   <>
 <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-2">
@@ -1520,12 +1585,12 @@ const [categories, setCategories] = useState([]);
 
       <div className="flex-1 flex flex-col gap-2">
 <div className="flex items-center gap-2">
-  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user?.customer_profile?.groom_name}</h2>
+  <h2 className="text-lg font-bold text-gray-800 dark:text-white">{dataFromLocalStorage?.groom_name}</h2>
   <h2 className="text-lg font-bold text-gray-800 dark:text-white">&</h2>
-<h2 className="text-lg font-bold text-gray-800 dark:text-white">{session.user?.customer_profile?.bride_name}</h2>
+<h2 className="text-lg font-bold text-gray-800 dark:text-white">{dataFromLocalStorage?.bride_name}</h2>
 </div>
 <p className="text-l text-gray-500 dark:text-neutral-300">
-  {new Date(session.user?.customer_profile?.event_date).toLocaleDateString('en-GB', {
+  {new Date(dataFromLocalStorage?.event_date).toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -1592,137 +1657,7 @@ const [categories, setCategories] = useState([]);
 
     
     {/* <!-- Slider --> */}
-    <div className="py-4 w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
-        <div
-          data-hs-carousel='{"isInfiniteLoop": true}'
-          className="relative hs-carousel overflow-hidden rounded-xl bg-gray-100 dark:bg-neutral-800 h-96" style={{ height: '40rem'}}
-        >
-          <div className="hs-carousel-body absolute top-0 bottom-0 left-0 flex flex-nowrap transition-transform duration-700 opacity-0">
-            <div className="hs-carousel-slide">
-              <a className="relative block h-96 rounded-xl" style={{ height: '40rem'}} href="#">
-                <img
-                  className="absolute inset-0 w-full h-full object-cover rounded-xl"
-                  src="https://cdn0.weddingwire.in/article/4793/3_2/1280/jpg/113974-studiokellyphotography-337445578-533103172337964-9035533201119956191-n.jpeg"
-                  alt="Hero Image"
-                />
-                <div className="relative z-10 text-center w-full h-full max-w-lg mx-auto px-12 flex flex-col justify-center items-center">
-                  <div className="bg-black/40 rounded-xl p-6">
-                    <p className="text-sm md:text-base uppercase text-white">
-                      Up to 30% Off on Dream Venues!
-                    </p>
-                
-                    <h2 className="mt-2 font-semibold text-2xl sm:text-2xl lg:text-4xl text-white">
-                      Book the vibe, not just the venue.
-                    </h2>
-                
-                    <div className="mt-7">
-                      <span
-  className="py-2 px-3 font-semibold text-sm text-gray-800 rounded-full"
-  style={{ backgroundColor: '#E91E63' }}
->
-  Book now
-</span>
-
-                    </div>
-                  </div>                
-                </div>
-              </a>
-            </div>
-             <div className="hs-carousel-slide">
-              <a className="relative block h-96 rounded-xl" style={{ height: '40rem'}} href="#">
-                <img className="absolute inset-0 size-full object-cover rounded-xl" src="https://t4.ftcdn.net/jpg/02/71/43/75/360_F_271437574_doTjDM96i4VpYYU68nFLpjLA2rOlSh5v.jpg" alt="Hero Image"/>
-
-                <div className="relative z-10 size-full max-w-lg p-8 sm:p-16 flex flex-col">
-                  <h2 className="mt-2 font-semibold text-3xl sm:text-4xl lg:text-5xl text-white">
-                    Luxury Catering That Melts in Your Mouth
-                  </h2>
-
-                  <p className="text-sm md:text-base uppercase text-white">
-                    Now at 20% Off!
-                  </p>
-
-                  <div className="mt-7">
-                    <span className="py-2 px-3 font-semibold text-sm bg-white text-gray-800 rounded-full">
-                      Book now
-                    </span>
-                  </div>
-                </div>
-              </a>
-            </div>
-            <div className="hs-carousel-slide">
-              <a className="h-120 lg:h-160 relative block overflow-hidden bg-linear-to-br from-emerald-500 to-emerald-900 rounded-xl focus:outline-hidden dark:bg-neutral-800" style={{ height: '40rem'}} href="../../pro/shop/listing.html">
-                 <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-5" style={{ background: '#064e3b',height: '40rem'}}>
-                  <div className="p-12 sm:p-16 md:ps-20 md:pe-0 max-w-xl">
-                    <span className="block font-bold uppercase text-2xl sm:text-3xl lg:text-4xl text-white">
-                      Starting at 
-                    </span>
-                    <span className="block font-bold uppercase text-5xl sm:text-6xl lg:text-7xl xl:text-8xl text-white">
-                      ₹9,999!
-                    </span>
-                    <span className="block md:text-end font-bold uppercase text-xl sm:text-2xl lg:text-3xl text-yellow-400">
-                      DJ & Entertainment Packages 
-                    </span>
-
-                    <div className="mt-10 md:mt-20">
-                      <h2 className="font-semibold text-2xl md:text-3xl text-white">
-                      </h2>
-
-                      <p className="mt-1 text-white">
-                      </p>
-
-                      <div className="mt-3 md:mt-5">
-                        <span className="py-2 px-3 font-semibold text-sm bg-white text-gray-800 rounded-full">
-                          Have a Look!
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-
-                  <div className="h-120 lg:h-160 grid grid-cols-2 gap-3 sm:gap-5 -rotate-12">
-                    <div className="flex flex-col gap-3 sm:gap-5">
-                      <div className="p-1.5 bg-white rounded-2xl lg:rounded-3xl shadow-2xl dark:bg-neutral-900">
-                        <img className="size-full object-cover rounded-xl lg:rounded-2xl" src="https://akm-img-a-in.tosshub.com/lingo/brt/images/story/202404/662f71d9be800-10-wedding-djs-to-book-for-your-wedding-290928589-16x9.png" alt="Product Image"/>
-                      </div>
-                      <div className="p-1.5 bg-white rounded-2xl lg:rounded-3xl shadow-2xl dark:bg-neutral-900">
-                        <img className="size-full object-cover rounded-xl lg:rounded-2xl" src="https://i.ytimg.com/vi/R0FDzIs48PM/maxresdefault.jpg" alt="Product Image"/>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3 sm:gap-5 -mt-6">
-                      <div className="p-1.5 bg-white rounded-2xl lg:rounded-3xl shadow-2xl dark:bg-neutral-900">
-                        <img className="size-full object-cover rounded-xl lg:rounded-2xl" src="https://cdn0.weddingwire.in/vendor/3754/3_2/960/jpg/wedding-entertainment-anchor-deepak-bajaj-stage-performance-8_15_413754-165622337886221.jpeg" alt="Product Image"/>
-                      </div>
-                      <div className="p-1.5 bg-white rounded-2xl lg:rounded-3xl shadow-2xl dark:bg-neutral-900">
-                        <img className="size-full object-cover rounded-xl lg:rounded-2xl" src="https://blog.g3fashion.com/wp-content/uploads/2021/04/choreographers-for-wedding-dance-1024x652.jpg" alt="Product Image"/>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-
-          {/* Navigation Buttons */}
-          <button
-            type="button"
-            className="hs-carousel-prev absolute top-1/2 left-2 transform -translate-y-1/2 inline-flex items-center justify-center w-10 h-10 bg-white border border-gray-200 text-gray-800 rounded-full shadow hover:bg-gray-100"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M15 19l-7-7 7-7"></path>
-            </svg>
-          </button>
-
-          <button
-            type="button"
-            className="hs-carousel-next absolute top-1/2 right-2 transform -translate-y-1/2 inline-flex items-center justify-center w-10 h-10 bg-white border border-gray-200 text-gray-800 rounded-full shadow hover:bg-gray-100"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path d="M9 5l7 7-7 7"></path>
-            </svg>
-          </button>
-        </div>
-      </div>
+<HeroCarousel />
     {/* <!-- End Slider --> */}
 </div>
 
@@ -1731,7 +1666,7 @@ const [categories, setCategories] = useState([]);
       {/* <!-- Grid --> */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="/Listing">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://cdn-blog.superprof.com/blog_in/wp-content/uploads/2020/01/in-photo-photo-1.jpg" alt="Product Image"/>
           </div>
@@ -1796,7 +1731,7 @@ const [categories, setCategories] = useState([]);
 
         <button type="button" className="py-2 px-3 flex items-center text-sm text-start bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-200 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600 dark:focus:bg-neutral-600">
           View all
-          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m9 18 6-6-6-6" />
           </svg>
         </button>
@@ -2084,67 +2019,34 @@ const [categories, setCategories] = useState([]);
       </div>
       {/* <!-- End Header --> */}
 
-      <div className="mb-3">
-        {/* <!-- List --> */}
-        <div className="relative flex flex-1 items-center overflow-hidden">
-          <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
-            <button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/11881/11881148.png" alt="Venue" className="shrink-0 size-3.5"/>
-  Venue
-</button>
+     <div className="mb-3">
+    {/* List */}
+    <div className="relative flex flex-1 items-center overflow-hidden">
+      <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              className={`py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full 
+  ${selectedCategoryId === category.id 
+    ? 'bg-[#E91E63] text-white' 
+    : 'bg-white text-gray-500 dark:bg-neutral-900 dark:text-neutral-400'} 
+  border border-gray-200 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 
+  dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600`}
 
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/4514/4514714.png" alt="Bride & Groom Essentials" className="shrink-0 size-3.5"/>
-  Bride &amp; Groom Essentials
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/17845/17845750.png" alt="Catering & Food" className="shrink-0 size-3.5"/>
-  Catering &amp; Food
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/6016/6016756.png" alt="Decor & Setup" className="shrink-0 size-3.5"/>
-  Decor &amp; Setup
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/1773/1773609.png" alt="Entertainment" className="shrink-0 size-3.5"/>
-  Entertainment
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/3249/3249934.png" alt="Photography & Videography" className="shrink-0 size-3.5"/>
-  Photography &amp; Videography
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/6002/6002697.png" alt="Invitations & Stationery" className="shrink-0 size-3.5"/>
-  Invitations &amp; Stationery
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/11622/11622740.png" alt="Gifts & Return Favors" className="shrink-0 size-3.5"/>
-  Gifts &amp; Return Favors
-</button>
-
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/3163/3163173.png" alt="Makeup & Styling" className="shrink-0 size-3.5"/>
-  Makeup &amp; Styling
-</button>
-
-<button type="button" className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600">
-  <img src="https://cdn-icons-png.flaticon.com/128/515/515034.png" alt="Rentals" className="shrink-0 size-3.5"/>
-  Rentals
-</button>
-
-          </div>
-
-          <div className="absolute top-0 end-0 h-full w-12 pointer-events-none bg-linear-to-l from-white via-white/90 to-transparent dark:from-neutral-900 dark:via-neutral-900/95"></div>
-        </div>
-        {/* <!-- End List --> */}
+              onClick={() => setSelectedCategoryId(category.id)} // Update selected category on click
+            >
+              {category.name}
+            </button>
+          ))
+        ) : (
+          <div className="text-sm text-gray-500">No categories found.</div>
+        )}
       </div>
+    </div>
+    {/* End List */}
+  </div>
 
       {/* <!-- Grid --> */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-y-10 gap-x-4">
@@ -2159,7 +2061,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2233,7 +2135,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2255,7 +2157,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2314,7 +2216,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2336,7 +2238,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2402,7 +2304,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2424,7 +2326,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2486,7 +2388,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2508,7 +2410,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2551,7 +2453,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2573,7 +2475,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2633,7 +2535,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2655,7 +2557,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2711,7 +2613,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2733,7 +2635,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2767,7 +2669,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2789,7 +2691,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2857,7 +2759,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2879,7 +2781,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -2922,7 +2824,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -2944,7 +2846,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3002,7 +2904,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3024,7 +2926,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3082,7 +2984,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3098,13 +3000,13 @@ const [categories, setCategories] = useState([]);
           <div className="group relative">
             <div className="relative">
               <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://mysticstudios.in/wp-content/uploads/2019/05/CHENNAI_BEACH_CREATIVE_COUPLE_PRE_WEDDING_SHOOT_MYSTIC_STUDIOS1730.jpg" alt="Product Image"/>
+                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" alt="Product Image"/>
               </a>
 
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3158,7 +3060,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3180,7 +3082,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3211,7 +3113,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3233,7 +3135,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3290,7 +3192,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3312,7 +3214,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3370,7 +3272,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3392,7 +3294,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3442,7 +3344,7 @@ const [categories, setCategories] = useState([]);
               </div>
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3464,7 +3366,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3518,7 +3420,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3540,7 +3442,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3594,7 +3496,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3616,7 +3518,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Add to Favorites --> */}
               <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
                 <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                   </svg>
                   <span className="sr-only">Add to favorites</span>
@@ -3651,7 +3553,7 @@ const [categories, setCategories] = useState([]);
 
           <div className="mt-auto pt-3">
             <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1" />
                 <circle cx="19" cy="21" r="1" />
                 <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
@@ -3679,6 +3581,7 @@ const [categories, setCategories] = useState([]);
 
       </div>
     </div>
+    
     {/* <!-- End Explore Interests --> */}
   </main>
   {/* <!-- ========== END MAIN CONTENT ========== --> */}
@@ -3794,7 +3697,7 @@ const [categories, setCategories] = useState([]);
               {/* <!-- Social Brands --> */}
               <div className="mt-2 -mx-2 flex flex-wrap items-center gap-1">
                 <a className="flex flex-col justify-center items-center size-9 rounded-full text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-                  <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
                     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                     <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
@@ -3808,7 +3711,7 @@ const [categories, setCategories] = useState([]);
                   <span className="sr-only">X (Twitter)</span>
                 </a>
                 <a className="flex flex-col justify-center items-center size-9 rounded-full text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-                  <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17" />
                     <path d="m10 15 5-3-5-3z" />
                   </svg>
@@ -3897,7 +3800,7 @@ const [categories, setCategories] = useState([]);
       <button type="button" className="py-1.5 px-2 inline-flex justify-center items-center gap-x-1 rounded-full border border-gray-200 text-xs text-gray-800 hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:hover:bg-neutral-700 dark:text-neutral-200 dark:focus:bg-neutral-700" aria-label="Close" data-hs-overlay="#hs-pro-shco">
         <span className="hidden lg:block">Esc</span>
         <span className="block lg:hidden">Close</span>
-        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 6 6 18" />
           <path d="m6 6 12 12" />
         </svg>
@@ -3926,7 +3829,7 @@ const [categories, setCategories] = useState([]);
 
             <div className="absolute top-0 end-0 z-10 pt-1 pe-1">
               <button type="button" className="size-5 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 hover:bg-white disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-white">
-                <svg className="shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg className="shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                 </svg>
                 <span className="sr-only">Add to favorites</span>
@@ -3973,7 +3876,7 @@ const [categories, setCategories] = useState([]);
 
             <div className="absolute top-0 end-0 z-10 pt-1 pe-1">
               <button type="button" className="size-5 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 hover:bg-white disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-white">
-                <svg className="shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg className="shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                 </svg>
                 <span className="sr-only">Add to favorites</span>
@@ -4012,7 +3915,7 @@ const [categories, setCategories] = useState([]);
 
             <div className="absolute top-0 end-0 z-10 pt-1 pe-1">
               <button type="button" className="size-5 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 hover:bg-white disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-white">
-                <svg className="shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg className="shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                 </svg>
                 <span className="sr-only">Add to favorites</span>
@@ -4089,7 +3992,7 @@ const [categories, setCategories] = useState([]);
           </h3>
           <button type="button" className="size-8 shrink-0 flex justify-center items-center gap-x-2 rounded-full border border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:text-neutral-400 dark:focus:bg-neutral-600" aria-label="Close" data-hs-overlay="#hs-pro-shmnrsm">
             <span className="sr-only">Close</span>
-            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
@@ -4115,7 +4018,7 @@ const [categories, setCategories] = useState([]);
                   
                   "toggleClasses": "hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-3 ps-4 pe-9 flex items-center gap-x-2 text-nowrap w-full cursor-pointer bg-white border border-gray-200 rounded-lg text-start text-sm focus:outline-hidden focus:ring-2 focus:ring-emerald-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600",
                   "optionClasses": "hs-selected:bg-gray-100 dark:hs-selected:bg-neutral-800 py-2 px-4 w-full text-sm text-gray-800 cursor-pointer hover:bg-gray-100 rounded-lg focus:outline-hidden focus:bg-gray-100 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800",
-                  "optionTemplate": "<div><div className=\"flex items-center gap-x-2\"><div data-icon></div><div className=\"text-gray-800 dark:text-neutral-200\" data-title></div><span className=\"hidden hs-selected:block ms-auto\"><svg className=\"shrink-0 size-3.5 text-gray-800 dark:text-neutral-200\" xmlns=\"http:.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg></span></div></div>",
+                  "optionTemplate": "<div><div className=\"flex items-center gap-x-2\"><div data-icon></div><div className=\"text-gray-800 dark:text-neutral-200\" data-title></div><span className=\"hidden hs-selected:block ms-auto\"><svg className=\"shrink-0 size-3.5 text-gray-800 dark:text-neutral-200\" xmlns=\"http:.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" strokeWidth=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg></span></div></div>",
                   "dropdownScope": "window",
                   "viewport": "#hs-pro-shmnrsm-body"
                 }' className="hidden">
@@ -4124,7 +4027,7 @@ const [categories, setCategories] = useState([]);
                           selected
                           value="English-us"
                           data-hs-select-option={JSON.stringify({
-                            icon: `<svg className="shrink-0 size-4 rounded-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g fill-rule="evenodd"><g stroke-width="1pt"><path fill="#bd3d44" d="M0 0h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0z" transform="scale(3.9385)"/><path fill="#fff" d="M0 10h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0z" transform="scale(3.9385)"/></g><path fill="#192f5d" d="M0 0h98.8v70H0z" transform="scale(3.9385)"/><path fill="#fff" d="M8.2 3l1 2.8H12L9.7 7.5l.9 2.7-2.4-1.7L6 10.2l.9-2.7-2.4-1.7h3z..." /></g></svg>`,
+                            icon: `<svg className="shrink-0 size-4 rounded-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><g fill-rule="evenodd"><g strokeWidth="1pt"><path fill="#bd3d44" d="M0 0h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0z" transform="scale(3.9385)"/><path fill="#fff" d="M0 10h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0zm0 20h247v10H0z" transform="scale(3.9385)"/></g><path fill="#192f5d" d="M0 0h98.8v70H0z" transform="scale(3.9385)"/><path fill="#fff" d="M8.2 3l1 2.8H12L9.7 7.5l.9 2.7-2.4-1.7L6 10.2l.9-2.7-2.4-1.7h3z..." /></g></svg>`,
                           })}
                         >
                           Chennai
@@ -4142,7 +4045,7 @@ const [categories, setCategories] = useState([]);
                     Dansk
                   </option>
                   <option value="Italiano" data-hs-select-option='{
-                  "icon": "<svg className=\"shrink-0 size-4 rounded-full\" xmlns=\"http://www.w3.org/2000/svg\" id=\"flag-icon-css-it\" viewBox=\"0 0 512 512\"><g fill-rule=\"evenodd\" stroke-width=\"1pt\"><path fill=\"#fff\" d=\"M0 0h512v512H0z\"/><path fill=\"#009246\" d=\"M0 0h170.7v512H0z\"/><path fill=\"#ce2b37\" d=\"M341.3 0H512v512H341.3z\"/></g></svg>"}'>
+                  "icon": "<svg className=\"shrink-0 size-4 rounded-full\" xmlns=\"http://www.w3.org/2000/svg\" id=\"flag-icon-css-it\" viewBox=\"0 0 512 512\"><g fill-rule=\"evenodd\" strokeWidth=\"1pt\"><path fill=\"#fff\" d=\"M0 0h512v512H0z\"/><path fill=\"#009246\" d=\"M0 0h170.7v512H0z\"/><path fill=\"#ce2b37\" d=\"M341.3 0H512v512H341.3z\"/></g></svg>"}'>
                     Italiano
                   </option>
                   <option value="中文-繁體" data-hs-select-option='{
@@ -4152,7 +4055,7 @@ const [categories, setCategories] = useState([]);
                 </select>
 
                 <div className="absolute top-1/2 end-2.5 -translate-y-1/2">
-                  <svg className="shrink-0 size-3.5 text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg className="shrink-0 size-3.5 text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="m7 15 5 5 5-5" />
                     <path d="m7 9 5-5 5 5" />
                   </svg>
@@ -4196,7 +4099,7 @@ const [categories, setCategories] = useState([]);
           </h3>
           <button type="button" className="size-8 shrink-0 flex justify-center items-center gap-x-2 rounded-full border border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:text-neutral-400 dark:focus:bg-neutral-600" aria-label="Close" data-hs-overlay="#hs-pro-shmnlcm">
             <span className="sr-only">Close</span>
-            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
@@ -4339,7 +4242,7 @@ const [categories, setCategories] = useState([]);
         <div className="absolute top-2 end-2.5 z-10">
           <button type="button" className="size-8 shrink-0 flex justify-center items-center gap-x-2 rounded-full border border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:text-neutral-400 dark:focus:bg-neutral-600" aria-label="Close" data-hs-overlay="#hs-pro-shmchpdm">
             <span className="sr-only">Close</span>
-            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 6 6 18" />
               <path d="m6 6 12 12" />
             </svg>
@@ -4376,7 +4279,7 @@ const [categories, setCategories] = useState([]);
                   </span>
                   <a className="flex items-center gap-x-1 text-sm text-gray-800 underline-offset-4 hover:underline focus:outline-hidden focus:underline dark:text-neutral-200" href="#">
                     in Tablets, Laptops &amp; Accessories
-                    <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="m9 18 6-6-6-6" />
                     </svg>
                   </a>
@@ -4550,7 +4453,7 @@ const [categories, setCategories] = useState([]);
 
                   <button type="button" className="flex shrink-0 justify-center items-center size-11 text-sm font-medium rounded-full border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
                     <span className="sr-only">Favorite</span>
-                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
                     </svg>
                   </button>

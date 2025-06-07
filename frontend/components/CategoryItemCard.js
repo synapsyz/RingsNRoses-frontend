@@ -41,7 +41,8 @@ const CategoryItemCard = ({ item }) => {
           {item.name}
           <br />
           <span className="text-xs text-gray-500 dark:text-neutral-500">
-            {item.location || 'Unknown'}
+
+            {item.location.name || 'Unknown'}
           </span>
         </h4>
 
@@ -134,4 +135,6 @@ const CategoryItemCard = ({ item }) => {
   );
 };
 
+
 export default CategoryItemCard;
+
