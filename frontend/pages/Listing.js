@@ -63,7 +63,15 @@ const mobileSidebarRef = useRef(null);
   const [isOn, setIsOn] = useState(false); // Manage the toggle's state
 const [selectedFilters, setSelectedFilters] = useState([]);
 const[isShowItems, setIsShowItems]=useState(false);
-  const handleToggle = () => {
+  // New state for price range (conceptual)
+  const [selectedPriceRange, setSelectedPriceRange] = useState(null); 
+  const prices = [
+    { id: "0-1000", label: "₹0-₹1,000", min: 0, max: 1000 },
+    { id: "1000-5000", label: "₹1,000-₹5,000", min: 1000, max: 5000 },
+    { id: "5000-10000", label: "₹5,000-₹10,000", min: 5000, max: 10000 },
+    { id: "above-10000", label: "Above ₹10,000", min: 10000, max: 999999 },
+  ];  
+const handleToggle = () => {
     setIsOn(!isOn);
     // You would typically perform an action here, e.g., filter products by deals
     console.log('Deal toggle is now:', !isOn);
@@ -75,28 +83,49 @@ const[isShowItems, setIsShowItems]=useState(false);
     { id: "above-1000", label: "Above 1000", min: 1000, max: 99999 },
   ];
   // Inside your Listing component
-const fetchMoreData = () => {
-  if (!nextPageUrl && categoryItems.length > 0 && hasMore === true) {
-    setHasMore(false);
-    return;
-  }
-
-  const urlToFetch = nextPageUrl || `/categories/${categoryName.toLowerCase().replace(/\s+/g, '_')}/`;
-
-  api.get(urlToFetch)
-    .then((response) => {
-      const newItems = response.data.results;
-      setCategoryItems((prevItems) => [...prevItems, ...newItems]);
-      setNextPageUrl(response.data.next);
-      if (response.data.next === null) {
-        setHasMore(false);
-      }
-    })
-    .catch((err) => {
-      console.error('Error fetching more items:', err);
+ const fetchMoreData = () => {
+    if (!nextPageUrl) {
       setHasMore(false);
-    });
-};
+      return;
+    }
+
+    const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
+    const selectedSubIds = Object.entries(checkedItems)
+      .filter(([, isChecked]) => isChecked)
+      .map(([id]) => id);
+
+    const params = {};
+    if (selectedCapacity) {
+      params.min_capacity = selectedCapacity.min;
+      params.max_capacity = selectedCapacity.max;
+    }
+    if (isOn) {
+      params.deals = true;
+    }
+    if (selectedPriceRange) {
+      params.min_price = selectedPriceRange.min;
+      params.max_price = selectedPriceRange.max;
+    }
+
+    // Axios will automatically merge existing params with the ones from nextPageUrl if it's a full URL
+    // or append them if nextPageUrl is just the path + query.
+    // Ensure nextPageUrl is just the path part for params to be correctly applied.
+    // If nextPageUrl already contains query params, axios will merge, but it's cleaner
+    // to build it from base + new params.
+    api.get(nextPageUrl, { params }) 
+      .then((response) => {
+        const newItems = response.data.results;
+        setCategoryItems((prevItems) => [...prevItems, ...newItems]);
+        setNextPageUrl(response.data.next);
+        if (response.data.next === null) {
+          setHasMore(false);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching more items:', err);
+        setHasMore(false);
+      });
+  };
 
     useEffect(() => {
         if (categories.length === 0 && !isLoading) {
@@ -434,95 +463,166 @@ useEffect(() => {
 
   // New/Modified useEffect to fetch items for selected subcategories
 
-  useEffect(() => {
-    const selectedSubIds = Object.entries(checkedItems)
-      .filter(([_, isChecked]) => isChecked)
-      .map(([id]) => id);
+  // useEffect(() => {
+  //   const selectedSubIds = Object.entries(checkedItems)
+  //     .filter(([_, isChecked]) => isChecked)
+  //     .map(([id]) => id);
 
-    if (selectedSubIds.length === 0) {
-      setCategoryItems([]);
-      return;
-    }
+  //   if (selectedSubIds.length === 0) {
+  //     setCategoryItems([]);
+  //     return;
+  //   }
 
-    const fetchAndCombineSubcategoryItems = async () => {
-      let allFetchedItems = [];
+  //   const fetchAndCombineSubcategoryItems = async () => {
+  //     let allFetchedItems = [];
+  //     const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
+
+  //     for (const subId of selectedSubIds) {
+  //       try {
+  //         let endpoint = `/categories/${currentCategoryName}/subcategories/${subId}/`;
+  //         if (selectedCapacity) {
+  //           endpoint += `?min_capacity=${selectedCapacity.min}&max_capacity=${selectedCapacity.max}`;
+  //         }
+  //         const res = await api.get(endpoint);
+  //         const items = res.data.results || [];
+  //         allFetchedItems = allFetchedItems.concat(items);
+  //       } catch (err) {
+  //         console.error(`Failed to fetch items for subcategory ${subId}:`, err);
+  //       }
+  //     }
+  //     setCategoryItems(allFetchedItems);
+  //   };
+
+  //   fetchAndCombineSubcategoryItems();
+  // }, [checkedItems, categoryName, selectedCapacity]);
+    useEffect(() => {
       const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
-
-      for (const subId of selectedSubIds) {
-        try {
-          let endpoint = `/categories/${currentCategoryName}/subcategories/${subId}/`;
-          if (selectedCapacity) {
-            endpoint += `?min_capacity=${selectedCapacity.min}&max_capacity=${selectedCapacity.max}`;
-          }
-          const res = await api.get(endpoint);
-          const items = res.data.results || [];
-          allFetchedItems = allFetchedItems.concat(items);
-        } catch (err) {
-          console.error(`Failed to fetch items for subcategory ${subId}:`, err);
-        }
-      }
-      setCategoryItems(allFetchedItems);
-    };
-
-    fetchAndCombineSubcategoryItems();
-  }, [checkedItems, categoryName, selectedCapacity]);
-   useEffect(() => {
-      const name = categoryName.toLowerCase().replace(/\s+/g, '_');
-      if (!name) return;
+      if (!currentCategoryName) return;
   
-      if (categoryItemsCache[name] && !selectedCapacity) {
-        setCategoryItems(categoryItemsCache[name]);
-        return;
-      }
+      const selectedSubIds = Object.entries(checkedItems)
+        .filter(([, isChecked]) => isChecked)
+        .map(([id]) => id);
   
-      let endpoint = `/${name}/`;
+      const params = {};
       if (selectedCapacity) {
-        endpoint += `?min_capacity=${selectedCapacity.min}&max_capacity=${selectedCapacity.max}`;
+        params.min_capacity = selectedCapacity.min;
+        params.max_capacity = selectedCapacity.max;
+      }
+      if (isOn) {
+        params.deals = true;
+      }
+      if (selectedPriceRange) { // Add price range to parameters
+        params.min_price = selectedPriceRange.min;
+        params.max_price = selectedPriceRange.max;
       }
   
-      api.get(endpoint)
-        .then(response => {
-          const items = response.data.results;
-          setCategoryItems(items);
-          if (!selectedCapacity) {
-            setCategoryItemsCache(prev => ({
-              ...prev,
-              [name]: items
-            }));
+      const fetchItems = async (subId = null) => {
+        let endpoint = `/categories/${currentCategoryName}/`;
+        if (subId) {
+          endpoint += `subcategories/${subId}/`;
+        }
+  
+        try {
+          const res = await api.get(endpoint, { params });
+          return { items: res.data.results || [], next: res.data.next };
+        } catch (err) {
+          console.error(`Failed to fetch items for ${subId ? `subcategory ${subId}` : 'category'} with filters:`, err);
+          return { items: [], next: null };
+        }
+      };
+  
+      const fetchAllItems = async () => {
+        setIsLoading(true);
+        setCategoryItems([]);
+        setHasMore(true);
+        setNextPageUrl(null);
+  
+        let allFetchedItems = [];
+        let nextUrlForPagination = null; // To store the next URL for overall pagination
+  
+        if (selectedSubIds.length > 0) {
+          // If subcategories are selected, fetch for each and combine.
+          // Pagination for multiple subcategories gets complex,
+          // often best handled by API that can take multiple subcategory IDs or a broader search.
+          // For simplicity here, we fetch all at once for selected subcategories.
+          for (const subId of selectedSubIds) {
+            const { items } = await fetchItems(subId); // We don't get next for individual subcategory fetches
+            allFetchedItems = allFetchedItems.concat(items);
           }
-        })
-        .catch(err => {
-          console.error(`Failed to fetch items for category ${name}:`, err);
-          setCategoryItems([]);
-        });
-    }, [categoryName, selectedCapacity]);
-useEffect(() => {
-  if (!isShowItems) return;
+          setHasMore(false); // Disable infinite scroll if fetching all subcategories at once
+        } else {
+          // If no subcategories are selected, fetch for the main category with other filters
+          const { items, next } = await fetchItems();
+          allFetchedItems = items;
+          nextUrlForPagination = next;
+          setHasMore(next !== null);
+        }
+        
+        setCategoryItems(allFetchedItems);
+        setNextPageUrl(nextUrlForPagination);
+        setIsLoading(false);
+      };
+  
+      fetchAllItems();
+  
+    }, [checkedItems, categoryName, selectedCapacity, isOn, selectedPriceRange]); 
+//    useEffect(() => {
+//       const name = categoryName.toLowerCase().replace(/\s+/g, '_');
+//       if (!name) return;
+  
+//       if (categoryItemsCache[name] && !selectedCapacity) {
+//         setCategoryItems(categoryItemsCache[name]);
+//         return;
+//       }
+  
+//       let endpoint = `/${name}/`;
+//       if (selectedCapacity) {
+//         endpoint += `?min_capacity=${selectedCapacity.min}&max_capacity=${selectedCapacity.max}`;
+//       }
+  
+//       api.get(endpoint)
+//         .then(response => {
+//           const items = response.data.results;
+//           setCategoryItems(items);
+//           if (!selectedCapacity) {
+//             setCategoryItemsCache(prev => ({
+//               ...prev,
+//               [name]: items
+//             }));
+//           }
+//         })
+//         .catch(err => {
+//           console.error(`Failed to fetch items for category ${name}:`, err);
+//           setCategoryItems([]);
+//         });
+//     }, [categoryName, selectedCapacity]);
+// useEffect(() => {
+//   if (!isShowItems) return;
 
-  const selectedSubIds = Object.entries(checkedItems)
-    .filter(([_, isChecked]) => isChecked)
-    .map(([id]) => id);
+//   const selectedSubIds = Object.entries(checkedItems)
+//     .filter(([_, isChecked]) => isChecked)
+//     .map(([id]) => id);
 
-  if (selectedSubIds.length === 0) return;
+//   if (selectedSubIds.length === 0) return;
 
-  selectedSubIds.forEach(async (subId) => {
-    const name = categoryName.toLowerCase().replace(/\s+/g, '_');
-    setCategoryName(name);
-    if (subcategoryItemsMap[subId]) return; // Cached
+//   selectedSubIds.forEach(async (subId) => {
+//     const name = categoryName.toLowerCase().replace(/\s+/g, '_');
+//     setCategoryName(name);
+//     if (subcategoryItemsMap[subId]) return; // Cached
 
-    try {
-      const res = await api.get(`/categories/${name}/subcategories/${subId}/`);
-      const items = res.data.results || [];
+//     try {
+//       const res = await api.get(`/categories/${name}/subcategories/${subId}/`);
+//       const items = res.data.results || [];
 
-      setSubcategoryItemsMap(prev => ({
-        ...prev,
-        [subId]: items,
-      }));
-    } catch (err) {
-      console.error(`Failed to fetch items for subcategory ${subId}`, err);
-    }
-  });
-}, [checkedItems, isShowItems]);
+//       setSubcategoryItemsMap(prev => ({
+//         ...prev,
+//         [subId]: items,
+//       }));
+//     } catch (err) {
+//       console.error(`Failed to fetch items for subcategory ${subId}`, err);
+//     }
+//   });
+// }, [checkedItems, isShowItems]);
 // Example modification for an existing useEffect that fetches category items
 useEffect(() => {
   const idToFetchItemsFor = isMobile && mobileSelectedCategoryId !== null
@@ -1696,29 +1796,25 @@ useEffect(() => {
   </div>
 
   {/* Subcategories List */}
-  {subcategories.length > 0 && (
-    <div className="space-y-0.5 mt-4">
-      {subcategories.map((sub) => (
-        <div key={sub.id} className="flex items-center">
-          <label
-            htmlFor={`subcategory-${sub.id}`}
-            className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800"
-          >
-            <input
-              type="checkbox"
-              id={`subcategory-${sub.id}`}
-              checked={!!checkedItems[sub.id]}
-              onChange={() => handleCheckboxChange(sub.id)}
-              className="shrink-0 size-4.5 border-gray-300 rounded-sm text-[#E91E63] checked:border-[#E91E63] focus:ring-[#E91E63] disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-[#E91E63] dark:checked:border-[#E91E63] dark:focus:ring-offset-gray-800"
-            />
-            <span className="ms-2 text-gray-800 dark:text-neutral-200">
-              {sub.name}
-            </span>
-          </label>
-        </div>
-      ))}
-    </div>
-  )}
+ <ul className="space-y-2">
+  {subcategories.map((sub) => (
+    <li key={sub.id} className="flex items-center">
+      <input
+        type="checkbox"
+        id={`sub-${sub.id}`}
+        className="shrink-0 mt-0.5 border-gray-200 rounded text-[#E91E63] focus:ring-[#E91E63] disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-[#E91E63] dark:checked:border-[#E91E63] dark:focus:ring-offset-gray-800"
+        checked={checkedItems[sub.id] || false}
+        onChange={() => handleCheckboxChange(sub.id)}
+      />
+      <label
+        htmlFor={`sub-${sub.id}`}
+        className="text-sm text-gray-500 ms-3 dark:text-neutral-500"
+      >
+        {sub.name}
+      </label>
+    </li>
+  ))}
+</ul>
   {/* End Subcategories List */}
 </div>
 
@@ -1832,34 +1928,25 @@ useEffect(() => {
             </div>
 
             {/* Price List */}
-            <div className="space-y-0.5">
-              {/* Checkbox: under ₹500 */}
-              <div className="flex items-center">
-                <label htmlFor="hs-pro-shmfloc-under-150" className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800">
-                  <input type="checkbox" className="shrink-0 size-4.5 border-gray-300 rounded-sm text-emerald-600 checked:border-emerald-600 focus:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-emerald-500 dark:checked:border-emerald-500 dark:focus:ring-offset-gray-800" id="hs-pro-shmfloc-under-150"></input>
-                                    <span className="ms-2 text-gray-800 dark:text-neutral-200">under ₹500</span>
-                </label>
-              </div>
-              {/* End Checkbox */}
-
-              {/* Checkbox: ₹500-₹1000 */}
-              <div className="flex items-center">
-                <label htmlFor="hs-pro-shmfloc-150-300" className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800">
-                  <input type="checkbox" className="shrink-0 size-4.5 border-gray-300 rounded-sm text-emerald-600 checked:border-emerald-600 focus:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-emerald-500 dark:checked:border-emerald-500 dark:focus:ring-offset-gray-800" id="hs-pro-shmfloc-150-300" />
-                  <span className="ms-2 text-gray-800 dark:text-neutral-200">₹500-₹1000</span>
-                </label>
-              </div>
-              {/* End Checkbox */}
-
-              {/* Checkbox: Above ₹1000 */}
-              <div className="flex items-center">
-                <label htmlFor="hs-pro-shmfloc-300-500" className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800">
-                  <input type="checkbox" className="shrink-0 size-4.5 border-gray-300 rounded-sm text-emerald-600 checked:border-emerald-600 focus:ring-emerald-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-emerald-500 dark:checked:border-emerald-500 dark:focus:ring-offset-gray-800" id="hs-pro-shmfloc-300-500" />
-                  <span className="ms-2 text-gray-800 dark:text-neutral-200">Above ₹1000</span>
-                </label>
-              </div>
-              {/* End Checkbox */}
-            </div>
+            <ul className="space-y-2">
+                    {prices.map((price) => (
+                      <li key={price.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`price-${price.id}`}
+                          className="shrink-0 mt-0.5 border-gray-200 rounded text-[#E91E63] focus:ring-[#E91E63] disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-[#E91E63] dark:checked:border-[#E91E63] dark:focus:ring-offset-gray-800"
+                          checked={selectedPriceRange && selectedPriceRange.id === price.id}
+                          onChange={() => setSelectedPriceRange(selectedPriceRange && selectedPriceRange.id === price.id ? null : price)}
+                        />
+                        <label
+                          htmlFor={`price-${price.id}`}
+                          className="text-sm text-gray-500 ms-3 dark:text-neutral-500"
+                        >
+                          {price.label}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
             {/* End Price List */}
           </div>
           {/* End Price Card */}
@@ -1870,25 +1957,24 @@ useEffect(() => {
           <div className="mb-3">
             <span className="font-medium text-sm text-gray-800 dark:text-neutral-200">Capacity</span>
           </div>
-          <div className="space-y-0.5">
-            {capacities.map(({ id, label, min, max }) => (
-              <div key={id} className="flex items-center">
-                <label
-                  htmlFor={`capacity-${id}`}
-                  className="p-2 group w-full inline-flex items-center cursor-pointer text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-neutral-800"
-                >
-                  <input
-                    type="radio"
-                    name="capacity-range"
-                    id={`capacity-${id}`}
-                    className="shrink-0 size-4.5 border-gray-300 rounded-sm text-[#d81b60] checked:border-[#d81b60] focus:ring-[#d81b60] dark:bg-neutral-900 dark:border-neutral-500 dark:checked:bg-[#d81b60] dark:checked:border-[#d81b60] dark:focus:ring-offset-gray-800"
-                    checked={selectedCapacity?.id === id}
-                    onChange={() => setSelectedCapacity({ id, label, min, max })}
-                  />
-                  <span className="ms-2 text-gray-800 dark:text-neutral-200">{label}</span>
-                </label>
-              </div>
-            ))}
+          <div className="space-y-2">
+            {capacities.map((capacity) => (
+                      <li key={capacity.id} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`capacity-${capacity.id}`}
+                          className="shrink-0 mt-0.5 border-gray-200 rounded text-[#E91E63] focus:ring-[#E91E63] disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:checked:bg-[#E91E63] dark:checked:border-[#E91E63] dark:focus:ring-offset-gray-800"
+                          checked={selectedCapacity && selectedCapacity.id === capacity.id}
+                          onChange={() => setSelectedCapacity(selectedCapacity && selectedCapacity.id === capacity.id ? null : capacity)}
+                        />
+                        <label
+                          htmlFor={`capacity-${capacity.id}`}
+                          className="text-sm text-gray-500 ms-3 dark:text-neutral-500"
+                        >
+                          {capacity.label}
+                        </label>
+                      </li>
+                    ))}
           </div>
         </div>
       )}
@@ -1901,6 +1987,7 @@ useEffect(() => {
   setIsInfiniteScrollActive(false);
   setNextPageUrl(null);
   setHasMore(true);
+  setSelectedPriceRange(null);
   setSelectedCapacity(null);          // ✅ clear capacity filter
   setCheckedItems({});                // ✅ clear subcategory filters
 
