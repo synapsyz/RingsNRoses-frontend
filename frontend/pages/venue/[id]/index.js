@@ -8,6 +8,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import FavoriteButton from "@/components/FavoriteButton";
 import CategoryItemCard from "@/components/CategoryItemCard";
 import { useSession } from 'next-auth/react'; // Import useSession
+import { useRouter } from "next/router";
+
 // const { data: session, status } = useSession();
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const relatedItems = [
@@ -65,6 +67,7 @@ const getApiUrl = () => {
     : process.env.NEXT_PUBLIC_HOST; // e.g., 'https://your-production-api.com'
 };
 
+
 const api_url = getApiUrl();
 const api = axios.create({
   baseURL: api_url + "/api/v1", // Adjust this to your backend API base URL
@@ -84,6 +87,8 @@ export default function ProductDetail() {
   const [showContent, setShowContent] = useState(false);
   const [isDark, setIsDark] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false);
+  const router = useRouter();
+  const [venueId, setVenueId] = useState(null);  // 👈 state to store ID
   const handleFavoriteToggle = async (newValue) => {
 
     console.log(newValue)
@@ -125,6 +130,12 @@ export default function ProductDetail() {
   const toggleFavorite = () => {
     setIsFavorite(prev => !prev);
   };
+
+    useEffect(() => {
+    if (router.isReady) {
+      setVenueId(router.query.id);  // 👈 set ID from route params
+    }
+  }, [router.isReady, router.query.id]);  // re-run if router ready or id changes
   useEffect(() => {
     // Load saved theme from localStorage
     const savedTheme = localStorage.getItem('theme')
@@ -155,22 +166,31 @@ export default function ProductDetail() {
       });
     }
   }, [venueData?.images]);
-  useEffect(() => {
-    // Fetch data on component mount
-    // api.get(`//`)
-    axios
-      .get("http://localhost:8000/api/v1/venues/1/")
+
+
+
+  // In the ProductDetail component
+
+useEffect(() => {
+    // Only run the fetch if venueId has a value
+    if (!venueId) return;
+
+    setLoading(true); // Set loading state
+
+    api
+      .get(`/venues/${venueId}/`) // 👈 FIX: Use venueId instead of id
       .then((res) => {
         setVenueData(res.data);
         setShowContent(true);
-        // text =venueData.about
-        setLoading(false);
+        // ...
       })
       .catch((err) => {
-        console.error("API error:", err);
-
+        // ...
+      })
+      .finally(() => {
+        setLoading(false); // Stop loading in any case
       });
-  }, []);
+  }, [venueId]); // 👈 FIX: Re-run this effect when venueId changes
 
   console.log(venueData)
 
@@ -1531,96 +1551,100 @@ export default function ProductDetail() {
                   <div className="lg:col-span-3">
                     {/* <!-- Slider --> */}
                     <div
-                      data-hs-carousel='{
-        "loadingClasses": "opacity-0",
-        "isInfiniteLoop": true
-      }'
-                      className="relative"
-                    >
-                      <div className="hs-carousel flex flex-col sm:flex-row gap-3 sm:gap-5" style={{ 'height': '722px !important' }}>
-                        {/* Thumbnails */}
-                        <div className="flex-none order-2 sm:order-1">
-                          <div className="hs-carousel-pagination sm:h-175 flex flex-row sm:flex-col gap-3 pb-1.5 sm:pb-0 overflow-x-auto sm:overflow-x-hidden sm:overflow-y-auto [&::-webkit-scrollbar]:h-1 sm:[&::-webkit-scrollbar]:hidden [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
-                            style={{ 'top': '-120 !important', 'position': 'relative' }}>
-                            {venueData?.images?.map((src, index) => (
-                              <div
-                                key={index}
-                                className="hs-carousel-pagination-item relative shrink-0 size-20 rounded-md sm:rounded-lg overflow-hidden cursor-pointer after:absolute after:inset-0 after:size-full after:rounded-md sm:after:rounded-lg border border-gray-200 hs-carousel-active:border-gray-800 hs-carousel-active:after:bg-black/10 dark:hs-carousel-active:border-white dark:border-neutral-700"
-                              >
-                                <img
-                                  className="bg-gray-100 size-full object-cover rounded-md sm:rounded-lg dark:bg-neutral-800"
-                                  src={src.image}
-                                  alt="Product Image"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        {/* End Thumbnails */}
+  data-hs-carousel='{
+    "loadingClasses": "opacity-0",
+    "isInfiniteLoop": true,
+    "isAutoPlay": true,
+    "autoPlayInterval": 3000
+  }'
+  className="relative"
+>
+  <div className="hs-carousel flex flex-col sm:flex-row gap-3 sm:gap-5 h-[722px]">
+    
+    {/* Thumbnails */}
+<div className="flex-none order-2 sm:order-1">
+  <div
+    className="
+      hs-carousel-pagination 
+      flex flex-row sm:flex-col          // Flex direction: row on mobile, column on desktop
+      flex-nowrap                       // 👈 ADDED: Prevents thumbnails from wrapping on mobile
+      overflow-x-auto sm:overflow-y-auto  // 👈 MODIFIED: Horizontal scroll on mobile, vertical on desktop
+      gap-3                             // Gap between thumbnails
+      pb-1.5 sm:pb-0                    // Padding bottom for mobile layout
+      sm:h-[700px]                      // Fixed height for the desktop column layout
 
-                        {/* Preview */}
+      // --- Scrollbar Styling (already responsive!) ---
+      [&::-webkit-scrollbar]:h-1        // Height of the horizontal scrollbar (mobile)
+      sm:[&::-webkit-scrollbar]:w-1     // Width of the vertical scrollbar (desktop)
+      [&::-webkit-scrollbar-thumb]:rounded-full
+      [&::-webkit-scrollbar-track]:bg-gray-100
+      [&::-webkit-scrollbar-thumb]:bg-gray-300
+      dark:[&::-webkit-scrollbar-track]:bg-neutral-700
+      dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500
+    "
+  >
+    {venueData?.images?.map((src, index) => (
+      <div
+        key={index}
+        // 👇 ADDED shrink-0 to prevent items from shrinking in the flex container
+        className="hs-carousel-pagination-item relative shrink-0 size-20 rounded-md sm:rounded-lg overflow-hidden cursor-pointer after:absolute after:inset-0 after:size-full after:rounded-md sm:after:rounded-lg border border-transparent hs-carousel-active:border-gray-800 hs-carousel-active:after:bg-black/10 dark:hs-carousel-active:border-white dark:border-neutral-800"
+      >
+        <img
+          className="bg-gray-100 size-full object-cover rounded-md sm:rounded-lg dark:bg-neutral-800"
+          src={src.image}
+          alt={`Thumbnail ${index}`}
+        />
+      </div>
+    ))}
+  </div>
+</div>
+    {/* End Thumbnails */}
 
+    {/* Preview */}
+    <div className="relative group grow overflow-hidden h-full order-1 sm:order-2 bg-gray-100 rounded-lg dark:bg-neutral-800">
+      {/* Carousel Body */}
+      <div className="hs-carousel-body absolute inset-y-0 start-0 flex flex-nowrap opacity-0 w-full h-full">
+        <div className="flex transition-transform duration-700 ease-in-out w-full h-full">
+          {venueData?.images?.map((src, index) => (
+            <div
+              key={index}
+              className="hs-carousel-slide flex-shrink-0 w-full h-full"
+              data-hs-carousel-slide
+            >
+              <img
+                src={src.image}
+                alt={`Venue image ${index}`}
+                className="w-full h-full object-cover rounded-lg"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
 
-                        <div className="relative group grow overflow-hidden h-137.5 sm:h-175 order-1 sm:order-2 bg-gray-100 rounded-lg dark:bg-neutral-800">
-                          {/* Carousel Body */}
-                          <div className="hs-carousel-body absolute inset-y-0 start-0 flex flex-nowrap opacity-0">
-                            <div className="flex transition-transform duration-700 ease-in-out">
-                              {venueData?.images?.map((src, index) => (
-                                <div
-                                  key={index}
-                                  className="hs-carousel-slide flex-shrink-0 w-full"
-                                  data-hs-carousel-slide
-                                >
-                                  <img
-                                    src={src.image}
-                                    alt={`Venue image ${index}`}
-                                    className="w-full h-full object-cover rounded-lg"
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                          </div>
+      {/* Nav Buttons */}
+      <button
+        type="button"
+        className="hs-carousel-prev group-hover:opacity-100 opacity-0 absolute top-1/2 left-2 z-10 inline-flex justify-center items-center size-10 bg-white border border-gray-100 text-gray-800 rounded-full shadow-2xs hover:bg-gray-100 -translate-y-1/2"
+      >
+        <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        <span className="sr-only">Previous</span>
+      </button>
 
-                          {/* Nav Buttons */}
-                          <button
-                            type="button"
-                            className="hs-carousel-prev group-hover:opacity-100 opacity-0 absolute top-1/2 left-2 z-10 inline-flex justify-center items-center size-10 bg-white border border-gray-100 text-gray-800 rounded-full shadow-2xs hover:bg-gray-100 -translate-y-1/2"
-                          >
-                            <svg
-                              className="shrink-0 size-5"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path d="M15 18l-6-6 6-6" />
-                            </svg>
-                            <span className="sr-only">Previous</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            className="hs-carousel-next group-hover:opacity-100 opacity-0 absolute top-1/2 right-2 z-10 inline-flex justify-center items-center size-10 bg-white border border-gray-100 text-gray-800 rounded-full shadow-2xs hover:bg-gray-100 -translate-y-1/2"
-                          >
-                            <svg
-                              className="shrink-0 size-5"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                            >
-                              <path d="M9 18l6-6-6-6" />
-                            </svg>
-                            <span className="sr-only">Next</span>
-                          </button>
-                        </div>
-
-                        {/* End Preview */}
-                      </div>
-                    </div>
-                    {/* <!-- End Slider --> */}
+      <button
+        type="button"
+        className="hs-carousel-next group-hover:opacity-100 opacity-0 absolute top-1/2 right-2 z-10 inline-flex justify-center items-center size-10 bg-white border border-gray-100 text-gray-800 rounded-full shadow-2xs hover:bg-gray-100 -translate-y-1/2"
+      >
+        <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path d="M9 18l6-6-6-6" />
+        </svg>
+        <span className="sr-only">Next</span>
+      </button>
+    </div>
+    {/* End Preview */}
+  </div>
+</div>
 
                     <div id="hs-sticky-sidebar-mobile-wrapper"></div>
 
@@ -2804,32 +2828,13 @@ export default function ProductDetail() {
                   <CategoryItemCard key={item.id} item={item} />
                 ))}
 
-                {/* <!-- End Card --> */}
+              
 
-                {/* <!-- Card --> */}
-
-                {/* <!-- End Card --> */}
-
-
-                {/* <!-- End Grid --> */}
               </div>
-              {/* <!-- End Explore Interests --> */}
 
-              {/* <!-- Catgory Group --> */}
-
-              {/* <!-- End Catgory Group --> */}
-
-              {/* <!-- Clients --> */}
-
-              {/* <!-- End Clients --> */}
             </div>
           </main>
-          {/* <!-- ========== END MAIN CONTENT ========== --> */}
-
-          {/* <!-- ========== FOOTER ========== --> */}
-
-          {/* <!-- ========== END FOOTER ========== --> */}
-
+          
           {/* <!-- ========== SECONDARY CONTENT ========== --> */}
           {/* <!-- Regional Settings Modal --> */}
           <div id="hs-pro-shmnrsm" className="hs-overlay hidden size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto [--close-when-click-inside:true] pointer-events-none" role="dialog" tabIndex="-1" aria-labelledby="hs-pro-shmnrsm-label">
@@ -2850,66 +2855,7 @@ export default function ProductDetail() {
                 </div>
                 {/* <!-- End Header --> */}
 
-                {/* <!-- Body --> */}
-                {/* <div
-      id="hs-pro-shmnrsm-body"
-      className="overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
-    >
-      <div className="p-6 space-y-5">
-
-        <div>
-          <label className="block mb-2 text-sm font-medium text-gray-800 dark:text-neutral-200">
-            Language
-          </label>
-
-          
-          <div className="relative">
-            <select
-              id="hs-pro-select-language"
-              data-hs-select='{
-                "placeholder": "Select country",
-                "toggleTag": "<button type=\"button\" aria-expanded=\"false\"><div data-icon></div></button>",
-                "dropdownClasses": "z-80 w-full min-w-45 max-h-72 ...",
-                "toggleClasses": "hs-select-disabled:pointer-events-none ...",
-                "optionClasses": "hs-selected:bg-gray-100 ...",
-                "optionTemplate": "<div><div className=\"flex items-center gap-x-2\">...</div></div>",
-                "dropdownScope": "window",
-                "viewport": "#hs-pro-shmnrsm-body"
-              }'
-              className="hidden"
-            >
-              <option value="">Choose</option>
-              <option
-                selected
-                value="English-us"
-                data-hs-select-option='{
-                  "icon": "<svg className=\"shrink-0 size-4 rounded-full\" ...></svg>"
-                }'
-              >
-                English (United States)
-              </option>
-              <option
-                value="English-uk"
-                data-hs-select-option='{
-                  "icon": "<svg className=\"shrink-0 size-4 rounded-full\" ...></svg>"
-                }'
-              >
-                English (United Kingdom)
-              </option>
-              <option
-                value="Deutsch"
-                data-hs-select-option='{
-                  "icon": "<svg className=\"shrink-0 size-4 rounded-full\" ...></svg>"
-                }'
-              >
-                Deutsch
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div> */}
-
+                
 
                 {/* <!-- Footer --> */}
                 <div className="p-6 pt-2 md:pt-2 flex flex-col gap-2">
