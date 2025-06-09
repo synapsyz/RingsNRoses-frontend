@@ -10,7 +10,7 @@ import CategoryItemCard from "@/components/CategoryItemCard";
 import { useSession } from 'next-auth/react'; // Import useSession
 import { useRouter } from "next/router";
 
-// const { data: session, status } = useSession();
+
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const relatedItems = [
   {
@@ -68,14 +68,14 @@ const getApiUrl = () => {
 };
 
 
+
 const api_url = getApiUrl();
 const api = axios.create({
   baseURL: api_url + "/api/v1", // Adjust this to your backend API base URL
 },
   {
     headers: {
-      ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
-    }
+      ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })    }
   });
 export default function ProductDetail() {
   const { data: session, status } = useSession();
@@ -89,33 +89,37 @@ export default function ProductDetail() {
   const [isFavorite, setIsFavorite] = useState(false);
   const router = useRouter();
   const [venueId, setVenueId] = useState(null);  // 👈 state to store ID
+  const [favoriteId, setFavoriteId] = useState(null); // CRITICAL: This must hold the ID to delete
+
+  const accessToken = session?.accessToken;
+
   const handleFavoriteToggle = async (newValue) => {
 
     console.log(newValue)
     try {
-      const accessToken = session?.accessToken;
+
+
+
+      // This is what the server expects:
+const payload = {
+  "content_type": "venue",
+  "object_id": 7
+};
+
+const config = {
+  headers: { 'Authorization': `Bearer ${accessToken}` }
+};
+
 
       if (!accessToken) {
         alert('Authentication token is missing. Please log in.');
         return;
       }
       if (newValue) {
-        await api.delete('/favorites/', {
-          // uid,
-          // token,
-          accessToken,
-          "content_type": "venue",
-          "object_id": 7
-        });
+        await api.post('/favorites/', payload, config); // ✅ CORRECT;
       }
       else {
-        await api.post('/favorites/', {
-          // uid,
-          // token,
-          accessToken,
-          "content_type": "venue",
-          "object_id": 7
-        });
+         await api.delete('/favorites/', payload, config); // ✅ CORRECT;
       }
 
 
@@ -177,8 +181,11 @@ useEffect(() => {
 
     setLoading(true); // Set loading state
 
-    api
-      .get(`/venues/${venueId}/`) // 👈 FIX: Use venueId instead of id
+api.get(`/venues/${venueId}/`, {
+  headers: {
+    'Authorization': `Bearer ${accessToken}`
+  }
+})
       .then((res) => {
         setVenueData(res.data);
         setShowContent(true);
@@ -189,6 +196,8 @@ useEffect(() => {
       })
       .finally(() => {
         setLoading(false); // Stop loading in any case
+                setShowContent(true);
+
       });
   }, [venueId]); // 👈 FIX: Re-run this effect when venueId changes
 
@@ -2460,9 +2469,14 @@ useEffect(() => {
                                   </div>
 
                                   <div>
-                                    <FavoriteButton initialFavorite={false} onToggle={handleFavoriteToggle} />
 
-
+                                        <FavoriteButton
+                                        initialFavorite={venueData?.favorite_details?.is_favorite}
+                                        contentType={venueData?.favorite_details?.content_type}
+                                        objectId={venueData?.id} 
+                                        fav_id={venueData?.favorite_details?.id}
+                                        accessToken={accessToken}
+                                        />
 
 
                                     {/* <button type="button" className="flex shrink-0 justify-center items-center size-10 text-sm font-medium rounded-full border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50  dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300">

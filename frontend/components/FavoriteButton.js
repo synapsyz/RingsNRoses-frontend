@@ -1,35 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios"; // Make sure to import axios
 
-const FavoriteButton = ({ initialFavorite = false, onToggle }) => {
+const FavoriteButton = ({
+  initialFavorite = false,
+  contentType,
+  objectId,
+  fav_id,
+  accessToken,
+}) => {
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
+  const [isLoading, setIsLoading] = useState(false);
   const [animate, setAnimate] = useState(false);
 
-  const toggleFavorite = () => {
-    const newValue = !isFavorite;
-    setIsFavorite(newValue);
+  // Sync state if the initial prop changes from the parent
+  useEffect(() => {
+    setIsFavorite(initialFavorite);
+  }, [initialFavorite]);
 
-    // Optional callback for parent component
-    if (onToggle) onToggle(newValue);
+  const handleFavoriteToggle = async () => {
+    if (isLoading || !objectId) return; // Prevent clicks if loading or no ID is present
 
-    // Animate once on favoriting
-    if (!isFavorite) {
+    setIsLoading(true);
+    const isFavoriting = !isFavorite; // The new state we want to achieve
+
+    // Optimistically update the UI
+    setIsFavorite(isFavoriting);
+
+    // Animate only when adding a favorite
+    if (isFavoriting) {
       setAnimate(true);
       setTimeout(() => setAnimate(false), 500);
+    }
+
+    const config = {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    };
+
+    try {
+      if (isFavoriting) {
+        // === ADDING a favorite ===
+        const payload = {
+          content_type: contentType,
+          object_id: objectId,
+        };
+        await axios.post(
+          "http://localhost:8000/api/v1/favorites/",
+          payload,
+          config
+        );
+        console.log("Item favorited successfully!");
+      } else {
+        // === REMOVING a favorite ===
+        // The objectId is now in the URL for the DELETE request
+        await axios.delete(
+          `http://localhost:8000/api/v1/favorites/${fav_id}/`,
+          config
+        );
+        console.log("Item unfavorited successfully!");
+      }
+    } catch (error) {
+      console.error("Failed to update favorite status:", error);
+      // If the API call fails, revert the button to its previous state
+      setIsFavorite(!isFavoriting);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <button
       type="button"
-      onClick={toggleFavorite}
+      onClick={handleFavoriteToggle}
+      disabled={isLoading}
       className="flex shrink-0 justify-center items-center size-10 text-sm font-medium rounded-full border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300"
     >
       <span className="sr-only">Favorite</span>
       <svg
         className={`shrink-0 size-4 transform transition-all duration-500 ease-in-out 
-          ${isFavorite ? "scale-125 text-red-500 opacity-100" : "scale-100 text-gray-500 opacity-80"} 
-          ${animate ? "animate-bounce" : ""}
-        `}
+          ${isFavorite ? "scale-125 text-red-500" : "scale-100 text-gray-500"} 
+          ${animate ? "animate-bounce" : ""}`}
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"

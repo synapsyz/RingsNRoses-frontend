@@ -7,7 +7,7 @@ const CategoryItemCard = ({ item }) => {
       <div className="group relative">
         <a href={item.detail_url} className="block relative w-full h-48 md:h-64 overflow-hidden rounded-xl">
           <img
-            src={item.images?.[0] || 'https://i0.wp.com/suessmoments.com/wp-content/uploads/sites/10014/2023/02/website-shadowbrook-nj-wedding-photos-7153-photography-by-SUESS-MOMENTS.jpg?ssl=1'}
+            src={'https://i0.wp.com/suessmoments.com/wp-content/uploads/sites/10014/2023/02/website-shadowbrook-nj-wedding-photos-7153-photography-by-SUESS-MOMENTS.jpg?ssl=1'}
             alt={item.name}
             className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-in-out rounded-xl"
           />
