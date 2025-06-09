@@ -31,7 +31,44 @@ export default function Signup() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const router = useRouter();
+ const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [subcategories, setSubcategories] = useState([]);
+    const [selectedSubcategory, setSelectedSubcategory] = useState(null);
 
+    // Add this useEffect hook to fetch categories on component mount
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await api.get("/categories/");
+                setCategories(response.data.results);
+                console.log(response.data);
+            } catch (err) {
+                console.error("Error fetching categories:", err);
+            }
+        };
+        fetchCategories();
+    }, []); // Empty dependency array means this runs once on mount
+
+    // Add this useEffect hook to fetch subcategories when a category is selected
+    useEffect(() => {
+        if (selectedCategory) {
+            const fetchSubcategories = async () => {
+                try {
+                    const categorySlug = selectedCategory.id;
+                    const response = await api.get(`/categories/${categorySlug}/subcategories/`);
+                    setSubcategories(response.data.results);
+                    setSelectedSubcategory(null); // Reset subcategory when category changes
+                } catch (err) {
+                    console.error("Error fetching subcategories:", err);
+                }
+            };
+            fetchSubcategories();
+        } else {
+            setSubcategories([]); // Clear subcategories if no category is selected
+            setSelectedSubcategory(null);
+        }
+    }, [selectedCategory]);
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -61,7 +98,8 @@ const handleSignup = async (e) => {
       name: formData.name,
       phone: getFullPhoneNumber(),
       business_name: formData.business_name,
-
+    //   category: selectedCategory ? selectedCategory.id : null,   
+    subcategory_id: selectedSubcategory?.id
     };
 
     const res = await api.post("/signup/vendor/", payload, {
@@ -813,7 +851,52 @@ const handleSignup = async (e) => {
                                         </div>
                                     )}
                                 </div>
+<div className="flex flex-wrap -mx-2"> {/* Added flex container with negative margin for proper spacing */}
+    {/* Category Dropdown */}
+    <div className="mt-3 w-full sm:w-1/2 px-2"> {/* Added responsive width and padding */}
+        
+        <select
+            id="category-select"
+            className="py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:focus:ring-neutral-600"
+            value={selectedCategory ? selectedCategory.id : ""}
+            onChange={(e) => {
+                const selectedCat = categories.find(cat => cat.id === parseInt(e.target.value));
+                setSelectedCategory(selectedCat);
+            }}
+            required
+        >
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                    {category.name}
+                </option>
+            ))}
+        </select>
+    </div>
 
+    {/* Subcategory Dropdown */}
+    <div className="mt-3 w-full sm:w-1/2 px-2"> {/* Added responsive width and padding */}
+       
+        <select
+            id="subcategory-select"
+            className="py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:focus:ring-neutral-600"
+            value={selectedSubcategory ? selectedSubcategory.id : ""}
+            onChange={(e) => {
+                const selectedSubcat = subcategories.find(subcat => subcat.id === parseInt(e.target.value));
+                setSelectedSubcategory(selectedSubcat);
+            }}
+            disabled={!selectedCategory || subcategories.length === 0} // Disable if no category selected or no subcategories
+            required
+        >
+            <option value="">Select a subcategory</option>
+            {subcategories.map((subcategory) => (
+                <option key={subcategory.id} value={subcategory.id}>
+                    {subcategory.name}
+                </option>
+            ))}
+        </select>
+    </div>
+</div>
 
                                 {/* Terms and Conditions Checkbox */}
                                 <div className="flex items-center gap-x-2">
