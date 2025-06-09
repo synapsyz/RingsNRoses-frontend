@@ -98,8 +98,7 @@ const handleSignup = async (e) => {
       name: formData.name,
       phone: getFullPhoneNumber(),
       business_name: formData.business_name,
-    //   category: selectedCategory ? selectedCategory.id : null,   
-    subcategory_id: selectedSubcategory?.id
+      subcategory_id: selectedSubcategory?.id
     };
 
     const res = await api.post("/signup/vendor/", payload, {
