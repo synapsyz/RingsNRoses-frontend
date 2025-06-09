@@ -1,5 +1,7 @@
 'use client';
 import Head from 'next/head';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css'; // Import the default styles
 import { useSession, signOut } from 'next-auth/react';
 import React, { useState, useEffect, useRef, useCallback } from 'react'; 
 import axios from 'axios';
@@ -48,7 +50,19 @@ const [categoryName, setCategoryName] = useState('Venues');
 const [subcategoryItemsMap, setSubcategoryItemsMap] = useState({});
   const [selectedCapacity, setSelectedCapacity] = useState(null);
 const [isInfiniteScrollActive, setIsInfiniteScrollActive] = useState(false);
+// States for the selected range to be sent to the API
+  const [sortBy, setSortBy] = useState('');
 
+  // ... other function declarations
+
+  // Add the following function for handling sort changes
+  const handleSortChange = (event) => {
+    setSortBy(event.target.value);
+  };
+
+  // States for the current values displayed on the sliders (for smoother UI feedback)
+  const [priceSliderValue, setPriceSliderValue] = useState([0, 10000]);
+  const [capacitySliderValue, setCapacitySliderValue] = useState([0, 1000]);
 
    // New state for caching subcategories
 
@@ -106,6 +120,11 @@ const handleToggle = () => {
       params.min_price = selectedPriceRange.min;
       params.max_price = selectedPriceRange.max;
     }
+     if (sortBy === 'priceLowToHigh') {
+    params.ordering = 'price';
+  } else if (sortBy === 'priceHighToLow') {
+    params.ordering = '-price';
+  }
 
     // Axios will automatically merge existing params with the ones from nextPageUrl if it's a full URL
     // or append them if nextPageUrl is just the path + query.
@@ -495,77 +514,79 @@ useEffect(() => {
 
   //   fetchAndCombineSubcategoryItems();
   // }, [checkedItems, categoryName, selectedCapacity]);
-    useEffect(() => {
-      const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
-      if (!currentCategoryName) return;
-  
-      const selectedSubIds = Object.entries(checkedItems)
-        .filter(([, isChecked]) => isChecked)
-        .map(([id]) => id);
-  
-      const params = {};
-      if (selectedCapacity) {
-        params.min_capacity = selectedCapacity.min;
-        params.max_capacity = selectedCapacity.max;
+   useEffect(() => {
+  const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
+  if (!currentCategoryName) return;
+
+  const selectedSubIds = Object.entries(checkedItems)
+    .filter(([, isChecked]) => isChecked)
+    .map(([id]) => id);
+
+  const params = {};
+  if (selectedCapacity) {
+    params.min_capacity = selectedCapacity.min;
+    params.max_capacity = selectedCapacity.max;
+  }
+  if (isOn) {
+    params.deals = true;
+  }
+  if (selectedPriceRange) {
+    params.min_price = selectedPriceRange.min;
+    params.max_price = selectedPriceRange.max;
+  }
+  // Add this block for sorting
+  if (sortBy === 'priceLowToHigh') {
+    params.ordering = 'price';
+  } else if (sortBy === 'priceHighToLow') {
+    params.ordering = '-price';
+  }
+  // End of sorting block
+
+  const fetchItems = async (subId = null) => {
+    let endpoint = `/categories/${currentCategoryName}/`;
+    if (subId) {
+      endpoint += `subcategories/${subId}/`;
+    }
+
+    try {
+      const res = await api.get(endpoint, { params });
+      return { items: res.data.results || [], next: res.data.next };
+    } catch (err) {
+      console.error(`Failed to fetch items for ${subId ? `subcategory ${subId}` : 'category'} with filters:`, err);
+      return { items: [], next: null };
+    }
+  };
+
+  const fetchAllItems = async () => {
+    setIsLoading(true);
+    setCategoryItems([]);
+    setHasMore(true);
+    setNextPageUrl(null);
+
+    let allFetchedItems = [];
+    let nextUrlForPagination = null;
+
+    if (selectedSubIds.length > 0) {
+      for (const subId of selectedSubIds) {
+        const { items } = await fetchItems(subId);
+        allFetchedItems = allFetchedItems.concat(items);
       }
-      if (isOn) {
-        params.deals = true;
-      }
-      if (selectedPriceRange) { // Add price range to parameters
-        params.min_price = selectedPriceRange.min;
-        params.max_price = selectedPriceRange.max;
-      }
-  
-      const fetchItems = async (subId = null) => {
-        let endpoint = `/categories/${currentCategoryName}/`;
-        if (subId) {
-          endpoint += `subcategories/${subId}/`;
-        }
-  
-        try {
-          const res = await api.get(endpoint, { params });
-          return { items: res.data.results || [], next: res.data.next };
-        } catch (err) {
-          console.error(`Failed to fetch items for ${subId ? `subcategory ${subId}` : 'category'} with filters:`, err);
-          return { items: [], next: null };
-        }
-      };
-  
-      const fetchAllItems = async () => {
-        setIsLoading(true);
-        setCategoryItems([]);
-        setHasMore(true);
-        setNextPageUrl(null);
-  
-        let allFetchedItems = [];
-        let nextUrlForPagination = null; // To store the next URL for overall pagination
-  
-        if (selectedSubIds.length > 0) {
-          // If subcategories are selected, fetch for each and combine.
-          // Pagination for multiple subcategories gets complex,
-          // often best handled by API that can take multiple subcategory IDs or a broader search.
-          // For simplicity here, we fetch all at once for selected subcategories.
-          for (const subId of selectedSubIds) {
-            const { items } = await fetchItems(subId); // We don't get next for individual subcategory fetches
-            allFetchedItems = allFetchedItems.concat(items);
-          }
-          setHasMore(false); // Disable infinite scroll if fetching all subcategories at once
-        } else {
-          // If no subcategories are selected, fetch for the main category with other filters
-          const { items, next } = await fetchItems();
-          allFetchedItems = items;
-          nextUrlForPagination = next;
-          setHasMore(next !== null);
-        }
-        
-        setCategoryItems(allFetchedItems);
-        setNextPageUrl(nextUrlForPagination);
-        setIsLoading(false);
-      };
-  
-      fetchAllItems();
-  
-    }, [checkedItems, categoryName, selectedCapacity, isOn, selectedPriceRange]); 
+      setHasMore(false);
+    } else {
+      const { items, next } = await fetchItems();
+      allFetchedItems = items;
+      nextUrlForPagination = next;
+      setHasMore(next !== null);
+    }
+
+    setCategoryItems(allFetchedItems);
+    setNextPageUrl(nextUrlForPagination);
+    setIsLoading(false);
+  };
+
+  fetchAllItems();
+
+}, [checkedItems, categoryName, selectedCapacity, isOn, selectedPriceRange, sortBy]); // Add sortBy here
 //    useEffect(() => {
 //       const name = categoryName.toLowerCase().replace(/\s+/g, '_');
 //       if (!name) return;
@@ -1947,6 +1968,24 @@ useEffect(() => {
                       </li>
                     ))}
                   </ul>
+                  <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
+            <Slider
+                range
+                min={0}
+                max={10000} // Set max price to 10000
+                defaultValue={[0, 10000]}
+                value={priceSliderValue}
+                onChange={value => setPriceSliderValue(value)}
+                onAfterChange={value => setSelectedPriceRange({ min: value[0], max: value[1] })}
+                trackStyle={[{ backgroundColor: '#E91E63' }]}
+                handleStyle={[{ borderColor: '#E91E63' }, { borderColor: '#E91E63' }]}
+                railStyle={{ backgroundColor: '#e0e0e0' }}
+            />
+            <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-neutral-400">
+                <span>₹{priceSliderValue[0]}</span>
+                <span>₹{priceSliderValue[1] === 10000 ? '10000+' : priceSliderValue[1]}</span>
+            </div>
+          </div>
             {/* End Price List */}
           </div>
           {/* End Price Card */}
@@ -1976,6 +2015,24 @@ useEffect(() => {
                       </li>
                     ))}
           </div>
+          <div className="p-4 border-b border-gray-200 dark:border-neutral-700">
+            <Slider
+                range
+                min={0}
+                max={1000} // Set max capacity to 1000
+                defaultValue={[0, 1000]}
+                value={capacitySliderValue}
+                onChange={value => setCapacitySliderValue(value)}
+                onAfterChange={value => setSelectedCapacity({ min: value[0], max: value[1] })}
+                trackStyle={[{ backgroundColor: '#E91E63' }]}
+                handleStyle={[{ borderColor: '#E91E63' }, { borderColor: '#E91E63' }]}
+                railStyle={{ backgroundColor: '#e0e0e0' }}
+            />
+            <div className="flex justify-between mt-2 text-sm text-gray-600 dark:text-neutral-400">
+                <span>{capacitySliderValue[0]}</span>
+                <span>{capacitySliderValue[1] === 1000 ? '1000+' : capacitySliderValue[1]}</span>
+            </div>
+          </div>
         </div>
       )}
           {/* End Capacity Card */}
@@ -1989,6 +2046,8 @@ useEffect(() => {
   setHasMore(true);
   setSelectedPriceRange(null);
   setSelectedCapacity(null);          // ✅ clear capacity filter
+  setPriceSliderValue([0, 10000]); // Reset slider visual to full price range
+    setCapacitySliderValue([0, 1000]);
   setCheckedItems({});                // ✅ clear subcategory filters
 
   const name = categoryName.toLowerCase().replace(/\s+/g, '_');
@@ -2097,10 +2156,12 @@ if (selectedCategoryId === 1) {
          </div>
         </div>
       </div>
+
       {/* End Body */}
     </div>
   </div>
   {/* End Sidebar */}
+  
 </div>
               <div className="grow overflow-hidden pb-10 lg:pt-10 lg:ps-4 xl:ps-8">
                 {/* Filter Group */}
@@ -2140,6 +2201,35 @@ if (selectedCategoryId === 1) {
     </span>
   </button>
 ))}
+<div className="relative min-h-7.5 inline-flex items-center justify-end w-full">
+  <span className="me-1 text-xs sm:text-sm text-gray-500 dark:text-neutral-500">
+    Sort By:
+  </span>
+  <select
+    className="appearance-none py-1 ps-1.5 pr-6 inline-flex shrink-0 justify-center items-center gap-x-1.5 border border-transparent font-medium text-sm text-gray-800 rounded-lg dark:text-neutral-200 focus:outline-none focus:ring-0 focus:border-transparent"
+    value={sortBy}
+    onChange={handleSortChange}
+    style={{ width: sortBy === "" ? "60px" : "auto" }}
+  >
+    <option value="">Sort</option>
+    <option value="priceLowToHigh">Price low to high</option>
+    <option value="priceHighToLow">Price high to low</option>
+  </select>
+
+  {/* SVG Arrow */}
+  <div className="pointer-events-none absolute right-2 top-1/2 transform -translate-y-1/2">
+    <svg
+      className="w-3 h-3 text-gray-600 dark:text-neutral-300"
+      viewBox="0 0 20 20"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.943l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0l-4.24-4.25a.75.75 0 01.02-1.06z" />
+    </svg>
+  </div>
+</div>
+
+
 
 </div>
 
@@ -2156,10 +2246,8 @@ if (selectedCategoryId === 1) {
                       <span
                         className="ms-1.5 flex flex-col justify-center items-center size-4 bg-white text-[#E91E63] rounded-full hover:bg-white/90 focus:bg-white/90"
                         onClick={() => {
-                          // Remove specific filter
                           const newFilters = selectedFilters.filter((_, i) => i !== idx);
                           setSelectedFilters(newFilters);
-                          // TODO: Also update the related state like isOn, checkboxes, etc.
                         }}
                       >
                         <svg
@@ -2182,6 +2270,7 @@ if (selectedCategoryId === 1) {
                   ))}
                 </div>
                 {/* Grid */}
+              
                 {isInfiniteScrollActive ? (
   <InfiniteScroll
     dataLength={categoryItems.length}
