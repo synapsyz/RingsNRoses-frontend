@@ -752,7 +752,7 @@ const config = {
                               {/* {/* <!-- Grid -->  */}
                               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-6">
                                 {/* {/* <!-- Item -->  */}
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.venuebookingz.com/24118-1720587040-wm-league-hotels-banquet-chennai-1.jpg" alt="Product Image" />
 
@@ -762,7 +762,7 @@ const config = {
                                 {/* {/* <!-- End Item -->  */}
 
                                 {/* {/* <!-- Item -->  */}
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.unexplora.com/wp-content/uploads/2020/11/Untitled-design-85.jpg" alt="Product Image" />
                                   </div>
@@ -771,7 +771,7 @@ const config = {
                                 {/* {/* <!-- End Item -->  */}
 
                                 {/* {/* <!-- Item -->  */}
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://cdn0.weddingwire.in/vendor/4599/3_2/960/jpg/wedding-venue-aj-garden-outdoor-space-1_15_364599-161640601569768.jpeg" alt="Product Image" />
                                   </div>
@@ -780,7 +780,7 @@ const config = {
                                 {/* {/* <!-- End Item -->  */}
 
                                 {/* {/* <!-- Item -->  */}
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.kalkifashion.com/blogs/wp-content/uploads/2023/01/Top-7-Destination-Wedding-Locations-in-India.jpg" alt="Product Image" />
                                   </div>
@@ -789,7 +789,7 @@ const config = {
                                 {/* {/* <!-- End Item -->  */}
 
                                 {/* {/* <!-- Item -->  */}
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://media.weddingz.in/images/ce4bb19da8f580022371692fda5715b5/thinking-of-a-beach-wedding-check-out-the-best-beach-wedding-venues-in-goa-2.jpg" alt="Product Image" />
 
@@ -799,7 +799,7 @@ const config = {
                                 {/* {/* <!-- End Item -->  */}
 
                                 {/* {/* <!-- Item -->  */}
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://media.weddingz.in/photologue/1490602150941/palace-wedding-venues-in-india-gajner-palace.PNG" alt="Product Image" />
 
@@ -809,7 +809,7 @@ const config = {
                                 {/* {/* <!-- End Item -->  */}
 
                                 {/* {/* <!-- Item -->  */}
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://imagewedz.oyoroomscdn.com/medium/photologue/images/diamond-banquet-chembur-mumbai-4.jpeg" alt="Product Image" />
                                   </div>
@@ -818,7 +818,7 @@ const config = {
                                 {/* {/* <!-- End Item -->  */}
 
                                 {/* {/* <!-- Item -->  */}
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.brides.com/thmb/6rWBPzOU1FKL8U4JJWdxTh7v4-8=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/J0GNM_v_QLTPspmntIY9Wx0-blZ0KWIyAGTfiPDU7Vz73PGoHrCJhs8u9UmLiQvm3_tX_NmoFw1ylvOHf_c7M-S112OA0R0X2CuTxIhgaEscCQgLwczPt6ACGKFjcopy-df74a973bac843b69df2ff927153bc12.jpg" alt="Product Image" />
                                   </div>
@@ -837,33 +837,33 @@ const config = {
                             {/* {/* <!-- Grid -->  */}
                             <div id="mega-menu-catalog-tab-2" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-2">
                               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.visionvivaah.com/blog/wp-content/uploads/2020/01/best-wedding-dresses-for-indian-bride1.jpg" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Bridal Wear</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQCVQETB2x5r5eCHyaWRCSe3NDxbRI817N1bw&s" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Groom Wear</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTagJonsg3okffWkoZ2IaItujDfucHwgrQtDg&s" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Jewelry</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images.shaadisaga.com/shaadisaga_production/photos/pictures/000/476/585/new_medium/tsg_%285%29.jpg?1532692503" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Footwear</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqBATTreSNWj8iUVlHBekdr4_DhvEjwmfw_Q&s" alt="Product Image" />
 
@@ -871,7 +871,7 @@ const config = {
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Accessories</span>
                                 </a>
 
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.riccoindia.com/cdn/shop/products/IMG_2384_2048x.jpg?v=1657351657" alt="Product Image" />
                                   </div>
@@ -883,7 +883,7 @@ const config = {
                               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 md:gap-6 mt-6">
 
                                 <div className="col-span-2 flex justify-center">
-                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://static.fibre2fashion.com//articleresources/images/75/7486/wedding-small_Small.jpg" alt="Product Image" />
                                     </div>
@@ -900,33 +900,33 @@ const config = {
                             <div id="mega-menu-catalog-tab-3" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-3">
                               {/* {/* <!-- Grid -->  */}
                               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDOF--vmxkIKTRlsB_j1cgw1jQZnHZLwyFkA&s" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Veg / Non-Veg Caterers</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://admin.venuelook.com/images/new-home-images/optimized/vendor/caterer.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Multi-Cuisine Caterers</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.captainjoe.in/images/catering-specialists.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Regional Cuisine Specialists</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4bzBgybsWbj23ahaKRLIzKXg2d9AHF3KJYQ&s" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Sweet & Dessert Vendors</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://5.imimg.com/data5/SELLER/Default/2020/10/BZ/NO/XH/58672911/neato-foods-ambattur-corporate-canteen-500x500.jpg" alt="Product Image" />
 
@@ -934,7 +934,7 @@ const config = {
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Live Counters</span>
                                 </a>
 
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://tastytablecatering.com/wp-content/uploads/2023/03/bartender-making-cocktails-at-open-bar-wedding.jpg" alt="Product Image" />
                                   </div>
@@ -946,7 +946,7 @@ const config = {
                               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 md:gap-6 mt-6">
 
                                 <div className="col-span-2 flex justify-center">
-                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTpNcpPpR6sNUwvc8KCdFLS2p8vJ1d60yiwQ&s" alt="Product Image" />
                                     </div>
@@ -961,33 +961,33 @@ const config = {
                             <div id="mega-menu-catalog-tab-4" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-4">
                               {/* {/* <!-- Grid -->  */}
                               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.k4craft.com/wp-content/uploads/2020/01/1Floral-Backdrop.jpg" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Floral Decor</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.diwas.in/wp-content/uploads/2016/02/rustic.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Theme Decor</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://shineevents.co.in/wp-content/uploads/2021/11/3-1.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Mandap & Stage Setup</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYV7_8nh0kvYPbrPLkwP4J0xEAOaNkF85WwA&s" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Table Centerpieces</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQe_Z8zIy0TvTbyuWiAB5qHLmSTzu2CK2YGA&s" alt="Product Image" />
 
@@ -995,7 +995,7 @@ const config = {
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Entrance Decor</span>
                                 </a>
 
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSjg6YRQtWTZE8cckQ0mpA10gwg5aTx6XmIdw&s" alt="Product Image" />
                                   </div>
@@ -1007,7 +1007,7 @@ const config = {
                               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 md:gap-6 mt-6">
 
                                 <div className="col-span-2 flex justify-center">
-                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3jRG895OPHXwvBu1Rhm6D-fB5ApicSAFHJA&s" alt="Product Image" />
                                     </div>
@@ -1022,33 +1022,33 @@ const config = {
                             <div id="mega-menu-catalog-tab-5" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-5">
                               {/* {/* <!-- Grid -->  */}
                               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLx1bP_LBPqfJ2FCjH24Thk9Ar5u1cAaAKOw&s" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">DJs</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqDnqOZq4whTmJchZKbntAphh5eTh87pvYxw&s" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Live Bands</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://cdn0.weddingwire.in/article-gallery-o/00000/3_2/960/jpg/articulos-india/2019/non-troncales/puneri-dhol/saurabh-birje-photography-phuneri-dhol-lead-image.jpeg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Dhol / Traditional Performers</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFRFcR4R3TkgAWj_GiasbsDiCNkYlTJR_QRA&s" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Dance Troupes</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://lh3.googleusercontent.com/cmF2dPVYXKut9jrWPMMjaNEVoCMHkx1LsglSMlVLHxR427Jjimiu0vw7Qq4cBjXFpU3IAJbXL9r0apHjau5QgYvFLPFHV1iNZLduww=w961-h641-l80-e31" alt="Product Image" />
 
@@ -1056,7 +1056,7 @@ const config = {
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Anchors / MCs</span>
                                 </a>
 
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuaal8xK8xGAaCnoX--044AHMWUoV-1Ofeqg&s" alt="Product Image" />
                                   </div>
@@ -1068,7 +1068,7 @@ const config = {
                               <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 md:gap-6 mt-6">
 
                                 <div className="col-span-2 flex justify-center">
-                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvQQU6ucynh7hLi1cDyvyN2VvZ_X4UOZ0_jQ&s" alt="Product Image" />
                                     </div>
@@ -1081,33 +1081,33 @@ const config = {
                             <div id="mega-menu-catalog-tab-6" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-6">
                               {/* {/* <!-- Grid -->  */}
                               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://cdn.kamatharjun.com/wp-content/uploads/2022/10/Prewedding-blog-8.jpg" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Candid Photography</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbRhTt7nxPVupZII-bGGMO5qAl8yc5sjZp8Q&s" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Traditional Photography</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.visionvivaah.com/blog/wp-content/uploads/2019/08/best-wedding-videography-in-chandigarh-960x487.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Cinematic Videography</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwNQVPkGMO4V2IS_FtdvhiKbbmoWiOT5zAeA&s" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Drone Shoots</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://5.imimg.com/data5/SELLER/Default/2021/2/EX/HF/RA/121338197/pre-wedding-photoshoot-service-500x500.jpg" alt="Product Image" />
 
@@ -1115,7 +1115,7 @@ const config = {
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Pre-Wedding Shoots</span>
                                 </a>
 
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://cdn0.weddingwire.in/vendor/2384/3_2/960/jpg/photobooth-instant-photo-booth-photobooth-4_15_422384-166246147178159.jpeg" alt="Product Image" />
                                   </div>
@@ -1131,33 +1131,33 @@ const config = {
                             <div id="mega-menu-catalog-tab-7" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-7">
                               {/* {/* <!-- Grid -->  */}
                               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,q_auto:best,t_productPageHeroGalleryTransformation_v2,w_auto/India%20LOB/Stationery%2C%20Letterheads%20and%20Stamps/Wedding%20Invitations/IN_Wedding-Invitations_Hero-image_01" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Printed Invitations</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://i.pinimg.com/736x/9f/7b/91/9f7b91504fc1cc4747f9c1cf05255498.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">E-Invites</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://blogcdn.paperlust.co/blog/wp-content/uploads/2019/08/1.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Laser-Cut Cards</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://i.etsystatic.com/18363873/r/il/0fcd9a/1891009885/il_570xN.1891009885_eqav.jpg" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Scroll Invitations</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://cms.cloudinary.vpsvc.com/image/upload/c_scale,dpr_auto,f_auto,q_auto:good,w_700/India%20LOB/Stationery%2C%20Letterheads%20and%20Stamps/Wedding%20Invitations/IN_Wedding-Invitations_Overview" alt="Product Image" />
 
@@ -1165,7 +1165,7 @@ const config = {
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Custom Wedding Stationery</span>
                                 </a>
 
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://design-assets.adobeprojectm.com/content/download/express/public/urn:aaid:sc:VA6C2:d271d604-d65c-55cd-b287-733effd3a3af/component?assetType=TEMPLATE&etag=35bc0dea77df416bb31c32dc28675a6d&revision=048a2724-6699-4d01-9c6b-62ee9736fb45&component_id=1a690ebd-eddb-4ae1-9e58-8d6d7d99ffb9" alt="Product Image" />
                                   </div>
@@ -1180,27 +1180,27 @@ const config = {
 
                             <div id="mega-menu-catalog-tab-9" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-9">
                               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://i.etsystatic.com/18125450/r/il/6f4a57/6104906139/il_570xN.6104906139_gw5l.jpg" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Personalized Gifts</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.brides.com/thmb/ZG_lIownwOgazIuIPBmv9M_FDA4=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/__opt__aboutcom__coeus__resources__content_migration__brides__public__brides-services__production__2016__10__24__580e9b44d1dc137f1593dcfe_2014_bridescom-Editorial_Images-12-Edible-Wedding-Favors-Refresh-Large-Edible-Wedding-Favors-Chocolate-Mousse-Love-Me-Do-Photography-a65883c7a28e40558abecdf1f967144b.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Edible Favors</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://www.thewalletstore.in/cdn/shop/files/9.jpg?v=1737713179&width=1200" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Utility Gifts</span>
                                 </a>
                                 <div className="col-span-3 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 md:gap-6 mt-6">
-                                  <div className="flex justify-center"> <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <div className="flex justify-center"> <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://m.media-amazon.com/images/I/81Vl6qGMspL.jpg" alt="Product Image" />
 
@@ -1208,7 +1208,7 @@ const config = {
                                     <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Handmade Crafts</span>
                                   </a>
                                   </div>
-                                  <div className="flex justify-center"> <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <div className="flex justify-center"> <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://ruchoks.com/wp-content/uploads/2024/01/1-84.jpg" alt="Product Image" />
 
@@ -1223,33 +1223,33 @@ const config = {
                             <div id="mega-menu-catalog-tab-11" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-11">
                               {/* {/* <!-- Grid -->  */}
                               <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVz1A8Ti2O_WJS5dX8B5XdkDDZ6tI_IAkg0g&s" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Bridal Makeup</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyb2JD1Q3RJDenIrbhmPSCs_ovsdW0I2QIeA&s" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Groom Styling</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://images-static.naikaa.com/beauty-blog/wp-content/uploads/2024/07/wedding-1.jpg" alt="Product Image" />
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Hair Stylists</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXvN8cq56FEbwqzNfbHgeDcOqfVE7UUr4jVQ&s" alt="Product Image" />
 
                                   </div>
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Mehendi Artists</span>
                                 </a>
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://i.pinimg.com/564x/ea/34/e8/ea34e8692b950a700a92765a1613c399.jpg" alt="Product Image" />
 
@@ -1257,7 +1257,7 @@ const config = {
                                   <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Nail Artists</span>
                                 </a>
 
-                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                   <div className="relative shrink-0">
                                     <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://mlw6zuezpssl.i.optimole.com/w:780/h:625/q:mauto/f:avif/https://www.rethespa.in/wp-content/uploads/s12.jpg" alt="Product Image" />
                                   </div>
@@ -1269,27 +1269,27 @@ const config = {
 
                               <div id="mega-menu-catalog-tab-13" className="hidden h-full" role="tabpanel" aria-labelledby="mega-menu-catalog-tab-item-13">
                                 <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-6">
-                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://cdn11.bigcommerce.com/s-9bdyx9g8xs/images/stencil/1280x1280/products/127/1493/sankheda-chairs-complete-set-for-wedding-and-events-rental__62086.1643592082.jpg?c=2" alt="Product Image" />
 
                                     </div>
                                     <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Furniture</span>
                                   </a>
-                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://sjcaterers.in/wp-content/uploads/2021/06/crockery-rent.jpg" alt="Product Image" />
                                     </div>
                                     <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Cutlery & Crockery</span>
                                   </a>
-                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                  <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                     <div className="relative shrink-0">
                                       <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRA-A6sE7W3_KngaJV-RVE77zeOldklIDl20y5lvCIRxfGQoHPTbAcPQLfW4QMvMepWWZiURaxho7vh4xE_X-RhiFyOgS_at9dGrTMkiWY" alt="Product Image" />
                                     </div>
                                     <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200">Tents & Shamianas</span>
                                   </a>
                                   <div className="col-span-3 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 md:gap-6 mt-6">
-                                    <div className="flex justify-center"> <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                    <div className="flex justify-center"> <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                       <div className="relative shrink-0">
                                         <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSODUDalBMhZ_Ak6GxjVWSB_9b903coKJOhuKX71S2cVSFokuf4RJtPeu4NG3x0lRr5CXTU_Gwt3wCda5lRhrxqTdjKWV_QEz9r7HWW3FU" alt="Product Image" />
 
@@ -1297,7 +1297,7 @@ const config = {
                                       <span className="mt-3 block text-sm text-gray-800 dark:text-neutral-200"> Props & Thematic Decor Items</span>
                                     </a>
                                     </div>
-                                    <div className="flex justify-center"> <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./listing.html">
+                                    <div className="flex justify-center"> <a className="group block p-4 rounded-lg text-center hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="././Listing">
                                       <div className="relative shrink-0">
                                         <img className="shrink-0 size-16 sm:size-20 lg:size-24 mx-auto object-cover bg-gray-100 rounded-full dark:bg-neutral-800" src="https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQ_OWIVSE0ErpqsXtMeGc4B725-W2KU2WZGzNvsIW-AFcxCr6dy6Z8iu17sYWOaXF_vSam6NYiOWDZlBzmFB6YaOvluk0oL8dSrLXv5TMd3" alt="Product Image" />
 
@@ -1534,7 +1534,7 @@ const config = {
                   <ol className=" flex items-center whitespace-nowrap">
                     <li className="flex items-center">
 
-                      <a className="py-0.5 px-1.5 flex items-center gap-x-1 text-sm rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="listing.html">
+                      <a className="py-0.5 px-1.5 flex items-center gap-x-1 text-sm rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./Listing">
                         {venueData?.subcategory?.category?.name}
                       </a>
                       <svg className="shrink-0 overflow-visible size-4  text-gray-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -1543,7 +1543,7 @@ const config = {
                     </li>
                     <li className="flex items-center truncate">
 
-                      <a className="py-0.5 px-1.5 flex items-center truncate gap-x-1 text-sm truncate rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="listing.html">
+                      <a className="py-0.5 px-1.5 flex items-center truncate gap-x-1 text-sm truncate rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="./Listing">
                         <span className="truncate"> {venueData?.subcategory?.name}</span>
                       </a>
                       <svg className="shrink-0 overflow-visible size-4  text-gray-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
