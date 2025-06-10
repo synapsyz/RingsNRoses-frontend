@@ -14,6 +14,7 @@ import EventForm from '@/components/EventForm';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import HeroCarousel from "@/components/HeroCarousel"; // adjust path as needed
+import CategoryItemCard from "@/components/CategoryItemCard";
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -31,7 +32,198 @@ const api = axios.create({
     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
   },
 });
+const venueCards = [
+  {
+    title: "Outdoor Lawns & Gardens",
+    image:
+      "https://images.squarespace-cdn.com/content/v1/5f152ec422af2a37ad8d4da4/1595231592681-7PDPA2AX1EQHG56NQNV3/Outdoor+Wedding+Venue+Chennai",
+    price: "₹2L",
+    originalPrice: "₹3L",
+    views: "50× last month",
+    reviews: 67,
+    badge: "💖 Most Loved",
+    href: "./product-detail",
+  },
+  {
+    title: "Theme Decor",
+    image: "https://img.staticmb.com/mbcontent/images/uploads/2023/8/Heaven_4.jpg",
+    price: "₹1L",
+    originalPrice: "₹1.5L",
+    views: "44× last month",
+    reviews: null,
+    badge: null,
+    href: "./product-detail",
+  },
+  {
+    title: "Drone Shoots",
+    image:
+      "https://t4.ftcdn.net/jpg/08/01/08/11/360_F_801081156_a7Rpu5kGuHBCPLkN9JhWe0qWpmWhwjNx.jpg",
+    price: "₹80K",
+    originalPrice: "₹1L",
+    views: "38× last month",
+    reviews: 29,
+    badge: "🔥 Trending now",
+    href: "./product-detail",
+  },
+  {
+    title: "Mehendi Artists",
+    image: "https://www.hamaraevent.com/uploads/blog/0076248001475654338.jpg",
+    price: "₹4k",
+    originalPrice: "₹6k",
+    views: "35× last month",
+    reviews: 3,
+    badge: null,
+    href: "./product-detail",
+  },
+  {
+    title: "Multi-Cuisine Caterers",
+    image:
+      "https://imgmediagumlet.lbb.in/media/2023/10/6520072fd766a50bd12a61b5_1696597807795.jpg",
+    price: "₹500/plate",
+    originalPrice: "₹700",
+    views: "33× last month",
+    reviews: null,
+    badge: "Popular this season",
+    href: "./product-detail",
+  },
+];
+
+const serviceButtons = [
+  {
+    label: "Venue",
+    icon: "https://cdn-icons-png.flaticon.com/128/11881/11881148.png",
+  },
+  {
+    label: "Bride & Groom Essentials",
+    icon: "https://cdn-icons-png.flaticon.com/128/4514/4514714.png",
+  },
+  {
+    label: "Catering & Food",
+    icon: "https://cdn-icons-png.flaticon.com/128/17845/17845750.png",
+  },
+  {
+    label: "Decor & Setup",
+    icon: "https://cdn-icons-png.flaticon.com/128/6016/6016756.png",
+  },
+  {
+    label: "Entertainment",
+    icon: "https://cdn-icons-png.flaticon.com/128/1773/1773609.png",
+  },
+  {
+    label: "Photography & Videography",
+    icon: "https://cdn-icons-png.flaticon.com/128/3249/3249934.png",
+  },
+  {
+    label: "Invitations & Stationery",
+    icon: "https://cdn-icons-png.flaticon.com/128/6002/6002697.png",
+  },
+  {
+    label: "Gifts & Return Favors",
+    icon: "https://cdn-icons-png.flaticon.com/128/11622/11622740.png",
+  },
+  {
+    label: "Makeup & Styling",
+    icon: "https://cdn-icons-png.flaticon.com/128/3163/3163173.png",
+  },
+  {
+    label: "Rentals",
+    icon: "https://cdn-icons-png.flaticon.com/128/515/515034.png",
+  },
+];
+
+
+const servicecategories = [
+  {
+    name: "Photography",
+    image: "https://cdn-blog.superprof.com/blog_in/wp-content/uploads/2020/01/in-photo-photo-1.jpg",
+  },
+  {
+    name: "Invitations",
+    image: "https://www.vivahcards.com/wp-content/uploads/2024/07/Indian-Wedding-Card-20272-Premium-Wedding-Invitation-Cards.jpg",
+  },
+  {
+    name: "Return Favors",
+    image: "https://lamansh.in/cdn/shop/files/125-rs-each-on-buying-in-bulk-call-at-8619550223-gift-hand-bag-lamansh-new-print-bridal-haldi-ceremony-design-hand-bags-for-haldi-mehendi-sangeet-wedding-return-gifts-pooja-or-festiva_7d67749e-998b-4b90-9fc6-93fd7556111a.jpg?v=1709128018&width=2400",
+  },
+  {
+    name: "Makeup",
+    image: "https://naomisheadmasters.com/wp-content/uploads/2025/04/How-to-Book-a-Reliable-Makeup-Artist-for-Your-Destination-Wedding.jpg",
+  },
+];
+
+const relatedItems = [
+  {
+    id: 1,
+    name: "Sugam Resort & Convention Center",
+    location: "Chennai",
+    detail_url: "/product-detail",
+    images: [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx_dGPXv0JN3-nkPUgbdbGVT1mzSY6_RNcnQ&s",
+    ],
+    price: 90000,
+    guest_capacity: "300-450",
+  },
+  {
+    id: 2,
+    name: "Mary Lawn Party Hall",
+    location: "Madurai",
+    detail_url: "/product-detail",
+    images: [
+      "https://images.venuebookingz.com/28254-1686054421-wm-mary10.jpg",
+    ],
+    price: 120000,
+    guest_capacity: "400-500",
+  },
+  {
+    id: 3,
+    name: "Illam Hospitality & Banquets",
+    location: "Coimbatore",
+    detail_url: "/product-detail",
+    images: [
+      "https://static.wixstatic.com/media/0057ed_daaa8ede0ebb479f9bbda20f6db193ed~mv2.jpg",
+    ],
+    price: 150000,
+    guest_capacity: "100-150",
+  },
+  {
+    id: 4,
+    name: "Sheraton Grand",
+    location: "Bangalore",
+    detail_url: "/product-detail",
+    images: [
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR87TsCDhwKtTRhIYWQrwI_Jk2L9lSl7XhYeA&s",
+    ],
+    price: 200000,
+    guest_capacity: "200-250",
+  },
+  {
+    id: 5,
+    name: "Cathy Multi Cuisine Caterers",
+    location: "Hyderabad",
+    detail_url: "/product-detail",
+    images: [
+      "https://content.jdmagicbox.com/comp/def_content/caterers/default-caterers-22.jpg",
+    ],
+    per_plate_price: 220,
+  },
+  {
+    id: 6,
+    name: "Premier Food Consultants",
+    location: "Pune",
+    detail_url: "/product-detail",
+    images: [
+      "https://moha-mushkil.com/wp-content/uploads/2018/09/IMG_20180724_212721.jpg",
+    ],
+    per_plate_price: 149,
+  },
+];
+
+
+
 export const metadata = {
+
+ 
+
   title: 'Rings N Roses',
   description:
     'A modern eCommerce template for multi-vendor stores with an advanced Mega Menu, filtering, and seamless browsing.',
@@ -88,6 +280,22 @@ function TabsSync() {
   return null; // This component only applies side effects
 }
 export default function Home() {
+  // const [servicecategories, setservicecategories] = useState(null);
+  //  useEffect(() => {
+  //   axios
+  //     .get("https://run.mocky.io/v3/46c78573-3f48-4c7a-bdcc-20b8fd19653f")
+  //     .then((res) => {
+  //       setservicecategories(res.data);
+  //       setShowContent(true);
+  //       setLoading(false);
+  //       console.log(servicecategories)
+  //     })
+  //     .catch((err) => {
+  //       console.error("API error:", err);
+
+  //     });
+  // }, []);
+
 
     const router = useRouter();
 
@@ -281,7 +489,7 @@ const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
   const headerContainerRef = useRef(null);
   const mobileDropdownRef = useRef(null); // Ref for the custom mobile dropdown
-const [selectedCategoryId, setSelectedCategoryId] = useState(1);
+
   const [hoveredCategoryId, setHoveredCategoryId] = useState(null);
   const [clickedCategoryId, setClickedCategoryId] = useState(null);
   const [mobileSelectedCategoryId, setMobileSelectedCategoryId] = useState(null);
@@ -545,27 +753,7 @@ const handleLogoutClick = async () => {
       <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
     </Link>
   );
-useEffect(() => {
-  const themeButtons = document.querySelectorAll('[data-hs-theme-click-value]');
-  themeButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const mode = btn.getAttribute('data-hs-theme-click-value');
-      if (mode === 'dark') {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
-    });
-  });
 
-  // Initialize theme on load
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark') {
-    document.documentElement.classList.add('dark');
-  }
-}, []);
   return (
         
       
@@ -599,7 +787,21 @@ useEffect(() => {
         `}</style>
 
         {/* Theme Script */}
-        
+        <Script id="theme-toggle" strategy="beforeInteractive">
+          {`
+            const html = document.querySelector('html');
+            const isLightOrAuto = localStorage.getItem('hs_theme') === 'light' ||
+              (localStorage.getItem('hs_theme') === 'auto' &&
+              !window.matchMedia('(prefers-color-scheme: dark)').matches);
+            const isDarkOrAuto = localStorage.getItem('hs_theme') === 'dark' ||
+              (localStorage.getItem('hs_theme') === 'auto' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isLightOrAuto && html.classList.contains('dark')) html.classList.remove('dark');
+            else if (isDarkOrAuto && html.classList.contains('light')) html.classList.remove('light');
+            else if (isDarkOrAuto && !html.classList.contains('dark')) html.classList.add('dark');
+            else if (isLightOrAuto && !html.classList.contains('light')) html.classList.add('light');
+          `}
+        </Script>
 
       <div className="dark:bg-neutral-900">
         <header className="flex flex-col lg:flex-nowrap z-50 bg-white dark:bg-neutral-900"></header>
@@ -612,7 +814,7 @@ useEffect(() => {
 <ul className="flex flex-wrap items-center gap-3">
   <li className="inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
     <button type="button" className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-overlay="#hs-pro-shmnrsm">
-      <img className="shrink-0 size-3.5 rounded-full" src="in.png" alt="English"/>
+      <img className="shrink-0 size-3.5 rounded-full" src="./assets/vendor/svg-country-flags/png250px/in.png" alt="English"/>
       Chennai 
     </button>
   </li> 
@@ -1666,55 +1868,18 @@ useEffect(() => {
       {/* <!-- Grid --> */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="/Listing">
+        {servicecategories?.map((category, index) => (
+        <a key={index} className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
-            <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://cdn-blog.superprof.com/blog_in/wp-content/uploads/2020/01/in-photo-photo-1.jpg" alt="Product Image"/>
+            <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src={category?.image} alt="Product Image"/>
           </div>
           <div className="grow p-3">
             <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-              Photography
+              {category?.name}
             </span>
           </div>
         </a>
-        {/* <!-- End Category Card --> */}
-
-        {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
-          <div className="relative shrink-0 w-20 sm:w-28 h-20">
-            <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://www.vivahcards.com/wp-content/uploads/2024/07/Indian-Wedding-Card-20272-Premium-Wedding-Invitation-Cards.jpg" alt="Product Image"/>
-          </div>
-          <div className="grow p-3">
-            <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-              Invitations
-            </span>
-          </div>
-        </a>
-        {/* <!-- End Category Card --> */}
-
-        {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
-          <div className="relative shrink-0 w-20 sm:w-28 h-20">
-            <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://lamansh.in/cdn/shop/files/125-rs-each-on-buying-in-bulk-call-at-8619550223-gift-hand-bag-lamansh-new-print-bridal-haldi-ceremony-design-hand-bags-for-haldi-mehendi-sangeet-wedding-return-gifts-pooja-or-festiva_7d67749e-998b-4b90-9fc6-93fd7556111a.jpg?v=1709128018&width=2400" alt="Product Image"/>
-          </div>
-          <div className="grow p-3">
-            <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-              Return Favors
-            </span>
-          </div>
-        </a>
-        {/* <!-- End Category Card --> */}
-
-        {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
-          <div className="relative shrink-0 w-20 sm:w-28 h-20">
-            <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://naomisheadmasters.com/wp-content/uploads/2025/04/How-to-Book-a-Reliable-Makeup-Artist-for-Your-Destination-Wedding.jpg" alt="Product Image"/>
-          </div>
-          <div className="grow p-3">
-            <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-              Makeup
-            </span>
-          </div>
-        </a>
+        ))}
         {/* <!-- End Category Card --> */}
       </div>
       {/* <!-- End Grid --> */}
@@ -1740,270 +1905,77 @@ useEffect(() => {
 
       {/* <!-- Grid --> */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-y-10 gap-x-4">
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.squarespace-cdn.com/content/v1/5f152ec422af2a37ad8d4da4/1595231592681-7PDPA2AX1EQHG56NQNV3/Outdoor+Wedding+Venue+Chennai" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Badge Group --> */}
-              <div className="absolute top-0 start-0 pt-2 ps-2 pointer-events-none">
-                <div className="flex flex-col gap-y-1">
-                  <p>
-                    <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-600 dark:text-white">
-                      💖 Most Loved
-                    </span>
-                  </p>
-                </div>
-              </div>
-              {/* <!-- End Badge Group --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Outdoor Lawns & Gardens
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  From ₹2L <span className="text-sm"></span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹3L</s>
+       
+       {venueCards.map((venue, index) => (
+    <div key={index} className="h-full flex flex-col">
+      <div className="group relative">
+        <div className="relative">
+          <a
+            className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden"
+            href={venue.href}
+          >
+            <img
+              className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl"
+              src={venue.image}
+              alt="Product Image"
+            />
+          </a>
+          <div className="absolute top-0 start-0 pt-2 ps-2 pointer-events-none">
+            <div className="flex flex-col gap-y-1">
+              <p>
+                <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-600 dark:text-white">
+                  {venue.badge}
                 </span>
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                  50× last month
-                </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (67)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
+              </p>
             </div>
           </div>
         </div>
-        {/* <!-- End Card --> */}
 
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://img.staticmb.com/mbcontent/images/uploads/2023/8/Heaven_4.jpg" alt="Product Image"/>
-              </a>
-            </div>
+        <a className="after:z-1 after:absolute after:inset-0" href={venue.href}></a>
 
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
+        <div className="pt-3">
+          <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
+            {venue.title}
+          </h4>
+          <div className="mt-1 flex flex-wrap items-center gap-1">
+            <span className="font-semibold" style={{ color: "#E91E63" }}>
+              From {venue.price}
+            </span>
+            <span className="text-sm text-gray-500 dark:text-neutral-500">
+              <s>{venue.originalPrice}</s>
+            </span>
+            <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
+              {venue.views}
+            </span>
+          </div>
 
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Theme Decor
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  From ₹1L <span className="text-sm"></span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹1.5L</s>
-                </span>
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                  44× last month
-                </span>
-              </div>
-            </div>
+          {/* Review Section (5 static stars) */}
+          <div className="mt-2 flex items-center gap-x-0.5">
+            {Array(5)
+              .fill(0)
+              .map((_, i) => (
+                <svg
+                  key={i}
+                  className="shrink-0 size-3 text-gray-800 dark:text-neutral-200"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="currentColor"
+                  viewBox="0 0 16 16"
+                >
+                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                </svg>
+              ))}
+            <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
+              ({venue.reviews})
+            </span>
           </div>
         </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://t4.ftcdn.net/jpg/08/01/08/11/360_F_801081156_a7Rpu5kGuHBCPLkN9JhWe0qWpmWhwjNx.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Badge Group --> */}
-              <div className="absolute top-0 start-0 pt-2 ps-2 pointer-events-none">
-                <div className="flex flex-col gap-y-1">
-                  <p>
-                    <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-600 dark:text-white">
-                      🔥 Trending now
-                    </span>
-                  </p>
-                </div>
-              </div>
-              {/* <!-- End Badge Group --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Drone Shoots
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  From ₹80K <span className="text-sm"></span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹1L</s>
-                </span>
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                  38× last month
-                </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (29)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://www.hamaraevent.com/uploads/blog/0076248001475654338.jpg" alt="Product Image"/>
-              </a>
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Mehendi Artists
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  From ₹4k <span className="text-sm"></span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹6k</s>
-                </span>
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                  35× last month
-                </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (3)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://imgmediagumlet.lbb.in/media/2023/10/6520072fd766a50bd12a61b5_1696597807795.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Badge Group --> */}
-              <div className="absolute top-0 start-0 pt-2 ps-2 pointer-events-none">
-                <div className="flex flex-col gap-y-1">
-                  <p>
-                    <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-600 dark:text-white">
-                      Popular this season
-                    </span>
-                  </p>
-                </div>
-              </div>
-              {/* <!-- End Badge Group --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Multi-Cuisine Caterers
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  From ₹500/plate <span className="text-sm"></span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹700</s>
-                </span>
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                  33× last month
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
+      </div>
+    </div>
+  ))}
+       
+       
       </div>
       {/* <!-- End Grid --> */}
     </div>
@@ -2019,1550 +1991,37 @@ useEffect(() => {
       </div>
       {/* <!-- End Header --> */}
 
-     <div className="mb-3">
-    {/* List */}
-    <div className="relative flex flex-1 items-center overflow-hidden">
-      <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
-        {categories.length > 0 ? (
-          categories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              className={`py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full 
-  ${selectedCategoryId === category.id 
-    ? 'bg-[#E91E63] text-white' 
-    : 'bg-white text-gray-500 dark:bg-neutral-900 dark:text-neutral-400'} 
-  border border-gray-200 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 
-  dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600`}
+      <div className="mb-3">
+        {/* <!-- List --> */}
+        <div className="relative flex flex-1 items-center overflow-hidden">
+          <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
+        {serviceButtons.map((btn, index) => (
+    <button
+      key={index}
+      type="button"
+      className="py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full bg-white border border-gray-200 text-[13px] text-gray-800 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:text-neutral-200 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600"
+    >
+      <img src={btn.icon} alt={btn.label} className="shrink-0 size-3.5" />
+      {btn.label}
+    </button>
+  ))}
 
-              onClick={() => setSelectedCategoryId(category.id)} // Update selected category on click
-            >
-              {category.name}
-            </button>
-          ))
-        ) : (
-          <div className="text-sm text-gray-500">No categories found.</div>
-        )}
+          </div>
+
+          <div className="absolute top-0 end-0 h-full w-12 pointer-events-none bg-linear-to-l from-white via-white/90 to-transparent dark:from-neutral-900 dark:via-neutral-900/95"></div>
+        </div>
+        {/* <!-- End List --> */}
       </div>
-    </div>
-    {/* End List */}
-  </div>
 
       {/* <!-- Grid --> */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-y-10 gap-x-4">
         {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx_dGPXv0JN3-nkPUgbdbGVT1mzSY6_RNcnQ&s" alt="Resorts"></img>
-              </a>
 
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
+{relatedItems?.map(item => (
+                  <CategoryItemCard key={item.id} item={item} />
+                ))}
 
-              {/* <!-- Badge Group --> */}
-              <div className="absolute top-0 start-0 pt-2 ps-2 pointer-events-none">
-                <div className="flex flex-col gap-y-1">
-                  <p>
-                    <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-600 dark:text-white">
-                      New
-                    </span>
-                  </p>
-                </div>
-              </div>
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Sugam Resort & Convention Center
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹90000 <span className="text-sm">INR</span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹100000</s>
-                </span>
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
-      300-450
-      <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-      </svg>
-    </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (4k+)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.venuebookingz.com/28254-1686054421-wm-mary10.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">    
-              Mary Lawn Party Hall
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹120000 <span className="text-sm">INR</span>
-</span>
-
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
-      400-500
-      <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-      </svg>
-    </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (16k+)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://static.wixstatic.com/media/0057ed_daaa8ede0ebb479f9bbda20f6db193ed~mv2.jpg/v1/fill/w_716,h_602,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Copy-of-072A0956-Edit-min-1024x683.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-            
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Illam Hospitality & Banquets
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹150000 <span className="text-sm">INR</span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹175000</s>
-                </span>
-                 <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
-      100-150
-      <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-      </svg>
-    </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M5.354 5.119 7.538.792A.52.52 0 0 1 8 .5c.183 0 .366.097.465.292l2.184 4.327 4.898.696A.54.54 0 0 1 16 6.32a.55.55 0 0 1-.17.445l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256a.5.5 0 0 1-.146.05c-.342.06-.668-.254-.6-.642l.83-4.73L.173 6.765a.55.55 0 0 1-.172-.403.6.6 0 0 1 .085-.302.51.51 0 0 1 .37-.245zM8 12.027a.5.5 0 0 1 .232.056l3.686 1.894-.694-3.957a.56.56 0 0 1 .162-.505l2.907-2.77-4.052-.576a.53.53 0 0 1-.393-.288L8.001 2.223 8 2.226z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (590)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR87TsCDhwKtTRhIYWQrwI_Jk2L9lSl7XhYeA&s" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Sheraton Grand
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹200000 <span className="text-sm">INR</span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹225000</s>
-                </span>
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
-      200-250
-      <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-      </svg>
-    </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (58)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.venuebookingz.com/24089-1686048898-wm-thanthai-periyar-community-hall-2.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-             
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Thanthai Periyar Community Hall
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹90000 <span className="text-sm">INR</span>
-</span>
-
-                <span className="text-sm text-gray-500 dark:text-neutral-500">
-                  <s>₹100000</s>
-                </span>
-               <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500 flex items-center gap-x-1">
-      600-850
-      <svg className="shrink-0 size-3 bi bi-person-fill" xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
-      </svg>
-    </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://content.jdmagicbox.com/comp/def_content/caterers/default-caterers-22.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-             
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Cathy Multi Cuisine Caterers 
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹220 <span className="text-sm">INR / Plate</span>
-</span>
-
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                 
-                </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (29k+)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://moha-mushkil.com/wp-content/uploads/2018/09/IMG_20180724_212721.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-             
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Premier Food Consultants
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-               <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹149 <span className="text-sm">INR / plate</span>
-</span>
-
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                 
-                </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M5.354 5.119 7.538.792A.52.52 0 0 1 8 .5c.183 0 .366.097.465.292l2.184 4.327 4.898.696A.54.54 0 0 1 16 6.32a.55.55 0 0 1-.17.445l-3.523 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256a.5.5 0 0 1-.146.05c-.342.06-.668-.254-.6-.642l.83-4.73L.173 6.765a.55.55 0 0 1-.172-.403.6.6 0 0 1 .085-.302.51.51 0 0 1 .37-.245zM8 12.027a.5.5 0 0 1 .232.056l3.686 1.894-.694-3.957a.56.56 0 0 1 .162-.505l2.907-2.77-4.052-.576a.53.53 0 0 1-.393-.288L8.001 2.223 8 2.226z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (6k+)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://images.jdmagicbox.com/v2/comp/chennai/a2/044pxx44.xx44.210330020515.i4a2/catalogue/chemistry-lab-the-bar-school-kodambakkam-chennai-bartender-services-426gjykqf8.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-             
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Chemistry Lab The Cocktail Company
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹425 <span className="text-sm">INR / plate</span>
-</span>
-
-                
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                  
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://content.jdmagicbox.com/v2/comp/chennai/m6/044pxx44.xx44.090921161513.h7m6/catalogue/sriji-sweets-vepery-chennai-sweet-shops-37f8bph.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-              <div className="absolute top-0 start-0 pt-2 ps-2 pointer-events-none">
-                <div className="flex flex-col gap-y-1">
-                  <p>
-                    <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-600 dark:text-white">
-                      New
-                    </span>
-                  </p>
-                </div>
-              </div>
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-             
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Sriji Sweets
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹129 <span className="text-sm">INR / Plate</span>
-</span>
-
-                <span className="ms-auto text-sm text-gray-500 dark:text-neutral-500">
-                 
-                </span>
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (29)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDslDDP1C653ta4es5oUErh-De3rFClLiCHw&s" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-              <div className="absolute top-0 start-0 pt-2 ps-2 pointer-events-none">
-                <div className="flex flex-col gap-y-1">
-                  <p>
-                    <span className="py-0.5 px-2 inline-flex items-center gap-x-1.5 text-xs font-medium bg-emerald-100 text-emerald-800 rounded-full dark:bg-emerald-600 dark:text-white">
-                      New
-                    </span>
-                  </p>
-                </div>
-              </div>
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Meka Catering Services
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹160 <span className="text-sm">INR / Plate</span>
-</span>
-
-                
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://lh6.googleusercontent.com/proxy/6-PoU_DOIbURMTBFclfmrHB1Vd26vWmWpIKoT3YtUg1cBLNsc_sK0NX75Y1RgAHJKD0VN1_BlsCVZx_C6pYB-LC5r7P8vLW6POv4LogML7ThWZYIrw5rq5uO9WNDRPJqQLvPyXoaXuo" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-             
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-           
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Chennai Photography
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-               <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹34999 <span className="text-sm">INR</span>
-</span>
-
-                
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (93)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://knotstories.in/wp-content/uploads/2024/02/image8-1.webp" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-             
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-               Knot Stories
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹45999 <span className="text-sm">INR</span>
-</span>
-
-                
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (158)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Mystic Studios
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹22999 <span className="text-sm">INR</span>
-</span>
-
-                
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (29)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://i.ytimg.com/vi/glDDKWjyiSE/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLD_YXepabXRqthid0cHW4XqV0l48A" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Elite Captures
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹35590 <span className="text-sm">INR</span>
-</span>
-
-               
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://dlmphotography.in/wp-content/uploads/2024/06/Wedding-Photography-Chennai-Best-Candid-Wedding-Photography-In-Chennai.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-              
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                DLM Photography
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹28999 <span className="text-sm">INR</span>
-</span>
-
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (3)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTN4yHnobAcx-vZMXI0_9R2-fKJSsF_cguNyg&s" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-             
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Styling By Rajesh
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹11599 <span className="text-sm">INR</span>
-</span>
-
-                
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (99)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://makeupnoor.wordpress.com/wp-content/uploads/2016/03/best-bridal-makeup-chennai-2.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Makeup Noor
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹10000 <span className="text-sm">INR</span>
-</span>
-
-               
-              </div>
-            </div>
-          </div>
-<div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (919)
-                </span>
-              </div>
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://cdn.augrav.com/online/jewels/2016/01/Beautiful-punjabi-mehandi-designs.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Senas Mehandi Art
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹8589 <span className="text-sm">INR</span>
-</span>
-
-                
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (329)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://www.studiovogueluxury.com/wp-content/uploads/2024/01/Hair-Care-Services.jpg" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Quick View --> */}
-             
-              {/* <!-- ENd Quick View --> */} 
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Studio Vogue Luxury
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹14000 <span className="text-sm">INR</span>
-</span>
-
-                
-              </div>
-
-              {/* <!-- Review --> */}
-              <div className="mt-2 flex items-center gap-x-0.5">
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                </svg>
-                <svg className="shrink-0 size-3 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                </svg>
-                <span className="ms-1 text-xs text-gray-800 dark:text-neutral-200">
-                  (51)
-                </span>
-              </div>
-              {/* <!-- End Review --> */}
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
-
-        {/* <!-- Card --> */}
-        <div className="h-full flex flex-col">
-          <div className="group relative">
-            <div className="relative">
-              <a className="block shrink-0 relative w-full h-48 md:h-64 overflow-hidden rounded-xl focus:outline-hidden" href="./product-detail">
-                <img className="size-full absolute inset-0 object-cover object-center group-hover:scale-105 group-focus:scale-105 transition-transform duration-500 ease-in-out rounded-xl" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR26FEBcAWRfDzKDsCOeAYL-Y2YQk-HYrOLBg&s" alt="Product Image"/>
-              </a>
-
-              {/* <!-- Add to Favorites --> */}
-              <div className="absolute top-0 end-0 z-3 pt-2 pe-2">
-                <button type="button" className="size-6 flex justify-center items-center gap-x-1 rounded-full text-xs bg-white border border-transparent text-gray-800 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden">
-                  <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-                  </svg>
-                  <span className="sr-only">Add to favorites</span>
-                </button>
-              </div>
-              {/* <!-- End Add to Favorites --> */}
-
-              {/* <!-- Badge Group --> */}
-            
-              {/* <!-- End Badge Group --> */}
-
-              {/* <!-- Quick View --> */}
-              
-              {/* <!-- ENd Quick View --> */}
-            </div>
-
-            <a className="after:z-1 after:absolute after:inset-0" href="./product-detail"></a>
-
-            <div className="pt-3">
-              <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">
-                Bridal Hairstylist Gopi
-              </h4>
-              <div className="mt-1 flex flex-wrap items-center gap-1">
-                <span className="font-semibold" style={{ color: '#E91E63' }}>
-  ₹7500 <span className="text-sm">INR</span>
-</span>
-
-                
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-auto pt-3">
-            <button type="button" className="py-1.5 px-3 inline-flex justify-center items-center gap-x-1.5 text-[13px] rounded-full border border-gray-200 bg-white text-gray-800 hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
-              <svg className="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="8" cy="21" r="1" />
-                <circle cx="19" cy="21" r="1" />
-                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
-              </svg>
-              Add to cart
-            </button>
-          </div>
-        </div>
-        {/* <!-- End Card --> */}
+      
       </div>
       {/* <!-- End Grid --> */}
 
