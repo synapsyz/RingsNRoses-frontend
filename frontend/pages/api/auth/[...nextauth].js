@@ -1,7 +1,13 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const isNgrok = true;
+// The problematic import has been removed.
+
+// Assuming your Django SIMPLE_JWT settings are:
+// "ACCESS_TOKEN_LIFETIME": timedelta(seconds=10),
+const ACCESS_TOKEN_LIFETIME_MINUTES = 15;
+
+const isNgrok = true; // Set to true if using ngrok
 
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -11,13 +17,9 @@ const getApiUrl = () => {
 
 const api_url = getApiUrl();
 
-async function refreshAccessToken(refreshToken, user_type) {
+async function refreshAccessToken(refreshToken) {
   try {
-    const endpoint =
-      user_type === "vendor"
-        ? `${api_url}/api/v1/vendor/token/refresh/`
-        : `${api_url}/api/v1/customer/token/refresh/`;
-
+    const endpoint = `${api_url}/api/v1/token/refresh/`;
     const res = await fetch(endpoint, {
       method: "POST",
       headers: {
@@ -29,16 +31,21 @@ async function refreshAccessToken(refreshToken, user_type) {
 
     const data = await res.json();
 
-    if (!res.ok) throw new Error(data?.detail || "Failed to refresh token");
+    if (!res.ok) {
+      console.error("Failed to refresh token response:", data);
+      throw new Error(data?.detail || "Failed to refresh token");
+    }
 
     return {
       accessToken: data.access,
       refreshToken: data.refresh || refreshToken,
-      accessTokenExpires: Date.now() + 15 * 60 * 1000,
+      accessTokenExpires: Date.now() + ACCESS_TOKEN_LIFETIME_MINUTES * 60 * 1000,
     };
   } catch (error) {
     console.error("Token refresh error:", error);
-    return null;
+    return {
+      error: "RefreshAccessTokenError",
+    };
   }
 }
 
@@ -52,6 +59,10 @@ export const authOptions = {
         user_type: { label: "User Type", type: "text" },
       },
       async authorize(credentials) {
+        if (!credentials) {
+          return null;
+        }
+
         const { email, password, user_type } = credentials;
         let endpoint = "";
 
@@ -60,7 +71,8 @@ export const authOptions = {
         } else if (user_type === "customer") {
           endpoint = `${api_url}/api/v1/customer/token/`;
         } else {
-          throw new Error("Invalid user type. Must be customer or vendor.");
+          console.error("Invalid user type provided.");
+          return null;
         }
 
         try {
@@ -76,14 +88,14 @@ export const authOptions = {
           const data = await res.json();
 
           if (!res.ok || !data.access) {
+            console.error("Login failed:", data);
             throw new Error(
               data.detail ||
               data.non_field_errors?.[0] ||
-              data.message ||
               "Login failed. Please check your credentials."
             );
           }
-
+          
           return {
             id: data.user_id || email,
             name: data.name || email,
@@ -92,11 +104,11 @@ export const authOptions = {
             accessToken: data.access,
             refreshToken: data.refresh,
             full_user: data.user || {},
-            accessTokenExpires: Date.now() + 15 * 60 * 1000,
+            accessTokenExpires: Date.now() + ACCESS_TOKEN_LIFETIME_SECONDS * 1000,
           };
         } catch (err) {
-          console.error("Authorize error:", err);
-          throw new Error("Login failed. Try again later.");
+          console.error("Authorize error:", err.message);
+          throw err;
         }
       },
     }),
@@ -109,37 +121,47 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 
   callbacks: {
-    async jwt({ token, user }) {
-      // On first login
-      if (user) {
-        token.accessToken = user.accessToken;
-        token.refreshToken = user.refreshToken;
-        token.user_type = user.user_type;
-        token.user = user.full_user || {};
-        token.accessTokenExpires = user.accessTokenExpires;
+    async jwt({ token, user, account }) {
+      if (account && user) {
+        return {
+          ...token,
+          accessToken: user.accessToken,
+          refreshToken: user.refreshToken,
+          accessTokenExpires: user.accessTokenExpires,
+          user: user.full_user || {},
+          user_type: user.user_type,
+        };
       }
 
-      // Token expired
-      if (Date.now() > token.accessTokenExpires) {
-        const refreshed = await refreshAccessToken(token.refreshToken, token.user_type);
-
-        if (refreshed) {
-          token.accessToken = refreshed.accessToken;
-          token.refreshToken = refreshed.refreshToken;
-          token.accessTokenExpires = refreshed.accessTokenExpires;
-        } else {
-          console.warn("Refresh token failed. Forcing logout.");
-        }
+      if (Date.now() < token.accessTokenExpires) {
+        return token;
       }
 
-      return token;
+      console.log("Access token expired. Attempting to refresh...");
+      const refreshedTokens = await refreshAccessToken(token.refreshToken);
+
+      if (refreshedTokens.error) {
+          console.warn("Refresh token failed. User will be logged out.");
+          return {
+              ...token,
+              error: "RefreshAccessTokenError",
+          };
+      }
+
+      return {
+        ...token,
+        accessToken: refreshedTokens.accessToken,
+        refreshToken: refreshedTokens.refreshToken,
+        accessTokenExpires: refreshedTokens.accessTokenExpires,
+      };
     },
 
     async session({ session, token }) {
       session.accessToken = token.accessToken;
-      session.refreshToken = token.refreshToken;
-      session.user_type = token.user_type;
       session.user = token.user || {};
+      session.user_type = token.user_type;
+      session.error = token.error;
+      
       return session;
     },
   },

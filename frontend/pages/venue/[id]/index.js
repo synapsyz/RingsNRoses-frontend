@@ -196,8 +196,6 @@ api.get(`/venues/${venueId}/`, {
       })
       .finally(() => {
         setLoading(false); // Stop loading in any case
-                setShowContent(true);
-
       });
   }, [venueId]); // 👈 FIX: Re-run this effect when venueId changes
 

@@ -54,7 +54,7 @@ const FavoriteButton = ({
         // The objectId is now in the URL for the DELETE request
         await axios.delete(
           `http://localhost:8000/api/v1/favorites/${fav_id}/`,
-          config
+          config,
         );
         console.log("Item unfavorited successfully!");
       }
