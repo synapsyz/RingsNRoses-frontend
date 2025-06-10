@@ -104,7 +104,7 @@ export const authOptions = {
             accessToken: data.access,
             refreshToken: data.refresh,
             full_user: data.user || {},
-            accessTokenExpires: Date.now() + ACCESS_TOKEN_LIFETIME_SECONDS * 1000,
+            accessTokenExpires: Date.now() + ACCESS_TOKEN_LIFETIME_MINUTES* 60 * 1000,
           };
         } catch (err) {
           console.error("Authorize error:", err.message);
