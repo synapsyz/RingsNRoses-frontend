@@ -135,11 +135,13 @@ const config = {
     setIsFavorite(prev => !prev);
   };
 
+    // Set venueId from router query
     useEffect(() => {
-    if (router.isReady) {
-      setVenueId(router.query.id);  // 👈 set ID from route params
-    }
-  }, [router.isReady, router.query.id]);  // re-run if router ready or id changes
+        if (router.isReady && router.query.id) {
+            console.log(router.query.id);
+            setVenueId(router.query.id);
+        }
+    }, [router.isReady, router.query.id]);
   useEffect(() => {
     // Load saved theme from localStorage
     const savedTheme = localStorage.getItem('theme')
@@ -175,29 +177,31 @@ const config = {
 
   // In the ProductDetail component
 
-useEffect(() => {
-    // Only run the fetch if venueId has a value
-    if (!venueId) return;
+    useEffect(() => {
+        if (!venueId) return;
 
-    setLoading(true); // Set loading state
+        const fetchVenueData = async () => {
+            setLoading(true);
+            try {
+                const config = accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : {};
+                const response = await api.get(`/venues/${venueId}/`, config);
+                setVenueData(response.data);
+                // Set the initial favorite state from the API response
+                setIsFavorite(response.data.is_favorite || false);
+                setShowContent(true);
+                setError(null);
+            } catch (err) {
+                console.error("Error fetching venue data:", err);
+                setError("Failed to load venue data.");
+                setVenueData(null);
+                setShowContent(false);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-api.get(`/venues/${venueId}/`, {
-  headers: {
-    'Authorization': `Bearer ${accessToken}`
-  }
-})
-      .then((res) => {
-        setVenueData(res.data);
-        setShowContent(true);
-        // ...
-      })
-      .catch((err) => {
-        // ...
-      })
-      .finally(() => {
-        setLoading(false); // Stop loading in any case
-      });
-  }, [venueId]); // 👈 FIX: Re-run this effect when venueId changes
+        fetchVenueData();
+    }, [venueId, accessToken]);
 
   console.log(venueData)
 
