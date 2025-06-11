@@ -10,7 +10,7 @@ import Link from 'next/link';
 import React, { useState, useEffect, useRef, useCallback } from 'react'; 
 import axios from 'axios';
 import EventForm from '@/components/EventForm'; 
-
+import LocationSelector from '../components/LocationSelector'; // Adjust the path as necessary
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import HeroCarousel from "@/components/HeroCarousel"; // adjust path as needed
@@ -90,7 +90,8 @@ function TabsSync() {
 export default function Home() {
 
     const router = useRouter();
-
+const [isLocationSelectorOpen, setIsLocationSelectorOpen] = useState(false); // New state variable
+ const [selectedLocationName, setSelectedLocationName] = useState('Chennai'); // New state variable
   const { data: session, status } = useSession();
   const user = session?.user;
 const accessToken = session?.accessToken;
@@ -611,10 +612,14 @@ useEffect(() => {
 
 <ul className="flex flex-wrap items-center gap-3">
   <li className="inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
-    <button type="button" className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-overlay="#hs-pro-shmnrsm">
-      <img className="shrink-0 size-3.5 rounded-full" src="in.png" alt="English"/>
-      Chennai 
-    </button>
+   <button
+  type="button"
+  className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400"
+  onClick={() => setIsLocationSelectorOpen(true)}
+>
+  <img className="shrink-0 size-3.5 rounded-full" src="in.png" alt="English"/>
+  {selectedLocationName} {/* Display the selected location name */}
+</button>
   </li> 
 
           
@@ -1178,7 +1183,14 @@ useEffect(() => {
                       }}
 
                     >
-
+ {category.svg_icon_url && (
+      <img
+        src={category.svg_icon_url}
+        alt={`${category.name} icon`}
+        className="w-5 h-5"
+      />
+    )}
+    <p className='ml-1'></p>
                       {category.name}
 
                       <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1484,9 +1496,16 @@ useEffect(() => {
                           onClick={() => handleMobileCategorySelect(category)}
 
                         >
-
+                          <div className="flex items-center gap-2">
+ {category.svg_icon_url && (
+      <img
+        src={category.svg_icon_url}
+        alt={`${category.name} icon`}
+        className="w-3 h-3"
+      />
+    )}
                           {category.name}
-
+</div>
                         </li>
 
                       ))}
@@ -2037,6 +2056,7 @@ useEffect(() => {
 
               onClick={() => setSelectedCategoryId(category.id)} // Update selected category on click
             >
+              
               {category.name}
             </button>
           ))
@@ -3986,18 +4006,18 @@ useEffect(() => {
     <div className="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto h-[calc(100%-56px)] min-h-[calc(100%-56px)] flex items-center">
       <div className="w-full max-h-full relative overflow-hidden flex flex-col bg-white rounded-xl pointer-events-auto shadow-xl dark:bg-neutral-800">
         {/* <!-- Header --> */}
-        <div className="py-4 px-6 flex justify-between items-center border-b border-gray-200 dark:border-neutral-700">
-          <h3 id="hs-pro-shmnrsm-label" className="font-medium text-gray-800 dark:text-neutral-200">
-            Select the location for your wedding.
-          </h3>
-          <button type="button" className="size-8 shrink-0 flex justify-center items-center gap-x-2 rounded-full border border-transparent bg-gray-100 text-gray-800 hover:bg-gray-200 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-200 dark:bg-neutral-700 dark:hover:bg-neutral-600 dark:text-neutral-400 dark:focus:bg-neutral-600" aria-label="Close" data-hs-overlay="#hs-pro-shmnrsm">
-            <span className="sr-only">Close</span>
-            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 6 6 18" />
-              <path d="m6 6 12 12" />
-            </svg>
-          </button>
-        </div>
+       <LocationSelector
+  isOpen={isLocationSelectorOpen}
+  onClose={() => setIsLocationSelectorOpen(false)}
+  onSave={(selectedLocationData) => {
+    console.log('Selected Location:', selectedLocationData);
+    setSelectedLocationName(selectedLocationData.location || 'Chennai'); // Update the displayed location name
+    setIsLocationSelectorOpen(false); // Close after saving
+  }}
+  onChange={(currentSelection) => {
+    console.log('Current Selection:', currentSelection);
+  }}
+/>
         {/* <!-- End Header --> */}
 
         {/* <!-- Body --> */}

@@ -5,6 +5,7 @@ import 'rc-slider/assets/index.css'; // Import the default styles
 import { useSession, signOut } from 'next-auth/react';
 import React, { useState, useEffect, useRef, useCallback } from 'react'; 
 import axios from 'axios';
+import LocationSelector from '../components/LocationSelector'; // Adjust the path as necessary
 import Link from 'next/link';
 import Script from 'next/script';
 import Image from 'next/image';
@@ -25,6 +26,8 @@ const api = axios.create({
 });
 
 export default function Listing() {
+  const [isLocationSelectorOpen, setIsLocationSelectorOpen] = useState(false);
+  const [selectedLocationName, setSelectedLocationName] = useState('Chennai');
   const [hasMore, setHasMore] = useState(true);
   const [nextPageUrl, setNextPageUrl] = useState(null);
      const sliderRef = useRef(null);
@@ -741,17 +744,31 @@ useEffect(() => {
               <ul className="flex flex-wrap items-center gap-3">
                 <li className="inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
                   <button
-                    type="button"
-                    className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400"
-                    data-hs-overlay="#hs-pro-shmnrsm"
-                  >
-                    <img
-                      className="shrink-0 size-3.5 rounded-full"
-                      src="in.png"
-                      alt="English"
-                    />
-                    Chennai
-                  </button>
+  type="button"
+  className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400"
+  onClick={() => setIsLocationSelectorOpen(true)} // Opens the LocationSelector
+>
+  <img className="shrink-0 size-3.5 rounded-full" src="in.png" alt="English" />
+  {selectedLocationName} {/* Displays the selected location */}
+</button>
+
+{/* Location Selector Component */}
+<LocationSelector
+  isOpen={isLocationSelectorOpen}
+  onClose={() => setIsLocationSelectorOpen(false)} // Closes the modal
+  onSave={(selectedLocationData) => {
+    // This function will be called when the "Save" button in LocationSelector is clicked.
+    // selectedLocationData will contain { country, state, location, locationId }
+    console.log('Selected Location:', selectedLocationData);
+    setSelectedLocationName(selectedLocationData.location || 'Chennai'); // Update the displayed name
+    setIsLocationSelectorOpen(false); // Close the modal after saving
+  }}
+  onChange={(currentSelection) => {
+    // This function can be used to handle intermediate changes in the selector if needed
+    console.log('Current Selection in selector:', currentSelection);
+  }}
+/>
+
                 </li>
                 <li className="hidden sm:inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
                   <a
@@ -1294,7 +1311,14 @@ useEffect(() => {
                             }}
       
                           >
-      
+       {category.svg_icon_url && (
+      <img
+        src={category.svg_icon_url}
+        alt={`${category.name} icon`}
+        className="w-5 h-5"
+      />
+    )}
+    <p className='ml-1'></p>
                             {category.name}
       
                             <svg className="shrink-0 size-3.5 ms-auto text-gray-500 dark:text-neutral-500" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1600,8 +1624,16 @@ useEffect(() => {
                                 onClick={() => handleMobileCategorySelect(category)}
       
                               >
-      
-                                {category.name}
+       <div className="flex items-center gap-2">
+ {category.svg_icon_url && (
+      <img
+        src={category.svg_icon_url}
+        alt={`${category.name} icon`}
+        className="w-3 h-3"
+      />
+    )}
+                          {category.name}
+</div>
       
                               </li>
       
@@ -2281,16 +2313,16 @@ if (selectedCategoryId === 1) {
   >
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
       {categoryItems.map(item => (
-        <CategoryItemCard key={item.id} item={item} />
-      ))}
+  <CategoryItemCard key={item.id} item={item} accessToken={session?.accessToken} />
+))}
     </div>
   </InfiniteScroll>
 ) : (
   <>
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
-      {categoryItems.map(item => (
-        <CategoryItemCard key={item.id} item={item} />
-      ))}
+     {categoryItems.map(item => (
+  <CategoryItemCard key={item.id} item={item} accessToken={session?.accessToken} />
+))}
     </div>
 
     {nextPageUrl && (
