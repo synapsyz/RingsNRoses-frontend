@@ -7,9 +7,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import Script from 'next/script';
-import Image from 'next/image';
 import { useRouter } from "next/router";
-
+import Image from 'next/image';
 import CategoryItemCard from '@/components/CategoryItemCard';
  import InfiniteScroll from 'react-infinite-scroll-component';
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -27,12 +26,10 @@ const api = axios.create({
 });
 
 export default function Listing() {
-  const router = useRouter();
   const [hasMore, setHasMore] = useState(true);
   const [nextPageUrl, setNextPageUrl] = useState(null);
      const sliderRef = useRef(null);
      const [categoryItems, setCategoryItems] = useState([]);
-     const [categoryItemsCache, setCategoryItemsCache] = useState({});
       const { data: session, status } = useSession();
       const user = session?.user;
 const [categories, setCategories] = useState([]);
@@ -43,9 +40,7 @@ const [categories, setCategories] = useState([]);
   const headerContainerRef = useRef(null);
   const mobileDropdownRef = useRef(null); // Ref for the custom mobile dropdown
 const [selectedCategoryId, setSelectedCategoryId] = useState(1); // State to track selected category
-const [categoryName, setCategoryName] = useState(null);
-const [subCategoryName, setSubCategoryName] = useState(null);
-
+const [categoryName, setCategoryName] = useState('Venues');
  const [subcategoriesMap, setSubcategoriesMap] = useState({});
   const [hoveredCategoryId, setHoveredCategoryId] = useState(null);
   const [clickedCategoryId, setClickedCategoryId] = useState(null);
@@ -55,6 +50,7 @@ const [subCategoryName, setSubCategoryName] = useState(null);
 const [subcategoryItemsMap, setSubcategoryItemsMap] = useState({});
   const [selectedCapacity, setSelectedCapacity] = useState(null);
 const [isInfiniteScrollActive, setIsInfiniteScrollActive] = useState(false);
+
 // States for the selected range to be sent to the API
   const [sortBy, setSortBy] = useState('');
 
@@ -64,7 +60,11 @@ const [isInfiniteScrollActive, setIsInfiniteScrollActive] = useState(false);
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
   };
+ 
 
+  const categoryItemsCache = useRef({});
+  const subcategoryItemsCache = useRef({});
+  const fetchTimeout = useRef(null);
   // States for the current values displayed on the sliders (for smoother UI feedback)
   const [priceSliderValue, setPriceSliderValue] = useState([0, 10000]);
   const [capacitySliderValue, setCapacitySliderValue] = useState([0, 1000]);
@@ -79,6 +79,8 @@ const [isInfiniteScrollActive, setIsInfiniteScrollActive] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 const mobileSidebarRef = useRef(null);
+const [subcategoryName, setSubcategoryName] = useState('');
+const router = useRouter();
   const [isOn, setIsOn] = useState(false); // Manage the toggle's state
 const [selectedFilters, setSelectedFilters] = useState([]);
 const[isShowItems, setIsShowItems]=useState(false);
@@ -90,21 +92,6 @@ const[isShowItems, setIsShowItems]=useState(false);
     { id: "5000-10000", label: "₹5,000-₹10,000", min: 5000, max: 10000 },
     { id: "above-10000", label: "Above ₹10,000", min: 10000, max: 999999 },
   ];  
-
-
-    useEffect(() => {
-        if (router.isReady && router.query.category) {
-            console.log(router.query.category);
-            setCategoryName(router.query.category);
-        }
-    }, [router.isReady, router.query.category]);
-
-    useEffect(() => {
-        if (router.isReady && router.query.subcategory) {
-            console.log(router.query.subcategory);
-            setSubCategoryName(router.query.subcategory);
-        }
-    }, [router.isReady, router.query.subcategory]);
 
 const handleToggle = () => {
     setIsOn(!isOn);
@@ -166,43 +153,169 @@ const handleToggle = () => {
         setHasMore(false);
       });
   };
-
-    useEffect(() => {
-        if (categories.length === 0 && !isLoading) {
-          setIsLoading(true);
-          setError(null);
-          api.get('/categories')
-            .then((response) => {
-              setCategories(response.data.results);
-               // Set initial hovered/clicked/mobile selected category if needed
-    
-              if (response.data.results.length > 0) {
-    
-                if (isMobile) {
-    
-                  setMobileSelectedCategoryId(response.data.results[0].id);
-    
-                  setMobileSelectedCategoryName(response.data.results[0].name);
-    
-                } else {
-    
-                  setHoveredCategoryId(response.data.results[0].id);
-    
-                  setClickedCategoryId(response.data.results[0].id);
-    
-                }
-    
-              }
-            })
-            .catch((err) => {
-              console.error('Error fetching categories:', err);
-              setError('Failed to load categories. Please try again.');
-            })
-            .finally(() => {
-              setIsLoading(false);
-            });
+// useEffect(() => {
+//     if (categories.length === 0) {
+//       api.get('/categories')
+//         .then(res => setCategories(res.data.results))
+//         .catch(err => console.error('Failed to load categories', err));
+//     }
+//   }, []);
+ useEffect(() => {
+        if (router.isReady && router.query.category) {
+            console.log(router.query.category);
+            setCategoryName(router.query.category);
         }
-      }, [categories.length, isLoading, isMobile]);
+    }, [router.isReady, router.query.category]);
+     useEffect(() => {
+            if (router.isReady && router.query.subcategory) {
+                console.log(router.query.subcategory);
+                setSubcategoryName(router.query.subcategory);
+            }
+        }, [router.isReady, router.query.subcategory]);
+        
+useEffect(() => {
+  if (categories.length === 0 && !isLoading) {
+    setIsLoading(true);
+    setError(null);
+
+    api.get('/categories')
+      .then((response) => {
+        setCategories(response.data.results);
+
+        if (response.data.results.length > 0) {
+          if (isMobile) {
+            setMobileSelectedCategoryId(response.data.results[0].id);
+            setMobileSelectedCategoryName(response.data.results[0].name);
+          } else {
+            setHoveredCategoryId(response.data.results[0].id);
+            setClickedCategoryId(response.data.results[0].id);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching categories:', err);
+        setError('Failed to load categories. Please try again.');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }
+}, [categories.length, isLoading, isMobile]);
+
+  const buildParamKey = () => {
+    return JSON.stringify({
+      categoryName,
+      selectedCapacity,
+      selectedPriceRange,
+      isOn,
+      sortBy,
+      checkedItems,
+    });
+  };
+   const buildParams = () => {
+    const params = {};
+    if (selectedCapacity) {
+      params.min_capacity = selectedCapacity.min;
+      params.max_capacity = selectedCapacity.max;
+    }
+    if (selectedPriceRange) {
+      params.min_price = selectedPriceRange.min;
+      params.max_price = selectedPriceRange.max;
+    }
+    if (isOn) params.deals = true;
+    if (sortBy === 'priceLowToHigh') params.ordering = 'price';
+    if (sortBy === 'priceHighToLow') params.ordering = '-price';
+    return params;
+  };
+  const fetchItems = useCallback(async () => {
+    const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
+    const selectedSubIds = Object.entries(checkedItems).filter(([, isChecked]) => isChecked).map(([id]) => id);
+    const paramKey = buildParamKey();
+
+    if (categoryItemsCache.current[paramKey]) {
+      setCategoryItems(categoryItemsCache.current[paramKey]);
+      return;
+    }
+
+    const params = buildParams();
+    let allItems = [];
+    let nextUrl = null;
+let count=0;
+    if (selectedSubIds.length > 0) {
+      for (const subId of selectedSubIds) {
+        const cacheKey = `${currentCategoryName}/subcategories/${subId}`;
+        if (subcategoryItemsCache.current[cacheKey]) {
+          allItems = allItems.concat(subcategoryItemsCache.current[cacheKey]);
+          continue;
+        }
+        try {
+          const res = await api.get(`/categories/${currentCategoryName}/subcategories/${subId}/`, { params });
+          subcategoryItemsCache.current[cacheKey] = res.data.results;
+          allItems = allItems.concat(res.data.results);
+        } catch (err) {
+          console.error(`Failed to fetch subcategory ${subId}`, err);
+        }
+      }
+      setHasMore(false);
+    } else {
+      
+      try {
+        count +=1;
+        console.log(count);
+        const res = await api.get(`/categories/${currentCategoryName}/`, { params });
+        allItems = res.data.results;
+        nextUrl = res.data.next;
+        setHasMore(!!nextUrl);
+        setNextPageUrl(nextUrl);
+      } catch (err) {
+        console.error(`Failed to fetch category ${currentCategoryName}`, err);
+      }
+    }
+    categoryItemsCache.current[paramKey] = allItems;
+    setCategoryItems(allItems);
+  }, [categoryName, checkedItems, selectedCapacity, selectedPriceRange, isOn, sortBy]);
+   useEffect(() => {
+    if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
+    fetchTimeout.current = setTimeout(() => {
+      fetchItems();
+    }, 500);
+    return () => clearTimeout(fetchTimeout.current);
+  }, [fetchItems]);
+    // useEffect(() => {
+    //     if (categories.length === 0 && !isLoading) {
+    //       setIsLoading(true);
+    //       setError(null);
+    //       api.get('/categories')
+    //         .then((response) => {
+    //           setCategories(response.data.results);
+    
+    //           if (response.data.results.length > 0) {
+    
+    //             if (isMobile) {
+    
+    //               setMobileSelectedCategoryId(response.data.results[0].id);
+    
+    //               setMobileSelectedCategoryName(response.data.results[0].name);
+    
+    //             } else {
+    
+    //               setHoveredCategoryId(response.data.results[0].id);
+    
+    //               setClickedCategoryId(response.data.results[0].id);
+    
+    //             }
+    
+    //           }
+    //         })
+    //         .catch((err) => {
+    //           console.error('Error fetching categories:', err);
+    //           setError('Failed to load categories. Please try again.');
+    //         })
+    //         .finally(() => {
+    //           setIsLoading(false);
+    //         });
+    //     }
+    //   }, [categories.length, isLoading, isMobile]);
     
       // Effect to fetch subcategories based on hovered, clicked, or mobile selected category
       useEffect(() => {
@@ -327,33 +440,33 @@ const handleToggle = () => {
     
       const IMAGE_SIZE = 100;
     
-      const SubcategoryItem = ({ subcategory, onClick }) => (
-        <Link
-          key={subcategory.id}
-          href={`/categories/${subcategory.category.id}/subcategories/${subCategoryName}`}
-          className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-800 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-          onClick={onClick}
-        >
-          {subcategory.image_url ? (
-            <Image
-              src={subcategory.image_url}
-              alt={subcategory.name}
-              width={IMAGE_SIZE}
-              height={IMAGE_SIZE}
-              className="rounded-full object-cover mb-4 w-[100px] h-[100px]"
-            />
-          ) : (
-            <div
-              className="rounded-full bg-gray-300 flex items-center justify-center mb-2 w-[100px] h-[100px]"
-            >
-              <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L20 20m-6-6l2-2m-2-2L14 4"></path>
-              </svg>
-            </div>
-          )}
-          <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
-        </Link>
-      );
+     const SubcategoryItem = ({ subcategory, onClick }) => (
+ <a
+  key={subcategory.id} // Note: key is usually for list rendering, not on the anchor tag itself. If this is within a map, the key should be on the parent element of this a tag.
+  href={`/${subcategory.category.name.toLowerCase().replace(/[\s-/]+/g, '_')}/${subcategory.name.toLowerCase().replace(/[\s-/]+/g, '_')}`}
+  className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-800 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+  onClick={onClick} // Keep your existing onClick handler if it does other things
+>
+    {subcategory.image_url ? (
+      <Image
+        src={subcategory.image_url}
+        alt={subcategory.name}
+        width={IMAGE_SIZE}
+        height={IMAGE_SIZE}
+        className="rounded-full object-cover mb-4 w-[100px] h-[100px]"
+      />
+    ) : (
+      <div
+        className="rounded-full bg-gray-300 flex items-center justify-center mb-2 w-[100px] h-[100px]"
+      >
+        <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L20 20m-6-6l2-2m-2-2L14 4"></path>
+        </svg>
+      </div>
+    )}
+    <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
+  </a>
+);
    useEffect(() => {
     const fetchSubcategories = async () => {
       // If already cached, do not fetch again
@@ -404,62 +517,8 @@ const handleToggle = () => {
     document.documentElement.classList.add('dark');
   }
 }, []);
-  useEffect(() => {
-    // Check if any subcategory is checked
-    const anySubcategoryChecked = Object.values(checkedItems).some(isChecked => isChecked);
 
-    if (anySubcategoryChecked) { // If any subcategory is checked, this effect should not run
-      setCategoryItems([]); // Clear default items if subcategories are selected
-      return;
-    }
 
-    const name = categoryName.toLowerCase().replace(/\s+/g, '_');
-    if (!name) return;
-
-    if (categoryItemsCache[name]) {
-      setCategoryItems(categoryItemsCache[name]);
-      return;
-    }
-
-    api.get(`/categories/${name}/subcategories/${subCategoryName}`)
-      .then(response => {
-        const items = response.data.results;
-        setCategoryItems(items);
-
-        setCategoryItemsCache(prev => ({
-          ...prev,
-          [name]: items
-        }));
-      })
-      .catch(err => {
-        console.error(`Failed to fetch items for category ${name}:`, err);
-        setCategoryItems([]);
-      });
-  }, [categoryName, categoryItemsCache, checkedItems]);
-useEffect(() => {
-const name = categoryName.toLowerCase().replace(/\s+/g, '_');
-  if (!name) return;
-
-  if (categoryItemsCache[name]) {
-    setCategoryItems(categoryItemsCache[name]);
-    return;
-  }
-
-  api.get(`/categories/${name}/subcategories/${subCategoryName}`)
-    .then(response => {
-      const items = response.data.results;
-      setCategoryItems(items);
-
-      setCategoryItemsCache(prev => ({
-        ...prev,
-        [name]: items
-      }));
-    })
-    .catch(err => {
-      console.error(`Failed to fetch items for category ${name}:`, err);
-      setCategoryItems([]);
-    });
-}, [categoryName]);
 
 
 
@@ -500,205 +559,54 @@ useEffect(() => {
     document.body.style.overflow = '';
   };
 }, [isMobileSidebarOpen]);
-
-  // New/Modified useEffect to fetch items for selected subcategories
-
-  // useEffect(() => {
-  //   const selectedSubIds = Object.entries(checkedItems)
-  //     .filter(([_, isChecked]) => isChecked)
-  //     .map(([id]) => id);
-
-  //   if (selectedSubIds.length === 0) {
-  //     setCategoryItems([]);
-  //     return;
-  //   }
-
-  //   const fetchAndCombineSubcategoryItems = async () => {
-  //     let allFetchedItems = [];
-  //     const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
-
-  //     for (const subId of selectedSubIds) {
-  //       try {
-  //         let endpoint = `/categories/${currentCategoryName}/subcategories/${subId}/`;
-  //         if (selectedCapacity) {
-  //           endpoint += `?min_capacity=${selectedCapacity.min}&max_capacity=${selectedCapacity.max}`;
-  //         }
-  //         const res = await api.get(endpoint);
-  //         const items = res.data.results || [];
-  //         allFetchedItems = allFetchedItems.concat(items);
-  //       } catch (err) {
-  //         console.error(`Failed to fetch items for subcategory ${subId}:`, err);
-  //       }
-  //     }
-  //     setCategoryItems(allFetchedItems);
-  //   };
-
-  //   fetchAndCombineSubcategoryItems();
-  // }, [checkedItems, categoryName, selectedCapacity]);
-   useEffect(() => {
-  const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
-  if (!currentCategoryName) return;
-
-  const selectedSubIds = Object.entries(checkedItems)
-    .filter(([, isChecked]) => isChecked)
-    .map(([id]) => id);
-
-  const params = {};
-  if (selectedCapacity) {
-    params.min_capacity = selectedCapacity.min;
-    params.max_capacity = selectedCapacity.max;
-  }
-  if (isOn) {
-    params.deals = true;
-  }
-  if (selectedPriceRange) {
-    params.min_price = selectedPriceRange.min;
-    params.max_price = selectedPriceRange.max;
-  }
-  // Add this block for sorting
-  if (sortBy === 'priceLowToHigh') {
-    params.ordering = 'price';
-  } else if (sortBy === 'priceHighToLow') {
-    params.ordering = '-price';
-  }
-  // End of sorting block
-
-  const fetchItems = async (subId = null) => {
-    let endpoint = `/categories/${currentCategoryName}/subcategories/${subCategoryName}`;
-    if (subId) {
-      endpoint += `subcategories/${subId}/`;
-    }
-
-    try {
-      const res = await api.get(endpoint, { params });
-      return { items: res.data.results || [], next: res.data.next };
-    } catch (err) {
-      console.error(`Failed to fetch items for ${subId ? `subcategory ${subId}` : 'category'} with filters:`, err);
-      return { items: [], next: null };
-    }
-  };
-
-  const fetchAllItems = async () => {
-    setIsLoading(true);
-    setCategoryItems([]);
-    setHasMore(true);
-    setNextPageUrl(null);
-
-    let allFetchedItems = [];
-    let nextUrlForPagination = null;
-
-    if (selectedSubIds.length > 0) {
-      for (const subId of selectedSubIds) {
-        const { items } = await fetchItems(subId);
-        allFetchedItems = allFetchedItems.concat(items);
-      }
-      setHasMore(false);
-    } else {
-      const { items, next } = await fetchItems();
-      allFetchedItems = items;
-      nextUrlForPagination = next;
-      setHasMore(next !== null);
-    }
-
-    setCategoryItems(allFetchedItems);
-    setNextPageUrl(nextUrlForPagination);
-    setIsLoading(false);
-  };
-
-  fetchAllItems();
-
-}, [checkedItems, categoryName, selectedCapacity, isOn, selectedPriceRange, sortBy]); // Add sortBy here
-//    useEffect(() => {
-//       const name = categoryName.toLowerCase().replace(/\s+/g, '_');
-//       if (!name) return;
-  
-//       if (categoryItemsCache[name] && !selectedCapacity) {
-//         setCategoryItems(categoryItemsCache[name]);
-//         return;
-//       }
-  
-//       let endpoint = `/${name}/`;
-//       if (selectedCapacity) {
-//         endpoint += `?min_capacity=${selectedCapacity.min}&max_capacity=${selectedCapacity.max}`;
-//       }
-  
-//       api.get(endpoint)
-//         .then(response => {
-//           const items = response.data.results;
-//           setCategoryItems(items);
-//           if (!selectedCapacity) {
-//             setCategoryItemsCache(prev => ({
-//               ...prev,
-//               [name]: items
-//             }));
-//           }
-//         })
-//         .catch(err => {
-//           console.error(`Failed to fetch items for category ${name}:`, err);
-//           setCategoryItems([]);
-//         });
-//     }, [categoryName, selectedCapacity]);
-// useEffect(() => {
-//   if (!isShowItems) return;
-
-//   const selectedSubIds = Object.entries(checkedItems)
-//     .filter(([_, isChecked]) => isChecked)
-//     .map(([id]) => id);
-
-//   if (selectedSubIds.length === 0) return;
-
-//   selectedSubIds.forEach(async (subId) => {
-//     const name = categoryName.toLowerCase().replace(/\s+/g, '_');
-//     setCategoryName(name);
-//     if (subcategoryItemsMap[subId]) return; // Cached
-
-//     try {
-//       const res = await api.get(`/categories/${name}/subcategories/${subId}/`);
-//       const items = res.data.results || [];
-
-//       setSubcategoryItemsMap(prev => ({
-//         ...prev,
-//         [subId]: items,
-//       }));
-//     } catch (err) {
-//       console.error(`Failed to fetch items for subcategory ${subId}`, err);
-//     }
-//   });
-// }, [checkedItems, isShowItems]);
-// Example modification for an existing useEffect that fetches category items
 useEffect(() => {
-  const idToFetchItemsFor = isMobile && mobileSelectedCategoryId !== null
-    ? mobileSelectedCategoryId
-    : clickedCategoryId;
+    if (router.isReady && router.query.category && categories.length > 0) {
+      const urlCategoryName = router.query.category;
+      const normalizedUrlCategoryName = urlCategoryName.toLowerCase().replace(/\s+/g, '_');
 
-  if (idToFetchItemsFor) {
-    // Reset states when category changes
-    setCategoryItems([]); // Clear existing items when category changes
-    setHasMore(true); // Reset hasMore to true for a new category
-    setNextPageUrl(null); // Reset nextPageUrl for a new category
+      const matchingCategory = categories.find(category =>
+        category.name.toLowerCase().replace(/\s+/g, '_') === normalizedUrlCategoryName
+      );
 
-    // Set loading state if you have one
-    // setIsLoading(true);
+      if (matchingCategory) {
+        setSelectedCategoryId(matchingCategory.id);
+        setCategoryName(matchingCategory.name);
+        setIsShowItems(false); // Mimics the behavior of clicking the button
+      } else {
+        console.warn(`No matching category found for URL parameter: "${urlCategoryName}". Displaying default or first category.`);
+        // Optional: If you want to reset to default/first category if URL param doesn't match
+        // if (categories.length > 0) {
+        //   setSelectedCategoryId(categories[0].id);
+        //   setCategoryName(categories[0].name);
+        // }
+      }
+    }
+  }, [router.isReady, router.query.category, categories]);
+useEffect(() => {
+  if (router.isReady && subcategoryName && subcategories.length > 0) {
+    // Replace spaces, hyphens, and slashes with underscores in the URL subcategory name
+    const normalizedUrlSubcategoryName = subcategoryName.toLowerCase().replace(/[\s-/]+/g, '_');
 
-    // Initial fetch for the first page
-    api.get(`/categories/${categoryName.toLowerCase().replace(/\s+/g, '_')}/subcategories/${subCategoryName}`) // Use your initial API endpoint
-      .then(response => {
-        setCategoryItems(response.data.results);
-        setNextPageUrl(response.data.next); // Store the next page URL
-        if (response.data.next === null) {
-          setHasMore(false); // If no next page, set hasMore to false
-        }
-      })
-      .catch(err => {
-        console.error('Error fetching category items:', err);
-        // setError('Failed to load category items. Please try again.');
-        setHasMore(false); // If initial fetch fails, stop future attempts
-      })
-      // .finally(() => {
-      //   setIsLoading(false);
-      // });
+    const matchingSubcategory = subcategories.find(sub =>
+      // Replace spaces, hyphens, and slashes with underscores in the subcategory name for comparison
+      sub.name.toLowerCase().replace(/[\s-/]+/g, '_') === normalizedUrlSubcategoryName
+    );
+
+    if (matchingSubcategory) {
+      // Only update if not already checked to prevent unnecessary re-renders
+      if (!checkedItems[matchingSubcategory.id]) {
+        setCheckedItems(prev => ({
+          ...prev,
+          [matchingSubcategory.id]: true
+        }));
+      }
+    } else {
+      // Optionally, clear subcategory filter if URL subcategory doesn't match
+      // This might be desired if you want a clean slate when an invalid subcategory is in the URL
+      // setCheckedItems({});
+    }
   }
-}, [clickedCategoryId, mobileSelectedCategoryId, isMobile, categoryName]); // Add categoryName to dependencies
+}, [router.isReady, subcategoryName, subcategories, checkedItems]);
   return (
     <>
       
@@ -2073,7 +1981,7 @@ useEffect(() => {
 
   const name = categoryName.toLowerCase().replace(/\s+/g, '_');
 
-  api.get(`/categories/${name}/subcategories/${subCategoryName}`)
+  api.get(`/categories/${name}/`)
     .then(response => {
       setCategoryItems(response.data.results);
       setNextPageUrl(response.data.next);
@@ -2335,10 +2243,9 @@ if (selectedCategoryId === 1) {
         setIsInfiniteScrollActive(false);
         setNextPageUrl(null);
         setHasMore(true);
-        if (!categoryName) return;
         const name = categoryName.toLowerCase().replace(/\s+/g, '_');
 
-        api.get(`/categories/${name}/subcategories/${subCategoryName}`)
+        api.get(`/categories/${name}/`)
           .then(response => {
             setCategoryItems(response.data.results);
             setNextPageUrl(response.data.next);

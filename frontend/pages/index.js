@@ -519,12 +519,12 @@ const handleLogoutClick = async () => {
 };
 
   const SubcategoryItem = ({ subcategory, onClick }) => (
-    <Link
-      key={subcategory.id}
-      href='./Listing'
-      className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-800 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-      onClick={onClick}
-    >
+    <a
+  key={subcategory.id} // Note: key is usually for list rendering, not on the anchor tag itself. If this is within a map, the key should be on the parent element of this a tag.
+  href={`/${subcategory.category.name.toLowerCase().replace(/[\s-/]+/g, '_')}/${subcategory.name.toLowerCase().replace(/[\s-/]+/g, '_')}`}
+  className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-800 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+  onClick={onClick} // Keep your existing onClick handler if it does other things
+>
       {subcategory.image_url ? (
         <Image
           src={subcategory.image_url}
@@ -543,7 +543,7 @@ const handleLogoutClick = async () => {
         </div>
       )}
       <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
-    </Link>
+    </a>
   );
 useEffect(() => {
   const themeButtons = document.querySelectorAll('[data-hs-theme-click-value]');
