@@ -5,7 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 // Assuming your Django SIMPLE_JWT settings are:
 // "ACCESS_TOKEN_LIFETIME": timedelta(seconds=10),
-const ACCESS_TOKEN_LIFETIME_MINUTES = 15;
+const ACCESS_TOKEN_LIFETIME_MINUTES = 120;
 
 const isNgrok = true; // Set to true if using ngrok
 
