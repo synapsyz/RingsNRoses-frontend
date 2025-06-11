@@ -9,6 +9,7 @@ import Link from 'next/link';
 import Script from 'next/script';
 import Image from 'next/image';
 import CategoryItemCard from '@/components/CategoryItemCard';
+
  import InfiniteScroll from 'react-infinite-scroll-component';
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
@@ -25,12 +26,17 @@ const api = axios.create({
 });
 
 export default function Listing() {
+  const { data: session, status, update } = useSession();
+  const accessToken = session?.accessToken;
+  const config = {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    };
   const [hasMore, setHasMore] = useState(true);
   const [nextPageUrl, setNextPageUrl] = useState(null);
      const sliderRef = useRef(null);
      const [categoryItems, setCategoryItems] = useState([]);
      const [categoryItemsCache, setCategoryItemsCache] = useState({});
-      const { data: session, status } = useSession();
+      
       const user = session?.user;
 const [categories, setCategories] = useState([]);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
@@ -400,7 +406,7 @@ const handleToggle = () => {
       return;
     }
 
-    api.get(`/categories/${name}/`)
+    api.get(`/categories/${name}/`,config)
       .then(response => {
         const items = response.data.results;
         setCategoryItems(items);
@@ -424,7 +430,7 @@ const name = categoryName.toLowerCase().replace(/\s+/g, '_');
     return;
   }
 
-  api.get(`/categories/${name}/`)
+  api.get(`/categories/${name}/`,config)
     .then(response => {
       const items = response.data.results;
       setCategoryItems(items);
@@ -547,9 +553,12 @@ useEffect(() => {
     if (subId) {
       endpoint += `subcategories/${subId}/`;
     }
-
+ const finalConfig = {
+    ...config,
+    params: params
+  };
     try {
-      const res = await api.get(endpoint, { params });
+      const res = await api.get(endpoint, finalConfig);
       return { items: res.data.results || [], next: res.data.next };
     } catch (err) {
       console.error(`Failed to fetch items for ${subId ? `subcategory ${subId}` : 'category'} with filters:`, err);
@@ -587,7 +596,7 @@ useEffect(() => {
   fetchAllItems();
 
 }, [checkedItems, categoryName, selectedCapacity, isOn, selectedPriceRange, sortBy]); // Add sortBy here
-//    useEffect(() => {
+
 //       const name = categoryName.toLowerCase().replace(/\s+/g, '_');
 //       if (!name) return;
   
@@ -2052,7 +2061,7 @@ useEffect(() => {
 
   const name = categoryName.toLowerCase().replace(/\s+/g, '_');
 
-  api.get(`/categories/${name}/`)
+  api.get(`/categories/${name}/`,config)
     .then(response => {
       setCategoryItems(response.data.results);
       setNextPageUrl(response.data.next);
@@ -2316,8 +2325,9 @@ if (selectedCategoryId === 1) {
         setHasMore(true);
         const name = categoryName.toLowerCase().replace(/\s+/g, '_');
 
-        api.get(`/categories/${name}/`)
+        api.get(`/categories/${name}/`,config)
           .then(response => {
+            
             setCategoryItems(response.data.results);
             setNextPageUrl(response.data.next);
           })
