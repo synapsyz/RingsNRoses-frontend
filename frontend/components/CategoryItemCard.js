@@ -1,7 +1,7 @@
 // components/CategoryItemCard.jsx
 import React from 'react';
 
-const CategoryItemCard = ({ item, accessToken }) => {
+const CategoryItemCard = ({ item }) => {
   console.log(item);
   return (
     <div key={item.id} className="h-full flex flex-col">

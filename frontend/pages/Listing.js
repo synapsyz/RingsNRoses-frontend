@@ -2313,7 +2313,7 @@ if (selectedCategoryId === 1) {
   >
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
       {categoryItems.map(item => (
-  <CategoryItemCard key={item.id} item={item} accessToken={session?.accessToken} />
+  <CategoryItemCard key={item.id} item={item} />
 ))}
     </div>
   </InfiniteScroll>
@@ -2321,7 +2321,7 @@ if (selectedCategoryId === 1) {
   <>
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
      {categoryItems.map(item => (
-  <CategoryItemCard key={item.id} item={item} accessToken={session?.accessToken} />
+  <CategoryItemCard key={item.id} item={item} />
 ))}
     </div>
 
