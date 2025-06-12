@@ -104,6 +104,7 @@ export const authOptions = {
             accessToken: data.access,
             refreshToken: data.refresh,
             full_user: data.user || {},
+
             accessTokenExpires: Date.now() + ACCESS_TOKEN_LIFETIME_MINUTES* 60 * 1000,
           };
         } catch (err) {

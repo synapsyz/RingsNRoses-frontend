@@ -9,7 +9,7 @@ import FavoriteButton from "@/components/FavoriteButton";
 import CategoryItemCard from "@/components/CategoryItemCard";
 import { useSession } from 'next-auth/react'; // Import useSession
 import { useRouter } from "next/router";
-
+import LocationSelector from '@/components/LocationSelector'; // Adjust the path as necessary
 
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const relatedItems = [
@@ -78,6 +78,8 @@ const api = axios.create({
       ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })    }
   });
 export default function ProductDetail() {
+  const [isLocationSelectorOpen, setIsLocationSelectorOpen] = useState(false);
+  const [selectedLocationName, setSelectedLocationName] = useState('Chennai');
   const { data: session, status } = useSession();
   const [error, setError] = useState(null);
   const [expanded, setExpanded] = useState(false);
@@ -461,10 +463,32 @@ const config = {
 
               <ul className="flex flex-wrap items-center gap-3">
                 <li className="inline-flex items-center relative text-xs text-gray-500 ps-3.5 first:ps-0 first:after:hidden after:absolute after:top-1/2 after:start-0 after:inline-block after:w-px after:h-2.5 after:bg-gray-400 after:rounded-full after:-translate-y-1/2 after:rotate-12 dark:text-neutral-500 dark:after:bg-neutral-600">
-                  <button type="button" className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400" data-hs-overlay="#hs-pro-shmnrsm">
-                    <img className="shrink-0 size-3.5 rounded-full" src="./assets/vendor/svg-country-flags/png250px/in.png" alt="English" />
-                    Chennai
-                  </button>
+                  <button
+  type="button"
+  className="flex items-center gap-x-1.5 text-start text-xs text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-200 dark:hover:text-neutral-400 dark:focus:text-neutral-400"
+  onClick={() => setIsLocationSelectorOpen(true)} // Opens the LocationSelector
+>
+  <img className="shrink-0 size-3.5 rounded-full" src="./public/in.png" alt="English" />
+  {selectedLocationName} {/* Displays the selected location */}
+</button>
+
+{/* Location Selector Component */}
+<LocationSelector
+  isOpen={isLocationSelectorOpen}
+  onClose={() => setIsLocationSelectorOpen(false)} // Closes the modal
+  onSave={(selectedLocationData) => {
+    // This function will be called when the "Save" button in LocationSelector is clicked.
+    // selectedLocationData will contain { country, state, location, locationId }
+    console.log('Selected Location:', selectedLocationData);
+    setSelectedLocationName(selectedLocationData.location || 'Chennai'); // Update the displayed name
+    setIsLocationSelectorOpen(false); // Close the modal after saving
+  }}
+  onChange={(currentSelection) => {
+    // This function can be used to handle intermediate changes in the selector if needed
+    console.log('Current Selection in selector:', currentSelection);
+  }}
+/>
+
                 </li>
 
 
