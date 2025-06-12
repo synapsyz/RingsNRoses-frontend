@@ -51,7 +51,7 @@ const CategoryItemCard = ({ item }) => {
             className="font-semibold"
             style={{ color: '#E91E63' }}
             >
-            From ₹{item.per_plate_price || item.price}
+            From ₹{item.per_plate_price || item.starting_price}
           </span>
 
           <div className="ms-auto flex items-center gap-x-1 text-sm text-gray-500 dark:text-neutral-500">
