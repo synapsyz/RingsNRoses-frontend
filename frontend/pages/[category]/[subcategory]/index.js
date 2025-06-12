@@ -26,11 +26,16 @@ const api = axios.create({
 });
 
 export default function Listing() {
+    const { data: session, status, update } = useSession();
+  let accessToken = session?.accessToken;
+  let config = {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    };
   const [hasMore, setHasMore] = useState(true);
   const [nextPageUrl, setNextPageUrl] = useState(null);
      const sliderRef = useRef(null);
      const [categoryItems, setCategoryItems] = useState([]);
-      const { data: session, status } = useSession();
+     
       const user = session?.user;
 const [categories, setCategories] = useState([]);
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
@@ -227,53 +232,84 @@ useEffect(() => {
     if (sortBy === 'priceHighToLow') params.ordering = '-price';
     return params;
   };
-  const fetchItems = useCallback(async () => {
-    const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
-    const selectedSubIds = Object.entries(checkedItems).filter(([, isChecked]) => isChecked).map(([id]) => id);
-    const paramKey = buildParamKey();
+const fetchItems = useCallback(async () => {
+    // Only proceed if the session status is "authenticated"
+    // The 'status' variable here refers to the one from useSession() in the component scope
+    if (status === "authenticated") {
+      // It's good practice to re-capture the latest accessToken and config here for safety
+      const currentAccessToken = session.accessToken;
+      const currentConfig = {
+        headers: { Authorization: `Bearer ${currentAccessToken}` },
+      };
 
-    if (categoryItemsCache.current[paramKey]) {
-      setCategoryItems(categoryItemsCache.current[paramKey]);
-      return;
-    }
+      const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
+      const selectedSubIds = Object.entries(checkedItems)
+        .filter(([, isChecked]) => isChecked)
+        .map(([id]) => id);
+      const paramKey = buildParamKey();
 
-    const params = buildParams();
-    let allItems = [];
-    let nextUrl = null;
-let count=0;
-    if (selectedSubIds.length > 0) {
-      for (const subId of selectedSubIds) {
-        const cacheKey = `${currentCategoryName}/subcategories/${subId}`;
-        if (subcategoryItemsCache.current[cacheKey]) {
-          allItems = allItems.concat(subcategoryItemsCache.current[cacheKey]);
-          continue;
+      if (categoryItemsCache.current[paramKey]) {
+        setCategoryItems(categoryItemsCache.current[paramKey]);
+        return;
+      }
+
+      const params = buildParams();
+      let allItems = [];
+      let nextUrl = null;
+
+      if (selectedSubIds.length > 0) {
+        for (const subId of selectedSubIds) {
+          const cacheKey = `${currentCategoryName}/subcategories/${subId}`;
+          if (subcategoryItemsCache.current[cacheKey]) {
+            allItems = allItems.concat(subcategoryItemsCache.current[cacheKey]);
+            continue;
+          }
+          try {
+            const res = await api.get(
+              `/categories/${currentCategoryName}/subcategories/${subId}/`,
+              {
+                ...currentConfig, // Use currentConfig here
+                params,
+              }
+            );
+            subcategoryItemsCache.current[cacheKey] = res.data.results;
+            allItems = allItems.concat(res.data.results);
+          } catch (err) {
+            console.error(`Failed to fetch subcategory ${subId}`, err);
+          }
         }
+        setHasMore(false);
+      } else {
+        console.log("Config for categories:", currentConfig); // Log the current config
         try {
-          const res = await api.get(`/categories/${currentCategoryName}/subcategories/${subId}/`, { params });
-          subcategoryItemsCache.current[cacheKey] = res.data.results;
-          allItems = allItems.concat(res.data.results);
+          const res = await api.get(`/categories/${currentCategoryName}/`, {
+            ...currentConfig, // Use currentConfig here
+            params,
+          });
+          allItems = res.data.results;
+          nextUrl = res.data.next;
+          setHasMore(!!nextUrl);
+          setNextPageUrl(nextUrl);
         } catch (err) {
-          console.error(`Failed to fetch subcategory ${subId}`, err);
+          console.error(`Failed to fetch category ${currentCategoryName}`, err);
+          if (err.response && err.response.status === 401) {
+            console.error("Authentication error: Access token might be invalid or expired.");
+          }
         }
       }
-      setHasMore(false);
+
+      categoryItemsCache.current[paramKey] = allItems;
+      setCategoryItems(allItems);
+
     } else {
-      
-      try {
-        count +=1;
-        console.log(count);
-        const res = await api.get(`/categories/${currentCategoryName}/`, { params });
-        allItems = res.data.results;
-        nextUrl = res.data.next;
-        setHasMore(!!nextUrl);
-        setNextPageUrl(nextUrl);
-      } catch (err) {
-        console.error(`Failed to fetch category ${currentCategoryName}`, err);
-      }
+      // This block runs if status is 'loading' or 'unauthenticated'
+      console.log("Not authenticated or session loading. Cannot fetch items for categories.");
+      // You might want to clear items, show a loading spinner, or redirect here.
+      // For example, if you want to show a loading state while status is 'loading'
+      // or clear items if 'unauthenticated', you would handle that here.
     }
-    categoryItemsCache.current[paramKey] = allItems;
-    setCategoryItems(allItems);
-  }, [categoryName, checkedItems, selectedCapacity, selectedPriceRange, isOn, sortBy]);
+  })
+
    useEffect(() => {
     if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
     fetchTimeout.current = setTimeout(() => {
@@ -2209,7 +2245,7 @@ if (selectedCategoryId === 1) {
     endMessage={<p className="text-center my-4 text-gray-500">No more items to show.</p>}
   >
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
-      {categoryItems.map(item => (
+      {categoryItems.map(item  => (
         <CategoryItemCard key={item.id} item={item} />
       ))}
     </div>
@@ -2217,7 +2253,7 @@ if (selectedCategoryId === 1) {
 ) : (
   <>
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-y-10 gap-x-4">
-      {categoryItems.map(item => (
+      {categoryItems.map(item  => (
         <CategoryItemCard key={item.id} item={item} />
       ))}
     </div>
