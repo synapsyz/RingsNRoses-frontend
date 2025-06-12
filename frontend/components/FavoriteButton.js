@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import axios from "axios"; // Make sure to import axios
-
+import { useSession } from 'next-auth/react';
 const FavoriteButton = ({
   initialFavorite = false,
   contentType,
   objectId,
   fav_id,
-  accessToken,
 }) => {
+  const { data: session, status, update } = useSession();
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isLoading, setIsLoading] = useState(false);
   const [animate, setAnimate] = useState(false);
   const [favId, setFavId] = useState(fav_id);
-
+  const accessToken = session?.accessToken;
 
   // Sync state if the initial prop changes from the parent
   useEffect(() => {
