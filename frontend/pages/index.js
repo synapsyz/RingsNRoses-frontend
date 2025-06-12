@@ -14,6 +14,8 @@ import LocationSelector from '../components/LocationSelector'; // Adjust the pat
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import HeroCarousel from "@/components/HeroCarousel"; // adjust path as needed
+import SearchBar from "@/components/SearchBar"; // adjust path as needed
+
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -750,75 +752,7 @@ useEffect(() => {
 
             <div className="hidden md:block w-full">
               {/* <!-- Search Input --> */}
-             <div className="relative w-full">
-  <input
-    type="text"
-    className="py-1.5 ps-4 sm:py-2.5 pe-10 block w-full bg-white border border-gray-200 text-base sm:text-sm rounded-full 
-               focus:outline-none 
-               focus:border-[#E91E63]     // <--- This now applies to ALL screen sizes
-               focus:ring-1 
-               focus:ring-[#E91E63]       // <--- This now applies to ALL screen sizes
-               disabled:opacity-50 disabled:pointer-events-none 
-               dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400"
-    placeholder="Search venues, decorators, makeup artists..."
-  />
-  <div className="absolute inset-y-0 end-0 z-10 flex items-center pe-1 sm:pe-1.5">
-    <button
-      type="button"
-      className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full text-white focus:outline-hidden"
-      style={{
-        backgroundColor: '#E91E63',
-      }}
-      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#d81b60')}
-      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E91E63')}
-    >
-      <svg
-        className="shrink-0 size-4"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-    </button>
-  </div>
-  <div className="hidden absolute inset-y-0 end-12 flex items-center pointer-events-none z-10 pe-1">
-    <button
-      type="button"
-      className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full text-white focus:outline-hidden"
-      style={{
-        backgroundColor: '#E91E63',
-      }}
-      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#d81b60')}
-      onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#E91E63')}
-    >
-      <span className="sr-only">Close</span>
-      <svg
-        className="shrink-0 size-4"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <path d="m15 9-6 6" />
-        <path d="m9 9 6 6" />
-      </svg>
-    </button>
-  </div>
-</div>
+<SearchBar />
               {/* <!-- End Search Input --> */}
             </div>
           </div>
@@ -1048,60 +982,7 @@ useEffect(() => {
 
       <div className="md:hidden mt-2.5 md:mt-0 w-full">
         {/* <!-- Search Input --> */}
-        <div className="relative w-full">
-  <input
-    type="text"
-    className="py-1.5 ps-4 sm:py-2.5 pe-10 block w-full bg-white border-gray-200 text-base sm:text-sm rounded-full focus:outline-hidden focus:border-[#E91E63] focus:ring-[#E91E63] disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder:text-neutral-400"
-    placeholder="Search venues, decorators, makeup artists..."
-  ></input>
-  <div className="absolute inset-y-0 end-0 z-10 flex items-center pe-1 sm:pe-1.5">
-    <button
-      type="button"
-      className="inline-flex shrink-0 justify-center items-center w-10 h-8 rounded-full bg-[#E91E63] text-white hover:bg-[#D81B60] focus:outline-hidden focus:bg-[#D81B60] dark:bg-[#E91E63] dark:hover:bg-[#D81B60] dark:focus:bg-[#D81B60]"
-    >
-      <svg
-        className="shrink-0 size-4"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-    </button>
-  </div>
-  <div className="hidden absolute inset-y-0 end-12 flex items-center pointer-events-none z-10 pe-1">
-    <button
-      type="button"
-      className="inline-flex shrink-0 justify-center items-center size-6 rounded-full text-gray-500 hover:text-[#E91E63] focus:outline-hidden focus:text-[#E91E63] dark:text-neutral-500 dark:hover:text-[#E91E63] dark:focus:text-[#E91E63]"
-      aria-label="Close"
-    >
-      <span className="sr-only">Close</span>
-      <svg
-        className="shrink-0 size-4"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <circle cx="12" cy="12" r="10" />
-        <path d="m15 9-6 6" />
-        <path d="m9 9 6 6" />
-      </svg>
-    </button>
-  </div>
-</div>
+<SearchBar />
         {/* <!-- End Search Input --> */}
       </div>
     </div>
