@@ -520,12 +520,12 @@ const handleLogoutClick = async () => {
 };
 
   const SubcategoryItem = ({ subcategory, onClick }) => (
-    <Link
-      key={subcategory.id}
-      href={`/categories/${subcategory.category.id}/subcategories/${subcategory.id}`}
-      className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-800 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-      onClick={onClick}
-    >
+    <a
+  key={subcategory.id} // Note: key is usually for list rendering, not on the anchor tag itself. If this is within a map, the key should be on the parent element of this a tag.
+  href={`/${subcategory.category.name.toLowerCase().replace(/[\s-/]+/g, '_')}/${subcategory.name.toLowerCase().replace(/[\s-/]+/g, '_')}`}
+  className="flex flex-col items-center justify-center text-center text-sm text-gray-700 rounded-lg hover:bg-gray-100 p-2 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-800 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
+  onClick={onClick} // Keep your existing onClick handler if it does other things
+>
       {subcategory.image_url ? (
         <Image
           src={subcategory.image_url}
@@ -544,7 +544,7 @@ const handleLogoutClick = async () => {
         </div>
       )}
       <span className="text-gray-800 dark:text-white font-medium">{subcategory.name}</span>
-    </Link>
+    </a>
   );
 useEffect(() => {
   const themeButtons = document.querySelectorAll('[data-hs-theme-click-value]');
@@ -1698,7 +1698,7 @@ useEffect(() => {
         {/* <!-- End Category Card --> */}
 
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="././Listing">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://www.vivahcards.com/wp-content/uploads/2024/07/Indian-Wedding-Card-20272-Premium-Wedding-Invitation-Cards.jpg" alt="Product Image"/>
           </div>
@@ -1711,7 +1711,7 @@ useEffect(() => {
         {/* <!-- End Category Card --> */}
 
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="././Listing">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://lamansh.in/cdn/shop/files/125-rs-each-on-buying-in-bulk-call-at-8619550223-gift-hand-bag-lamansh-new-print-bridal-haldi-ceremony-design-hand-bags-for-haldi-mehendi-sangeet-wedding-return-gifts-pooja-or-festiva_7d67749e-998b-4b90-9fc6-93fd7556111a.jpg?v=1709128018&width=2400" alt="Product Image"/>
           </div>
@@ -1724,7 +1724,7 @@ useEffect(() => {
         {/* <!-- End Category Card --> */}
 
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="./listing.html">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="././Listing">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://naomisheadmasters.com/wp-content/uploads/2025/04/How-to-Book-a-Reliable-Makeup-Artist-for-Your-Destination-Wedding.jpg" alt="Product Image"/>
           </div>
