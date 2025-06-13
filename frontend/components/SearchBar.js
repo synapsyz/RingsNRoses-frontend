@@ -15,10 +15,10 @@ const getIconForType = (type) => {
       );
     case 'catering':
       return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="size-5 text-teal-500">
-          <path d="M10 2a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 2ZM10 15a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 10 15ZM10 7a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" />
-          <path fillRule="evenodd" d="M16.49 2.51a.75.75 0 0 0-1.06 0l-1.061 1.06a.75.75 0 0 0 1.06 1.06l1.06-1.06a.75.75 0 0 0 0-1.06ZM4.57 14.43a.75.75 0 0 0-1.06 1.06l1.06 1.06a.75.75 0 0 0 1.06-1.06l-1.06-1.06ZM17.25 10a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 .75.75ZM4.25 10a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5a.75.75 0 0 1 .75.75ZM14.43 4.57a.75.75 0 0 0 1.06-1.06l-1.06-1.06a.75.75 0 0 0-1.06 1.06l1.06 1.06ZM5.63 15.49a.75.75 0 0 0 1.06-1.06l-1.06-1.06a.75.75 0 1 0-1.06 1.06l1.06 1.06Z" clipRule="evenodd" />
-        </svg>
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" />
+</svg>
+
       );
     default:
       return (
@@ -135,7 +135,11 @@ const SearchBar = () => {
                   style={{ transitionDelay: `${index * 50}ms` }} // This creates the stagger effect
                 >
                   <a href={result.detail_url} className="flex items-center gap-4 p-4 hover:bg-pink-50 dark:hover:bg-neutral-700 transition-colors duration-150">
-                    <div className="flex-shrink-0">{getIconForType(result.type)}</div>
+<img
+  className="flex-shrink-0 w-5 h-5"
+  src={result?.svg_url || '/icons/default-check.svg'}
+  alt="Check icon"
+/>
                     <div className="flex-grow"><p className="font-medium text-sm text-gray-800 dark:text-neutral-200">{result.name}</p></div>
                     <span className="text-xs capitalize bg-gray-100 text-gray-600 px-2 py-1 rounded-full dark:bg-neutral-600 dark:text-neutral-300">{result.type}</span>
                   </a>
