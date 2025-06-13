@@ -62,7 +62,7 @@ const relatedItems = [
 ]
 // Get the base API URL based on the environment
 const getApiUrl = () => {
-  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+  return process.env.NEXT_PUBLIC_APP_ENV === 'developme'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST // e.g., 'http://127.0.0.1:8000'
     : process.env.NEXT_PUBLIC_HOST; // e.g., 'https://your-production-api.com'
 };
@@ -2241,7 +2241,7 @@ const config = {
                             >
                               {venueData?.about}
                             </p>
-                            {venueData?.about.length > 100 && (
+                            {venueData?.about?.length > 100 && (
                               < button
                                 className="mt-2 text-blue-600 hover:underline"
                                 onClick={() => setExpanded(!expanded)}
