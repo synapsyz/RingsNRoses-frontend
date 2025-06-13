@@ -62,7 +62,7 @@ const relatedItems = [
 ]
 // Get the base API URL based on the environment
 const getApiUrl = () => {
-  return process.env.NEXT_PUBLIC_APP_ENV === 'developme'
+  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST // e.g., 'http://127.0.0.1:8000'
     : process.env.NEXT_PUBLIC_HOST; // e.g., 'https://your-production-api.com'
 };
@@ -185,7 +185,13 @@ const config = {
         const fetchVenueData = async () => {
             setLoading(true);
             try {
-                const config = accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : {};
+                const config = {
+  headers: {
+    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+    'ngrok-skip-browser-warning': 'true',
+  },
+};
+
                 const response = await api.get(`/venues/${venueId}/`, config);
                 setVenueData(response.data);
                 // Set the initial favorite state from the API response
