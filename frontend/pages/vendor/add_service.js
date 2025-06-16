@@ -12,6 +12,7 @@ import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Blockquote from '@tiptap/extension-blockquote';
+import FAQEditor from '@/components/FAQEditor';
 import { Link as TiptapLink } from '@tiptap/extension-link';  // Tiptap extension
 export default function AddProduct() {
   const editorRef = useRef(null);
@@ -152,14 +153,6 @@ export default function AddProduct() {
       });
     };
   }, []);
-  useEffect(() => {
-    // JS to set today's date for availability date input
-    const today = new Date().toISOString().split('T')[0]
-    const availabilityDateInput = document.getElementById('availability-date')
-    if (availabilityDateInput) {
-      availabilityDateInput.setAttribute('min', today)
-    }
-  }, [])
 
   return (
     <>
@@ -1241,6 +1234,7 @@ export default function AddProduct() {
                 </div>
               </div>
               {/* End Variants Card */}
+              <FAQEditor />
             </div>
             {/* End Col */}
 
@@ -1264,7 +1258,7 @@ export default function AddProduct() {
                         Price
                       </label>
                       <div className="relative w-full">
-                        <input id="hs-pro-daufpr" type="text" className="py-1.5 sm:py-2 px-3 block w-full border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600" placeholder="0.00" defaultValue="2000" />
+                        <input id="hs-pro-daufpr" type="text" className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600" placeholder="0.00" defaultValue="2000" />
                         <div className="absolute inset-y-0 end-0 flex items-center pe-[5px] text-stone-400">
                           {/* Select */}
                           <div className="relative">
@@ -1296,24 +1290,7 @@ export default function AddProduct() {
                     {/* End Input */}
 
                     {/* Switch/Toggle */}
-                    <div className="py-2 px-3 flex justify-between items-center border border-stone-200 rounded-lg dark:border-neutral-700">
-                      {/* Date input */}
-                      <input
-                        type="date"
-                        id="availability-date"
-                        className="ml-2 px-2 py-1 border border-transparent rounded-md text-sm text-gray-700 dark:bg-neutral-800 dark:border-transparent dark:text-neutral-200"
-                        min=""
-                      />
-                      {/* Label */}
-                      <label htmlFor="availability-date" className="sm:text-sm text-gray-500 dark:text-neutral-400">Availability</label>
-
-                      {/* Toggle */}
-                      <label htmlFor="availability-toggle" className="relative inline-block w-11 h-6 ml-3 cursor-pointer">
-                        <input type="checkbox" id="availability-toggle" className="peer sr-only" />
-                        <span className="absolute inset-0 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out peer-checked:bg-green-600 dark:bg-neutral-700 dark:peer-checked:bg-green-500 peer-disabled:opacity-50 peer-disabled:pointer-events-none"></span>
-                        <span className="absolute top-1/2 start-0.5 -translate-y-1/2 size-5 bg-white rounded-full shadow-sm transition-transform duration-200 ease-in-out peer-checked:translate-x-full dark:bg-neutral-400 dark:peer-checked:bg-white"></span>
-                      </label>
-                    </div>
+                    
                     {/* End Switch/Toggle */}
                   </div>
                   {/* End Body */}
