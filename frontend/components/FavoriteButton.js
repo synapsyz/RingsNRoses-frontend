@@ -35,8 +35,12 @@ const FavoriteButton = ({
     }
 
     const config = {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
+      },
     };
+
 
     var res = null;
 
@@ -48,7 +52,7 @@ const FavoriteButton = ({
           object_id: objectId,
         };
         res = await axios.post(
-          "http://localhost:8000/api/v1/favorites/",
+          "https://6d88-183-82-206-189.ngrok-free.app/api/v1/favorites/",
           payload,
           config
         );
@@ -59,7 +63,7 @@ const FavoriteButton = ({
         // === REMOVING a favorite ===
         // The objectId is now in the URL for the DELETE request
         await axios.delete(
-          `http://localhost:8000/api/v1/favorites/${favId}/`,
+          `https://6d88-183-82-206-189.ngrok-free.app/api/v1/favorites/${favId}/`,
           config,
         );
         console.log("Item unfavorited successfully!");
