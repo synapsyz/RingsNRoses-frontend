@@ -13,6 +13,7 @@ const FavoriteButton = ({
   const [animate, setAnimate] = useState(false);
   const [favId, setFavId] = useState(fav_id);
   const accessToken = session?.accessToken;
+  const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 
   // Sync state if the initial prop changes from the parent
   useEffect(() => {

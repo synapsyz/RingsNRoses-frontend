@@ -19,6 +19,7 @@ const SearchBar = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 
   // Debounce the search query to avoid excessive API calls
   const debouncedQuery = useDebounce(query, 500);
