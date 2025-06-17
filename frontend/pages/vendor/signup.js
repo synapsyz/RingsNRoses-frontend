@@ -14,27 +14,29 @@ isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? false
     : true
 const getApiUrl = () => {
-  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
-    ? process.env.NEXT_PUBLIC_API_LOCALHOST
-    : process.env.NEXT_PUBLIC_HOST;
+    return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+        ? process.env.NEXT_PUBLIC_API_LOCALHOST
+        : process.env.NEXT_PUBLIC_HOST;
 };
 api_url = getApiUrl()
 // Axios instance for backend communication
 const api = axios.create({
-    baseURL: api_url+"/api/v1", // Adjust this to your backend API base URL
-   headers: {
-                     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
-                   }
+    baseURL: api_url + "/api/v1", // Adjust this to your backend API base URL
+    headers: {
+        ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
+    }
 });
 export default function Signup() {
     const { data: session, status } = useSession();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const router = useRouter();
- const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [subcategories, setSubcategories] = useState([]);
     const [selectedSubcategory, setSelectedSubcategory] = useState(null);
+    const [isWhatsApp, setIsWhatsApp] = useState(false);
+
 
     // Add this useEffect hook to fetch categories on component mount
     useEffect(() => {
@@ -78,71 +80,71 @@ export default function Signup() {
 
 
     useEffect(() => {
-          if (status === "authenticated") {
+        if (status === "authenticated") {
             router.push("/"); // Change this to your desired page
-          }
-        }, [status, router]);
+        }
+    }, [status, router]);
 
 
 
 
-const handleSignup = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setError(null);
+    const handleSignup = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
 
-  try {
-    const payload = {
-      email: formData.email,
-      password: formData.password,
-      name: formData.name,
-      phone: getFullPhoneNumber(),
-      business_name: formData.business_name,
-      subcategory_id: selectedSubcategory?.id
-    };
+        try {
+            const payload = {
+                email: formData.email,
+                password: formData.password,
+                name: formData.name,
+                phone: getFullPhoneNumber(),
+                business_name: formData.business_name,
+                subcategory_id: selectedSubcategory?.id
+            };
 
-    const res = await api.post("/signup/vendor/", payload, {
-      headers: {
-        ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
-      },
-    });
+            const res = await api.post("/signup/vendor/", payload, {
+                headers: {
+                    ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+                },
+            });
 
-    console.log("Vendor signup success:", res.data);
+            console.log("Vendor signup success:", res.data);
 
-    const loginRes = await signIn("credentials", {
+            const loginRes = await signIn("credentials", {
                 email: formData.email,
                 password: formData.password,
                 name: formData.name,
                 phone: getFullPhoneNumber(),
                 user_type: "vendor",
-    });
+            });
 
-    if (res.ok) {
-      router.push("/dashboard"); // Or vendor dashboard: /vendor/dashboard
-    } else {
-      setError("Login failed after vendor signup.");
-    }
-  } catch (err) {
-    console.error("Vendor signup error:", err);
-    console.error("Signup error:", err.response?.data || err.message);
+            if (res.ok) {
+                router.push("/dashboard"); // Or vendor dashboard: /vendor/dashboard
+            } else {
+                setError("Login failed after vendor signup.");
+            }
+        } catch (err) {
+            console.error("Vendor signup error:", err);
+            console.error("Signup error:", err.response?.data || err.message);
 
             let errorKey = Object.keys(err.response?.data)
             let errorValue = Object.values(err.response?.data)
 
-            if(errorKey.includes('email')){
+            if (errorKey.includes('email')) {
                 let index = errorKey.indexOf('email')
                 setemailError(errorValue[index][0])
             }
-            if(errorKey.includes('phone')){
+            if (errorKey.includes('phone')) {
                 let index = errorKey.indexOf('phone')
                 setphoneError(errorValue[index][0])
             }
             // Display a more user-friendly error message
             setError(err.response?.data?.detail || err.response?.data?.message || "Signup failed. Please check your inputs.");
-  } finally {
-    setLoading(false);
-  }
-};
+        } finally {
+            setLoading(false);
+        }
+    };
 
 
 
@@ -429,62 +431,62 @@ const handleSignup = async (e) => {
         setTheme((prev) => (prev === "dark" ? "light" : "dark"));
     };
 
-   useEffect(() => {
-           // Theme logic
-           const root = window.document.documentElement;
-           if (theme === "dark") {
-               root.classList.add("dark", "bg-gray-900", "text-white");
-               root.classList.remove("bg-white", "text-gray-900");
-           } else {
-               root.classList.remove("dark", "bg-gray-900", "text-white");
-               root.classList.add("bg-white", "text-gray-900");
-           }
-           localStorage.setItem("theme", theme);
-   
-           // Password Strength Logic
-           const checkPasswordStrength = () => {
-               const newRules = {
-                   minLength: formData.password.length >= MIN_PASSWORD_LENGTH,
-                   lowercase: /[a-z]/.test(formData.password),
-                   uppercase: /[A-Z]/.test(formData.password),
-                   numbers: /\d/.test(formData.password),
-                   specialCharacters: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]/.test(formData.password),
-               };
-               setPasswordRules(prevRules => {
-                   const updatedVisibleRules = { ...visibleRules };
-                   for (const rule in newRules) {
-                       if (newRules[rule] && !prevRules[rule]) {
-                           setTimeout(() => {
-                               setVisibleRules(prevVisible => ({
-                                   ...prevVisible,
-                                   [rule]: false,
-                               }));
-                           }, 1000);
-                       } else if (!newRules[rule] && prevRules[rule]) {
-                           updatedVisibleRules[rule] = true;
-                       }
-                   }
-                   setVisibleRules(updatedVisibleRules);
-                   return newRules;
-               });
-           };
-           checkPasswordStrength();
-   setCountries(COUNTRY_DATA);
+    useEffect(() => {
+        // Theme logic
+        const root = window.document.documentElement;
+        if (theme === "dark") {
+            root.classList.add("dark", "bg-gray-900", "text-white");
+            root.classList.remove("bg-white", "text-gray-900");
+        } else {
+            root.classList.remove("dark", "bg-gray-900", "text-white");
+            root.classList.add("bg-white", "text-gray-900");
+        }
+        localStorage.setItem("theme", theme);
+
+        // Password Strength Logic
+        const checkPasswordStrength = () => {
+            const newRules = {
+                minLength: formData.password.length >= MIN_PASSWORD_LENGTH,
+                lowercase: /[a-z]/.test(formData.password),
+                uppercase: /[A-Z]/.test(formData.password),
+                numbers: /\d/.test(formData.password),
+                specialCharacters: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]/.test(formData.password),
+            };
+            setPasswordRules(prevRules => {
+                const updatedVisibleRules = { ...visibleRules };
+                for (const rule in newRules) {
+                    if (newRules[rule] && !prevRules[rule]) {
+                        setTimeout(() => {
+                            setVisibleRules(prevVisible => ({
+                                ...prevVisible,
+                                [rule]: false,
+                            }));
+                        }, 1000);
+                    } else if (!newRules[rule] && prevRules[rule]) {
+                        updatedVisibleRules[rule] = true;
+                    }
+                }
+                setVisibleRules(updatedVisibleRules);
+                return newRules;
+            });
+        };
+        checkPasswordStrength();
+        setCountries(COUNTRY_DATA);
         setFilteredCountries(COUNTRY_DATA);
-          
-   
-           // Click outside to close phone country dropdown
-           const handleClickOutside = (event) => {
-               if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                   setIsDropdownOpen(false);
-               }
-           };
-   
-           document.addEventListener('mousedown', handleClickOutside);
-           return () => {
-               document.removeEventListener('mousedown', handleClickOutside);
-           };
-       }, [formData.password, theme]);
+
+
+        // Click outside to close phone country dropdown
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [formData.password, theme]);
 
     const handleCountrySearchChange = (event) => {
         const term = event.target.value;
@@ -507,7 +509,7 @@ const handleSignup = async (e) => {
         setFilteredCountries(countries); // Reset filtered countries
         countryInputRef.current?.focus(); // Focus back on the phone number input if desired
     };
- const handleChange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prevData) => ({
             ...prevData,
@@ -546,19 +548,19 @@ const handleSignup = async (e) => {
                         {/* Header */}
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             {/* Logo */}
-                           <a
-  className="flex-none rounded-md text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
-  href="/"
-  aria-label="Preline"
->
-  <img
-    src="./Logo.png" // Replace with the actual image path
-    alt="Preline Logo"
-    className="w-24 h-auto"
-    width="36"
-    height="36"
-  />
-</a>
+                            <a
+                                className="flex-none rounded-md text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
+                                href="/"
+                                aria-label="Preline"
+                            >
+                                <img
+                                    src="./Logo.png" // Replace with the actual image path
+                                    alt="Preline Logo"
+                                    className="w-24 h-auto"
+                                    width="36"
+                                    height="36"
+                                />
+                            </a>
 
                             {/* End Logo */}
 
@@ -569,13 +571,13 @@ const handleSignup = async (e) => {
                         {/* End Header */}
 
                         {/* Body */}
-  <div className='mt-6'>
-  <img
-    src="20250524_154914.png"
-    alt="Charts Mockups"
-  />
-  <hr className="mt-4 border-t border-gray-300" />
-</div>
+                        <div className='mt-6'>
+                            <img
+                                src="20250524_154914.png"
+                                alt="Charts Mockups"
+                            />
+                            <hr className="mt-4 border-t border-gray-300" />
+                        </div>
 
 
                         {/* End Body */}
@@ -631,28 +633,28 @@ const handleSignup = async (e) => {
                                 <div>
                                     <label htmlFor="hs-pro-dalfn" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
                                     </label>
-                                      <input
-                                                    type="text"
-                                                    className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                    placeholder="Name"
-                                                    name="name"
-                                                    value={formData.name}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
+                                    <input
+                                        type="text"
+                                        className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                        placeholder="Name"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                    />
                                 </div>
                                 <div>
                                     <label htmlFor="hs-pro-dappcn" className="block mb-2 text-sm font-medium text-gray-800 dark:text-white">
                                     </label>
-<input
-                                                    type="text"
-                                                    className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                    placeholder="Business Name"
-                                                    name="business_name"
-                                                    value={formData.business_name}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
+                                    <input
+                                        type="text"
+                                        className="mt-3 py-2 sm:py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                        placeholder="Business Name"
+                                        name="business_name"
+                                        value={formData.business_name}
+                                        onChange={handleChange}
+                                        required
+                                    />
                                     {/* <input type="text" id="hs-pro-dappcn"
                                         value={formData.business_name}
                                         onChange={handleChange}
@@ -672,9 +674,9 @@ const handleSignup = async (e) => {
                                         onChange={handleChange}
                                         required
                                     />
-                                      {email && (
-                                                    <p className="text-sm text-red-600 mt-1">{email}</p>
-                                                )}
+                                    {email && (
+                                        <p className="text-sm text-red-600 mt-1">{email}</p>
+                                    )}
                                     {/* <input type="email" id="hs-pro-dale"
                                         value={formData.email}
                                         onChange={handleChange}
@@ -682,47 +684,47 @@ const handleSignup = async (e) => {
                                         className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600" placeholder="you@email.com" /> */}
                                 </div>
                                 {email && (
-                                                    <p className="text-sm text-red-600 mt-1">{email}</p>
-                                                )}
+                                    <p className="text-sm text-red-600 mt-1">{email}</p>
+                                )}
 
                                 {/* Password Input and Rules */}
                                 <div className="space-y-3">
                                     <div>
                                         <label htmlFor="hs-pro-shcafpw" className="sr-only">
-                                                    Password
-                                                </label>
-                                                <div className='relative'>
-                                                    <input
-                                                        type={showPassword ? "text" : "password"}
-                                                        id="hs-pro-shcafpw"
-                                                        className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
-                                                        placeholder="Password"
-                                                        name="password"
-                                                        value={formData.password}
-                                                        onChange={handleChange}
-                                                        required
-                                                        minLength={MIN_PASSWORD_LENGTH}
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword((prev) => !prev)}
-                                                        className="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
-                                                    >
-                                                        {showPassword ? (
-                                                            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                                                                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                                                                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                                                                <line x1="2" x2="22" y1="2" y2="22" />
-                                                            </svg>
-                                                        ) : (
-                                                            <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                                                <circle cx="12" cy="12" r="3" />
-                                                            </svg>
-                                                        )}
-                                                    </button>
-                                                </div>
+                                            Password
+                                        </label>
+                                        <div className='relative'>
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                id="hs-pro-shcafpw"
+                                                className="py-3 px-4 block w-full border border-gray-400 rounded-lg sm:text-sm placeholder:text-gray-400 focus:border-indigo-500 focus:ring-indigo-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:placeholder:text-white/60 dark:focus:ring-neutral-600"
+                                                placeholder="Password"
+                                                name="password"
+                                                value={formData.password}
+                                                onChange={handleChange}
+                                                required
+                                                minLength={MIN_PASSWORD_LENGTH}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                className="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
+                                            >
+                                                {showPassword ? (
+                                                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                                        <line x1="2" x2="22" y1="2" y2="22" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                )}
+                                            </button>
+                                        </div>
                                     </div>
 
                                     {/* Password Rules */}
@@ -817,10 +819,30 @@ const handleSignup = async (e) => {
                                         />
                                         {/* Hidden input to hold the full phone number for form submission */}
                                         <input type="hidden" name="full_phone_number" value={getFullPhoneNumber()} />
+
+
                                     </div>
                                     {phoneExist && (
                                         <p className="text-sm text-red-600 mt-1">{phoneExist}</p>
                                     )}
+
+
+                                    <div className="mt-4 flex items-center gap-x-2">
+                                        <div className="p-0">
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            id="is-whatsapp"
+                                            checked={isWhatsApp}
+                                            onChange={(e) => setIsWhatsApp(e.target.checked)}
+                                            className="shrink-0 size-3.5 rounded-sm border border-gray-400 focus:ring-offset-0 dark:bg-neutral-800 dark:border-neutral-700"
+                                            style={{ accentColor: '#E91E63' }}
+                                        />
+                                        <label htmlFor="is-whatsapp" className="text-sm text-gray-800 dark:text-neutral-200">
+                                            Is this number on <span style={{ color: '#E91E63' }}>WhatsApp?</span>
+                                        </label>
+                                    </div>
+
                                     {isDropdownOpen && (
                                         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto dark:bg-neutral-800 dark:border-neutral-700">
                                             <div className="p-2">
@@ -850,104 +872,104 @@ const handleSignup = async (e) => {
                                         </div>
                                     )}
                                 </div>
-<div className="flex flex-wrap -mx-2"> {/* Added flex container with negative margin for proper spacing */}
-    {/* Category Dropdown */}
-    <div className="mt-3 w-full sm:w-1/2 px-2"> {/* Added responsive width and padding */}
-        
-        <select
-            id="category-select"
-            className="py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:focus:ring-neutral-600"
-            value={selectedCategory ? selectedCategory.id : ""}
-            onChange={(e) => {
-                const selectedCat = categories.find(cat => cat.id === parseInt(e.target.value));
-                setSelectedCategory(selectedCat);
-            }}
-            required
-        >
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                    {category.name}
-                </option>
-            ))}
-        </select>
-    </div>
+                                <div className="flex flex-wrap -mx-2"> {/* Added flex container with negative margin for proper spacing */}
+                                    {/* Category Dropdown */}
+                                    <div className="mt-1 w-full sm:w-1/2 px-2"> {/* Added responsive width and padding */}
 
-    {/* Subcategory Dropdown */}
-    <div className="mt-3 w-full sm:w-1/2 px-2"> {/* Added responsive width and padding */}
-       
-        <select
-            id="subcategory-select"
-            className="py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:focus:ring-neutral-600"
-            value={selectedSubcategory ? selectedSubcategory.id : ""}
-            onChange={(e) => {
-                const selectedSubcat = subcategories.find(subcat => subcat.id === parseInt(e.target.value));
-                setSelectedSubcategory(selectedSubcat);
-            }}
-            disabled={!selectedCategory || subcategories.length === 0} // Disable if no category selected or no subcategories
-            required
-        >
-            <option value="">Select a subcategory</option>
-            {subcategories.map((subcategory) => (
-                <option key={subcategory.id} value={subcategory.id}>
-                    {subcategory.name}
-                </option>
-            ))}
-        </select>
-    </div>
-</div>
+                                        <select
+                                            id="category-select"
+                                            className="py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:focus:ring-neutral-600"
+                                            value={selectedCategory ? selectedCategory.id : ""}
+                                            onChange={(e) => {
+                                                const selectedCat = categories.find(cat => cat.id === parseInt(e.target.value));
+                                                setSelectedCategory(selectedCat);
+                                            }}
+                                            required
+                                        >
+                                            <option value="">Select a category</option>
+                                            {categories.map((category) => (
+                                                <option key={category.id} value={category.id}>
+                                                    {category.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Subcategory Dropdown */}
+                                    <div className="mt-1 w-full sm:w-1/2 px-2"> {/* Added responsive width and padding */}
+
+                                        <select
+                                            id="subcategory-select"
+                                            className="py-2.5 px-3 block w-full border border-gray-400 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-transparent dark:border-neutral-700 dark:text-neutral-300 dark:focus:ring-neutral-600"
+                                            value={selectedSubcategory ? selectedSubcategory.id : ""}
+                                            onChange={(e) => {
+                                                const selectedSubcat = subcategories.find(subcat => subcat.id === parseInt(e.target.value));
+                                                setSelectedSubcategory(selectedSubcat);
+                                            }}
+                                            disabled={!selectedCategory || subcategories.length === 0} // Disable if no category selected or no subcategories
+                                            required
+                                        >
+                                            <option value="">Select a subcategory</option>
+                                            {subcategories.map((subcategory) => (
+                                                <option key={subcategory.id} value={subcategory.id}>
+                                                    {subcategory.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
 
                                 {/* Terms and Conditions Checkbox */}
                                 <div className="flex items-center gap-x-2">
                                     <input
-                                    type="checkbox"
-                                    className="shrink-0 border-gray-200 size-3.5 rounded-sm focus:ring-offset-0 dark:bg-neutral-800 dark:border-neutral-700"
-                                    id="hs-pro-dsftac"
-                                    checked={acceptTerms}
-                                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                                    style={{ accentColor: '#E91E63' }}
+                                        type="checkbox"
+                                        className="shrink-0 size-3.5 rounded-sm border border-gray-400 focus:ring-offset-0 dark:bg-neutral-800 dark:border-neutral-700"
+                                        id="hs-pro-dsftac"
+                                        checked={acceptTerms}
+                                        onChange={(e) => setAcceptTerms(e.target.checked)}
+                                        style={{ accentColor: '#E91E63' }}
                                     />
 
                                     <label htmlFor="hs-pro-dsftac" className="text-sm text-gray-800 dark:text-neutral-200">
                                         I accept the
                                         <a
-                                        className="ml-1 text-sm hover:underline focus:outline-hidden text-gray-500 dark:text-neutral-500"
-                                        href="#"
-                                        style={{ color: '#E91E63' }}
-                                        onMouseOver={(e) => (e.currentTarget.style.color = '#D81B60')} // hover
-                                        onMouseOut={(e) => (e.currentTarget.style.color = '#E91E63')}   // reset after hover
-                                        onFocus={(e) => (e.currentTarget.style.color = '#C2185B')}     // focus
-                                        onBlur={(e) => (e.currentTarget.style.color = '#E91E63')}      // reset after focus
+                                            className="ml-1 text-sm hover:underline focus:outline-hidden text-gray-500 dark:text-neutral-500"
+                                            href="#"
+                                            style={{ color: '#E91E63' }}
+                                            onMouseOver={(e) => (e.currentTarget.style.color = '#D81B60')} // hover
+                                            onMouseOut={(e) => (e.currentTarget.style.color = '#E91E63')}   // reset after hover
+                                            onFocus={(e) => (e.currentTarget.style.color = '#C2185B')}     // focus
+                                            onBlur={(e) => (e.currentTarget.style.color = '#E91E63')}      // reset after focus
                                         >
-                                        Terms and Conditions
+                                            Terms and Conditions
                                         </a>
-
                                     </label>
                                 </div>
+
                                 {/* End Terms and Conditions Checkbox */}
 
-                               <button
-                                type="submit"
-                                className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                                disabled={
-                                    !passwordRules.minLength ||
-                                    !passwordRules.lowercase ||
-                                    !passwordRules.uppercase ||
-                                    !passwordRules.numbers ||
-                                    !passwordRules.specialCharacters ||
-                                    !acceptTerms
-                                }
-                                style={{
-                                    backgroundColor: '#E91E63',
-                                }}
-                                onMouseOver={(e) => {
-                                    if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#D81B60'; // hover
-                                }}
-                                onMouseOut={(e) => {
-                                    if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#E91E63'; // reset
-                                }}
+                                <button
+                                    type="submit"
+                                    className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                                    disabled={
+                                        !passwordRules.minLength ||
+                                        !passwordRules.lowercase ||
+                                        !passwordRules.uppercase ||
+                                        !passwordRules.numbers ||
+                                        !passwordRules.specialCharacters ||
+                                        !acceptTerms
+                                    }
+                                    style={{
+                                        backgroundColor: '#E91E63',
+                                    }}
+                                    onMouseOver={(e) => {
+                                        if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#D81B60'; // hover
+                                    }}
+                                    onMouseOut={(e) => {
+                                        if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = '#E91E63'; // reset
+                                    }}
                                 >
-                                Sign up
+                                    Sign up
                                 </button>
 
                             </div>
@@ -956,29 +978,29 @@ const handleSignup = async (e) => {
                         <p className="flex justify-center text-sm text-gray-500 dark:text-neutral-500">
                             Have an Business account?
                             <a
-                            className="inline-flex items-center gap-x-1 text-sm decoration-2 hover:underline font-medium focus:outline-hidden focus:underline"
-                            href="/vendor/login"
-                            style={{ color: '#E91E63' }}
-                            onMouseOver={(e) => (e.currentTarget.style.color = '#D81B60')} // hover color
-                            onMouseOut={(e) => (e.currentTarget.style.color = '#E91E63')}   // normal color
-                            onFocus={(e) => (e.currentTarget.style.color = '#C2185B')}     // focus color
-                            onBlur={(e) => (e.currentTarget.style.color = '#E91E63')}      // reset
+                                className="inline-flex items-center gap-x-1 text-sm decoration-2 hover:underline font-medium focus:outline-hidden focus:underline"
+                                href="/vendor/login"
+                                style={{ color: '#E91E63' }}
+                                onMouseOver={(e) => (e.currentTarget.style.color = '#D81B60')} // hover color
+                                onMouseOut={(e) => (e.currentTarget.style.color = '#E91E63')}   // normal color
+                                onFocus={(e) => (e.currentTarget.style.color = '#C2185B')}     // focus color
+                                onBlur={(e) => (e.currentTarget.style.color = '#E91E63')}      // reset
                             >
-                            Sign in
-                            <svg
-                                className="shrink-0 size-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                            >
-                                <path d="m9 18 6-6-6-6" />
-                            </svg>
+                                Sign in
+                                <svg
+                                    className="shrink-0 size-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="m9 18 6-6-6-6" />
+                                </svg>
                             </a>
 
                         </p>
