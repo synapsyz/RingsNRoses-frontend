@@ -79,7 +79,7 @@ export default function Signup() {
 
     useEffect(() => {
           if (status === "authenticated") {
-            router.push("/"); // Change this to your desired page
+            router.push("/vendor/vendorform"); // Change this to your desired page
           }
         }, [status, router]);
 
@@ -118,7 +118,7 @@ const handleSignup = async (e) => {
     });
 
     if (res.ok) {
-      router.push("/dashboard"); // Or vendor dashboard: /vendor/dashboard
+      router.push("/vendor/vendorform"); // Or vendor dashboard: /vendor/dashboard
     } else {
       setError("Login failed after vendor signup.");
     }
