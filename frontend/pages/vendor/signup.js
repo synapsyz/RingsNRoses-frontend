@@ -80,10 +80,17 @@ export default function Signup() {
 
 
     useEffect(() => {
+ whatsapp_checkbox
         if (status === "authenticated") {
             router.push("/"); // Change this to your desired page
         }
     }, [status, router]);
+
+          if (status === "authenticated") {
+            router.push("/vendor/vendorform"); // Change this to your desired page
+          }
+        }, [status, router]);
+ main
 
 
 
@@ -119,6 +126,7 @@ export default function Signup() {
                 user_type: "vendor",
             });
 
+ whatsapp_checkbox
             if (res.ok) {
                 router.push("/dashboard"); // Or vendor dashboard: /vendor/dashboard
             } else {
@@ -127,6 +135,16 @@ export default function Signup() {
         } catch (err) {
             console.error("Vendor signup error:", err);
             console.error("Signup error:", err.response?.data || err.message);
+
+    if (res.ok) {
+      router.push("/vendor/vendorform"); // Or vendor dashboard: /vendor/dashboard
+    } else {
+      setError("Login failed after vendor signup.");
+    }
+  } catch (err) {
+    console.error("Vendor signup error:", err);
+    console.error("Signup error:", err.response?.data || err.message);
+ main
 
             let errorKey = Object.keys(err.response?.data)
             let errorValue = Object.values(err.response?.data)

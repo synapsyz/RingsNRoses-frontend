@@ -13,6 +13,7 @@ const FavoriteButton = ({
   const [animate, setAnimate] = useState(false);
   const [favId, setFavId] = useState(fav_id);
   const accessToken = session?.accessToken;
+  const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 
   // Sync state if the initial prop changes from the parent
   useEffect(() => {
@@ -35,8 +36,12 @@ const FavoriteButton = ({
     }
 
     const config = {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
+      },
     };
+
 
     var res = null;
 
@@ -48,7 +53,7 @@ const FavoriteButton = ({
           object_id: objectId,
         };
         res = await axios.post(
-          "http://localhost:8000/api/v1/favorites/",
+          "https://6d88-183-82-206-189.ngrok-free.app/api/v1/favorites/",
           payload,
           config
         );
@@ -59,7 +64,7 @@ const FavoriteButton = ({
         // === REMOVING a favorite ===
         // The objectId is now in the URL for the DELETE request
         await axios.delete(
-          `http://localhost:8000/api/v1/favorites/${favId}/`,
+          `https://6d88-183-82-206-189.ngrok-free.app/api/v1/favorites/${favId}/`,
           config,
         );
         console.log("Item unfavorited successfully!");

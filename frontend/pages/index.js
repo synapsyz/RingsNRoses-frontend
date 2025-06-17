@@ -13,8 +13,8 @@ import EventForm from '@/components/EventForm';
 import LocationSelector from '../components/LocationSelector'; // Adjust the path as necessary
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-import HeroCarousel from "@/components/HeroCarousel"; // adjust path as needed
-import SearchBar from "@/components/SearchBar"; // adjust path as needed
+import HeroCarousel from "@/components/HeroCarousel";
+import SearchBar from "@/components/SearchBar";
 
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
