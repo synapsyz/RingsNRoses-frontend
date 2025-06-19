@@ -3,6 +3,8 @@
 import { useEffect } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import '../styles/globals.css';
+import 'react-datepicker/dist/react-datepicker.css';
+
 
 export default function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   useEffect(() => {
