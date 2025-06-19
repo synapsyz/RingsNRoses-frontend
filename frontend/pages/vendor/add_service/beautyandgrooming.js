@@ -346,6 +346,7 @@ useEffect(() => {
     };
   }, []);
 
+  
   // Initialize restrictions editor
   useEffect(() => {
     if (!restrictionsEditorRef.current) return;
