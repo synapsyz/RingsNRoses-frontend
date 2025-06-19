@@ -118,7 +118,7 @@ const handleSignup = async (e) => {
     });
 
     if (res.ok) {
-      router.push("/vendor/vendorform"); // Or vendor dashboard: /vendor/dashboard
+      router.push("/vendor/dashboard"); // Or vendor dashboard: /vendor/dashboard
     } else {
       setError("Login failed after vendor signup.");
     }
