@@ -81,9 +81,8 @@ const VendorForm = () => {
       gst_number: formData.gstNumber.trim() || null,
       business_registration_number: formData.businessRegistrationNumber.trim() || null,
     };
-
     try {
-      const response = await api.put('/customer-profile/update/', dataToSend, {
+      const response = await api.put('/vendor-profile/update/', dataToSend, { // Modified API endpoint
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
@@ -101,7 +100,7 @@ const VendorForm = () => {
       }
 
       await update(); // Refresh session data (next-auth)
-
+      window.location.reload();
     } catch (error) {
       const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Unknown error';
       console.error('API Error:', error.response?.data || errorMessage);
