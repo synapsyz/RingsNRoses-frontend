@@ -20,6 +20,7 @@ export default function DashboardPage() {
       name: 'Orders',
       data: [30, 40, 45, 50, 49],
     },
+    
   ];
 
   return (
