@@ -20,7 +20,7 @@ export default function Login() {
   
   useEffect(() => {
       if (status === "authenticated") {
-        router.push("/vendor/add_service1"); // Change this to your desired page
+        router.push("/vendor/dashboard"); // Change this to your desired page
       }
     }, [status, router]);
 
@@ -62,7 +62,7 @@ export default function Login() {
     });
 
     if (res.ok) {
-      router.push("/vendor/add_service1");
+      router.push("/vendor/dashboard");
     } else {
       try {
         const err = JSON.parse(res.error);
