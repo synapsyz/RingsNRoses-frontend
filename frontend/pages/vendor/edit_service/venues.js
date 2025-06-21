@@ -17,6 +17,8 @@ import FAQEditor from '@/components/FAQEditor'; // Assuming this component exist
 import { Link as TiptapLink } from '@tiptap/extension-link';
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
+import { useRouter } from 'next/router'; // Import useRouter
+
 let api_url;
 let isNgrok;
 
@@ -36,6 +38,7 @@ const api = axios.create({
     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
   }
 });
+
 const EditorToolbar = ({ editor, editorId }) => {
   if (!editor) return null;
 
@@ -135,58 +138,101 @@ const EditorToolbar = ({ editor, editorId }) => {
     </div>
   );
 };
-export default function AddProduct() {
-    const editorRef = useRef(null);
+
+export default function EditService() { // Renamed component
+  const router = useRouter(); // Initialize useRouter
+  const editorRef = useRef(null);
   const editorInstance = useRef(null);
   const cancellationEditorRef = useRef(null);
   const cancellationEditorInstance = useRef(null);
   const restrictionsEditorRef = useRef(null);
   const restrictionsEditorInstance = useRef(null);
-    const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-const [selectedLocationData, setSelectedLocationData] = useState(null);
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
+  const [selectedLocationData, setSelectedLocationData] = useState(null);
+  const [termsAndConditions, setTermsAndConditions] = useState('');
+  const termsEditorRef = useRef(null);
+  const termsEditorInstance = useRef(null);
+  const [websiteLink, setWebsiteLink] = useState('');
+  const [instagramLink, setInstagramLink] = useState('');
+  const [facebookLink, setFacebookLink] = useState('');
 
-    const { data: session, status } = useSession();
-     let accessToken = session?.accessToken;
+  const { data: session, status } = useSession();
+  let accessToken = session?.accessToken;
   let config = {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    };
-    console.log(accessToken);
-    console.log(session?.user);
+    headers: { Authorization: `Bearer ${accessToken}` },
+  };
+
   const [eventTypes, setEventTypes] = useState([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState(new Set());
 
   // Form state for venue details
-  const [Name, setName] = useState('');
-  const [contactName, setcontactName] = useState('');
+  const [venueName, setVenueName] = useState('');
+  const [managerName, setManagerName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [about, setAbout] = useState(''); // This will come from Tiptap editor
   const [perPlatePrice, setPerPlatePrice] = useState('');
+  const [guestCapacity, setGuestCapacity] = useState('');
+  const [eventSpaces, setEventSpaces] = useState('');
+  const [totalAreaSqft, setTotalAreaSqft] = useState('');
+  const [advanceBookingNotice, setAdvanceBookingNotice] = useState('');
+  const [advancePaymentRequired, setAdvancePaymentRequired] = useState('');
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [restrictions, setRestrictions] = useState('');
   const [location, setLocation] = useState('');
-    const [serviceLocation, setServiceLocation] = useState('');
-  const [minimumAdvanceBooking, setMinimumAdvanceBooking] = useState('');
-
-  const [experience, setExperience] = useState('');
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
-const [termsAndConditions, setTermsAndConditions] = useState('');
-const termsEditorRef = useRef(null);
-const termsEditorInstance = useRef(null);
-const [returnDeliveryPolicy, setReturnDeliveryPolicy] = useState('');
-const returnDeliveryEditorRef = useRef(null);
-const returnDeliveryEditorInstance = useRef(null);
-const [websiteLink, setWebsiteLink] = useState('');
-const [instagramLink, setInstagramLink] = useState('');
-const [facebookLink, setFacebookLink] = useState('');
 
-  // Hardcoded for now as per your request. In a real app, you'd fetch these.
-  const subcategory = 1; // Assuming Banquet Halls is subcategory 1
-  const vendorId = 860; // Placeholder: Replace with actual session.user.id
-console.log(vendorId);
+  const subcategory = 1; // Assuming Banquet Halls is subcategory 1 for venues
+  const venueId = session?.user?.vendor_profile?.service_id; // Get venue ID from session as specified
 
+  // Fetch venue details on component mount or venueId change
+  useEffect(() => {
+    const fetchVenueDetails = async () => {
+      if (!venueId || status !== 'authenticated') return;
+
+      try {
+        const response = await api.get(`/venues/${venueId}`, config);
+        const venueData = response.data;
+
+        // Populate form fields with fetched data
+        setVenueName(venueData.name || '');
+        setManagerName(venueData.manager_name || '');
+        setContactNumber(venueData.contact_number || '');
+        setEmailAddress(venueData.email || ''); // Assuming email field exists in API response
+        setAbout(venueData.about || '');
+        setPerPlatePrice(venueData.per_plate_price || '');
+        setGuestCapacity(venueData.guest_capacity || '');
+        setEventSpaces(venueData.event_spaces || ''); // Assuming event_spaces field exists
+        setTotalAreaSqft(venueData.total_area_sqft || '');
+        setAdvanceBookingNotice(venueData.advance_booking_notice || '');
+        setAdvancePaymentRequired(venueData.advance_payment_required || '');
+        setCancellationPolicy(venueData.cancellation_policy || '');
+        setRestrictions(venueData.restrictions || '');
+        setLocation(venueData.location || ''); // Assuming location is a simple ID or string
+
+        // Set selected services and event types
+        if (venueData.services_offered) {
+          setSelectedServices(new Set(venueData.services_offered.map(service => service.id)));
+        }
+        if (venueData.events_supported) {
+          setSelectedEventTypes(new Set(venueData.events_supported.map(eventType => eventType.id)));
+        }
+
+        setWebsiteLink(venueData.website_link || ''); // Assuming these fields exist
+        setInstagramLink(venueData.instagram_link || '');
+        setFacebookLink(venueData.facebook_link || '');
+        setTermsAndConditions(venueData.terms_and_conditions || ''); // Assuming this field exists
+
+      } catch (error) {
+        console.error("Error fetching venue details:", error);
+        setFormMessage({ type: 'error', text: 'Error: Could not fetch venue details.' });
+      }
+    };
+
+    fetchVenueDetails();
+  }, [venueId, status, accessToken]); // Re-fetch when venueId or session status changes
 
   useEffect(() => {
     // Fetch services from the backend
@@ -216,6 +262,8 @@ console.log(vendorId);
     fetchServices();
     fetchEventTypes();
   }, []);
+
+  // Initialize and update Tiptap editors
 useEffect(() => {
     if (!editorRef.current) return;
 
@@ -269,6 +317,7 @@ useEffect(() => {
       onUpdate: ({ editor }) => {
         setAbout(editor.getHTML());
       },
+      content: about || '', 
     });
 
     editorInstance.current = editor;
@@ -278,13 +327,16 @@ useEffect(() => {
         editorInstance.current.destroy();
       }
     };
-  }, []);
-
-  // Initialize cancellation policy editor
+  }, []); // Re-initialize when 'about' content changes
+useEffect(() => {
+  if (editorInstance.current && about) {
+    editorInstance.current.commands.setContent(about);
+  }
+}, [about]);
   useEffect(() => {
-    if (!cancellationEditorRef.current) return;
-
-    const editor = new Editor({
+     if (!cancellationEditorRef.current) return;
+ 
+     const editor = new Editor({
   element: cancellationEditorRef.current,
   extensions: [
     StarterKit.configure({
@@ -336,29 +388,31 @@ useEffect(() => {
   },
   content: cancellationPolicy || '',
 });
-
-    cancellationEditorInstance.current = editor;
-
-    return () => {
-      if (cancellationEditorInstance.current) {
-        cancellationEditorInstance.current.destroy();
-      }
-    };
-  }, []);
-
-  
-  // Initialize restrictions editor
-  useEffect(() => {
-    if (!restrictionsEditorRef.current) return;
-
-    const editor = new Editor({
+ 
+     cancellationEditorInstance.current = editor;
+ 
+     return () => {
+       if (cancellationEditorInstance.current) {
+         cancellationEditorInstance.current.destroy();
+       }
+     };
+   }, []);
+useEffect(() => {
+  if (cancellationEditorInstance.current && cancellationPolicy) {
+    cancellationEditorInstance.current.commands.setContent(cancellationPolicy);
+  }
+}, [cancellationPolicy]);
+   useEffect(() => {
+     if (!restrictionsEditorRef.current) return;
+ 
+     const editor = new Editor({
   element: restrictionsEditorRef.current,
   extensions: [
     StarterKit.configure({
       history: false
     }),
     Placeholder.configure({
-      placeholder: 'Enter Booking Policy here...',
+      placeholder: 'Enter restrictions here...',
       emptyNodeClass: 'before:text-stone-400'
     }),
     Paragraph.configure({
@@ -403,143 +457,90 @@ useEffect(() => {
   },
   content: restrictions || '',
 });
-
-    restrictionsEditorInstance.current = editor;
-
+ 
+     restrictionsEditorInstance.current = editor;
+ 
+     return () => {
+       if (restrictionsEditorInstance.current) {
+         restrictionsEditorInstance.current.destroy();
+       }
+     };
+   }, []);
+useEffect(() => {
+  if (restrictionsEditorInstance.current && restrictions) {
+    restrictionsEditorInstance.current.commands.setContent(restrictions);
+  }
+}, [restrictions]);
+   useEffect(() => {
+    if (!termsEditorRef.current) return;
+  
+    const editor = new Editor({
+      element: termsEditorRef.current,
+      extensions: [
+        StarterKit.configure({
+          history: false
+        }),
+        Placeholder.configure({
+          placeholder: 'Enter terms and conditions...',
+          emptyNodeClass: 'before:text-stone-400'
+        }),
+        Paragraph.configure({
+          HTMLAttributes: {
+            class: 'text-sm text-stone-800 dark:text-stone-200'
+          }
+        }),
+        Bold.configure({
+          HTMLAttributes: {
+            class: 'font-bold'
+          }
+        }),
+        Underline,
+        TiptapLink.configure({
+          HTMLAttributes: {
+            class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
+          }
+        }),
+        BulletList.configure({
+          HTMLAttributes: {
+            class: 'list-disc list-inside text-stone-800 dark:text-white'
+          }
+        }),
+        OrderedList.configure({
+          HTMLAttributes: {
+            class: 'list-decimal list-inside text-stone-800 dark:text-white'
+          }
+        }),
+        ListItem.configure({
+          HTMLAttributes: {
+            class: 'marker:text-sm'
+          }
+        }),
+        Blockquote.configure({
+          HTMLAttributes: {
+            class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
+          }
+        })
+      ],
+      onUpdate: ({ editor }) => {
+        setTermsAndConditions(editor.getHTML());
+      },
+      content: termsAndConditions || ''
+    });
+  
+    termsEditorInstance.current = editor;
+  
     return () => {
-      if (restrictionsEditorInstance.current) {
-        restrictionsEditorInstance.current.destroy();
+      if (termsEditorInstance.current) {
+        termsEditorInstance.current.destroy();
       }
     };
   }, []);
-  useEffect(() => {
-  if (!termsEditorRef.current) return;
 
-  const editor = new Editor({
-    element: termsEditorRef.current,
-    extensions: [
-      StarterKit.configure({
-        history: false
-      }),
-      Placeholder.configure({
-        placeholder: 'Enter terms and conditions...',
-        emptyNodeClass: 'before:text-stone-400'
-      }),
-      Paragraph.configure({
-        HTMLAttributes: {
-          class: 'text-sm text-stone-800 dark:text-stone-200'
-        }
-      }),
-      Bold.configure({
-        HTMLAttributes: {
-          class: 'font-bold'
-        }
-      }),
-      Underline,
-      TiptapLink.configure({
-        HTMLAttributes: {
-          class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
-        }
-      }),
-      BulletList.configure({
-        HTMLAttributes: {
-          class: 'list-disc list-inside text-stone-800 dark:text-white'
-        }
-      }),
-      OrderedList.configure({
-        HTMLAttributes: {
-          class: 'list-decimal list-inside text-stone-800 dark:text-white'
-        }
-      }),
-      ListItem.configure({
-        HTMLAttributes: {
-          class: 'marker:text-sm'
-        }
-      }),
-      Blockquote.configure({
-        HTMLAttributes: {
-          class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
-        }
-      })
-    ],
-    onUpdate: ({ editor }) => {
-      setTermsAndConditions(editor.getHTML());
-    },
-    content: termsAndConditions || ''
-  });
-
-  termsEditorInstance.current = editor;
-
-  return () => {
-    if (termsEditorInstance.current) {
-      termsEditorInstance.current.destroy();
-    }
-  };
-}, []);
-// Add this with your other useEffect hooks
 useEffect(() => {
-  if (!returnDeliveryEditorRef.current) return;
-
-  const editor = new Editor({
-    element: returnDeliveryEditorRef.current,
-    extensions: [
-      StarterKit.configure({
-        history: false
-      }),
-      Placeholder.configure({
-        placeholder: 'Enter Legal and Compliance policy...',
-        emptyNodeClass: 'before:text-stone-400'
-      }),
-      Paragraph.configure({
-        HTMLAttributes: {
-          class: 'text-sm text-stone-800 dark:text-stone-200'
-        }
-      }),
-      Bold.configure({
-        HTMLAttributes: {
-          class: 'font-bold'
-        }
-      }),
-      Underline,
-      TiptapLink.configure({
-        HTMLAttributes: {
-          class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
-        }
-      }),
-      BulletList.configure({
-        HTMLAttributes: {
-          class: 'list-disc list-inside text-stone-800 dark:text-white'
-        }
-      }),
-      OrderedList.configure({
-        HTMLAttributes: {
-          class: 'list-decimal list-inside text-stone-800 dark:text-white'
-        }
-      }),
-      ListItem.configure({
-        HTMLAttributes: {
-          class: 'marker:text-sm'
-        }
-      }),
-      Blockquote.configure({
-        HTMLAttributes: {
-          class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
-        }
-      })
-    ],
-    onUpdate: ({ editor }) => {
-      setReturnDeliveryPolicy(editor.getHTML());
-    },
-  });
-
-  returnDeliveryEditorInstance.current = editor;
-
-  return () => {
-    if (returnDeliveryEditorInstance.current) {
-      returnDeliveryEditorInstance.current.destroy();
-    }
-  };
-}, []);
+  if (termsEditorInstance.current && termsAndConditions) {
+    termsEditorInstance.current.commands.setContent(termsAndConditions);
+  }
+}, [termsAndConditions]);
   const handleServiceToggle = (serviceId) => {
     setSelectedServices(prevSelectedServices => {
       const newSelected = new Set(prevSelectedServices);
@@ -567,61 +568,68 @@ useEffect(() => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prepare data for the POST request
+    if (!venueId) {
+      setFormMessage({ type: 'error', text: 'Error: Venue ID not found for update.' });
+      return;
+    }
+
+    // Prepare data for the PUT request
     const formData = {
-      name: Name,
-      vendor: vendorId, // Replace with actual session.user.id
+      name: venueName,
+      vendor: session?.user?.vendor_profile.id, // Keep vendor ID
       subcategory: subcategory,
       services_offered: Array.from(selectedServices),
-      location: selectedLocationData?.locationId || location, // Assuming location is a numeric ID from an API or selection
+      location: selectedLocationData?.locationId || location,
       about: about,
-      starting_price: parseFloat(perPlatePrice), // Using per_plate_price as starting_price for now
+      starting_price: parseFloat(perPlatePrice),
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
+      advance_payment_required: parseFloat(advancePaymentRequired),
       events_supported: Array.from(selectedEventTypes),
-      per_plate_price: parseFloat(perPlatePrice), // Added per_plate_price field
-      manager_name: contactName,
+      per_plate_price: parseFloat(perPlatePrice),
+      guest_capacity: parseInt(guestCapacity),
+      manager_name: managerName,
+      total_area_sqft: parseFloat(totalAreaSqft),
+      advance_booking_notice: parseInt(advanceBookingNotice),
       restrictions: restrictions,
+      website_link: websiteLink, // Include website link
+      instagram_link: instagramLink, // Include Instagram link
+      facebook_link: facebookLink, // Include Facebook link
+      terms_and_conditions: termsAndConditions, // Include terms and conditions
     };
 
-    console.log("Submitting data:", formData); // Log data to console for debugging
+    console.log("Submitting updated data:", formData);
 
     try {
-  // Assuming 'accessToken' is available in this scope
-  const accessToken = session?.accessToken; // Replace with your actual accessToken variable
+      const accessToken = session?.accessToken;
+      const config = {
+        headers: {
+          'Content-Type': 'application/json', // Changed to application/json for PUT
+          'Authorization': `Bearer ${accessToken}`
+        },
+      };
 
-  const config = {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-      'Authorization': `Bearer ${accessToken}`
-    },
-  };
-
-  const response = await api.post("/beautygrooming/", formData, config);
-  console.log("beautygrooming added successfully:", response.data);
-  setFormMessage({ type: 'success', text: 'beautygrooming added successfully!' });
-  // Optionally reset form fields here
-}catch (error) {
-      console.error("Error adding venue:", error);
+      const response = await api.put(`/venues/${venueId}/`, formData, config); // Changed to PUT request
+      console.log("Venue updated successfully:", response.data);
+      setFormMessage({ type: 'success', text: 'Venue updated successfully!' });
+    } catch (error) {
+      console.error("Error updating venue:", error);
       if (error.response) {
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
         console.error("Error data:", error.response.data);
         console.error("Error status:", error.response.status);
         console.error("Error headers:", error.response.headers);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to add venue.'}` });
+        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to update venue.'}` });
       } else if (error.request) {
-        // The request was made but no response was received
         console.error("Error request:", error.request);
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
       } else {
-        // Something happened in setting up the request that triggered an Error
         console.error("Error message:", error.message);
         setFormMessage({ type: 'error', text: `Error: ${error.message}` });
       }
     }
   };
 
+ 
   return (
     <>
       <Head>
@@ -1403,7 +1411,7 @@ useEffect(() => {
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <div>
                           <label htmlFor="venueName" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Service Name
+                            Name
                             <span className="hs-tooltip inline-block align-middle">
                               <svg className="shrink-0 size-4 text-stone-500 dark:text-neutral-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="12" cy="12" r="10" />
@@ -1419,22 +1427,22 @@ useEffect(() => {
                             id="venueName"
                             type="text"
                             className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Bridal Makeup"
-                            value={Name}
-                            onChange={(e) => setName(e.target.value)}
+                            placeholder="Royal Palace Banquet"
+                            value={venueName}
+                            onChange={(e) => setVenueName(e.target.value)}
                           />
                         </div>
                         <div>
                           <label htmlFor="managerName" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Contact Name
+                            Manager Name
                           </label>
                           <input
                             id="managerName"
                             type="text"
                             className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
                             placeholder="John Doe"
-                            value={contactName}
-                            onChange={(e) => setcontactName(e.target.value)}
+                            value={managerName}
+                            onChange={(e) => setManagerName(e.target.value)}
                           />
                         </div>
                       </div>
@@ -1468,7 +1476,7 @@ useEffect(() => {
                               id="emailAddress"
                               type="text"
                               className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                              placeholder="makeup@email.com"
+                              placeholder="mahal@email.com"
                               value={emailAddress}
                               onChange={(e) => setEmailAddress(e.target.value)}
                             />
@@ -1562,10 +1570,10 @@ useEffect(() => {
                   {/* End Media Card */}
 
                   {/* Variants Card */}
-                  {/* <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                  <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
-                        Service Category
+                        Services Offered
                       </h2>
                     </div>
                     <div className="p-4">
@@ -1608,8 +1616,8 @@ useEffect(() => {
 
 
                     </div>
-                  </div> */}
-                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                  </div>
+                  <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     {/* Header */}
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
@@ -1629,13 +1637,14 @@ useEffect(() => {
                     </div>
                     {/* End Body */}
                   </div>
+
                   {/* End Variants Card */}
                   <FAQEditor />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     {/* Header */}
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
-                        Cancellation/Refund Policy
+                        Cancellation Policy
                       </h2>
                     </div>
                     {/* End Header */}
@@ -1655,7 +1664,8 @@ useEffect(() => {
                     </div>
                     {/* End Body */}
                   </div>
-                  <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                  {/* Social Media Links Section */}
+<div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
   {/* Header */}
   <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
     <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
@@ -1665,7 +1675,7 @@ useEffect(() => {
   {/* End Header */}
 
   {/* Body */}
-  <div className="ml-4 mt-2 mr-4 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
+  <div className="ml-2 mt-2 mr-2 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
     {/* Website Link */}
     <div>
       <label htmlFor="websiteLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
@@ -1733,7 +1743,7 @@ useEffect(() => {
                         {/* Input */}
                         <div>
                           <label htmlFor="perPlatePrice" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Price
+                            Per Plate Price
                           </label>
                           <div className="relative w-full">
                             <input
@@ -1772,7 +1782,19 @@ useEffect(() => {
                       {/* Body */}
                       <div id="hs-add-product-organization-card-body" className="p-5 space-y-4">
                         {/* Input */}
-                        
+                        <div>
+                          <label htmlFor="guestCapacity" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Guest Capacity
+                          </label>
+                          <input
+                            id="guestCapacity"
+                            type="number"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="eg. 450"
+                            value={guestCapacity}
+                            onChange={(e) => setGuestCapacity(e.target.value)}
+                          />
+                        </div>
                         {/* End Input */}
 
                         {/* Input */}
@@ -1808,79 +1830,12 @@ useEffect(() => {
                           {/* End Select */}
                         </div>
                         {/* End Input */}
-<div className="mt-4">
-                          <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            No. of years Experience
-                          </label>
-
-                          <div className="relative">
-                            <input
-                              id="location"
-                              type="text"
-                              placeholder="Enter in numbers"
-                              className="py-1.5 sm:py-2 pr-12 pl-4 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1"
-                              value={location}
-                              onChange={(e) => setExperience(e.target.value)}
-                            />
-
-                            {/* Clickable Location Button with custom color */}
-                            
-
-                          </div>
-                        </div>
-                        {/* Input */}
-                        
-                       
-
-                        {/* End Input */}
-                      </div>
-                      {/* End Body */}
-                    </div>
-<div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                      {/* Header */}
-                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
-                          Location and Facilities
-
-                        </h2>
-                      </div>
-                      {/* End Header */}
-
-                      {/* Body */}
-                      <div id="hs-add-product-organization-card-body" className="p-5 space-y-4">
-                        {/* Input */}
-                        
-                        {/* End Input */}
-
-                       
-                        {/* End Input */}
-
-                       <div >
-                          <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Service Location
-                          </label>
-
-                          <div className="relative">
-                            <input
-                              id="location"
-                              type="text"
-                              placeholder="eg. in-salon, at venue, home service"
-                              className="py-1.5 sm:py-2 pr-12 pl-4 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1"
-                              value={location}
-                              onChange={(e) => setServiceLocation(e.target.value)}
-                            />
-
-                            {/* Clickable Location Button with custom color */}
-                            
-
-                          </div>
-                        </div>
 
                         {/* Input */}
                         {/* Location Section */}
                         <div className="mt-4">
                           <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Location of Salon/Studio
+                            Location
                           </label>
 
                           <div className="relative">
@@ -1927,59 +1882,163 @@ useEffect(() => {
                       </div>
                       {/* End Body */}
                     </div>
-                    
+
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       {/* Header */}
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
-                          Customization Options
+                          Service Details
+                        </h2>
+                      </div>
+                      {/* End Header */}
 
+                      {/* Body */}
+                      <div id="hs-add-product-Event-spaces-card-body" className="p-5 space-y-4">
+                        {/* Input */}
+                        <div>
+                          <label htmlFor="eventSpaces" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Event Spaces
+                          </label>
+                          <input
+                            id="eventSpaces"
+                            type="text"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="e.g., halls, lawns"
+                            value={eventSpaces}
+                            onChange={(e) => setEventSpaces(e.target.value)}
+                          />
+                        </div>
+                        {/* End Input */}
+                        <div>
+                          <label htmlFor="totalAreaSqft" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Total Area
+                          </label>
+                          <input
+                            id="totalAreaSqft"
+                            type="number"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="in sq. ft."
+                            value={totalAreaSqft}
+                            onChange={(e) => setTotalAreaSqft(e.target.value)}
+                          />
+                        </div>
+
+                      </div>
+                      {/* End Body */}
+                    </div>
+                    {/* End Organization Card */}
+                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                      {/* Header */}
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
+                          Booking Details
+                        </h2>
+                      </div>
+                      {/* End Header */}
+
+                      {/* Body */}
+                      <div id="hs-add-product-Event-spaces-card-body" className="p-5 space-y-4">
+                        {/* Input */}
+                        <div>
+                          <label htmlFor="advanceBookingNotice" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Advance Booking Notice
+                          </label>
+                          <input
+                            id="advanceBookingNotice"
+                            type="number"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="Enter in Days"
+                            value={advanceBookingNotice}
+                            onChange={(e) => setAdvanceBookingNotice(e.target.value)}
+                          />
+                        </div>
+                        {/* End Input */}
+                        <div>
+                          <label htmlFor="advancePaymentRequired" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Advance Payment Required
+                          </label>
+                          <input
+                            id="advancePaymentRequired"
+                            type="number"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="Enter in %"
+                            value={advancePaymentRequired}
+                            onChange={(e) => setAdvancePaymentRequired(e.target.value)}
+                          />
+                        </div>
+
+                      </div>
+                      {/* End Body */}
+                    </div>
+                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                      {/* Header */}
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
+                          Events Supported
                         </h2>
                       </div>
                       {/* End Header */}
 
                       {/* Body */}
                       <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
+                        {/* Input */}
                         <div>
-                          <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Minimum Advance Booking
+                          <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Event Types
                           </label>
-
-                          <div className="relative">
-                            <input
-                              id="location"
-                              type="text"
-                              placeholder="Enter in days for advance booking"
-                              className="py-1.5 sm:py-2 pr-12 pl-4 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1"
-                              value={location}
-                              onChange={(e) => setMinimumAdvanceBooking(e.target.value)}
-                            />
-
-                            {/* Clickable Location Button with custom color */}
-                           
-
+                          <div>
+                            <div className="p-2">
+                              <div className="flex flex-wrap gap-2">
+                                {eventTypes.map(eventType => (
+                                  <label
+                                    key={eventType.id}
+                                    htmlFor={`eventType-checkbox-${eventType.id}`}
+                                    className={`
+                                      py-2 px-2.5 relative flex justify-center items-center text-center text-[11px]
+                                      bg-white border border-gray-200 ring-1 ring-transparent text-gray-800
+                                      cursor-pointer rounded-xl hover:border-green-600 hover:ring-green-600
+                                      dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700
+                                      dark:hover:ring-neutral-600 dark:hover:ring-neutral-600
+                                      peer-checked:bg-green-100 peer-checked:border-green-200 peer-checked:ring-green-200 peer-checked:text-green-800
+                                      dark:peer-checked:bg-green-800/30 dark:peer-checked:border-green-800/50
+                                      dark:peer-checked:ring-green-800/50 dark:peer-checked:text-green-500
+                                      has-disabled:pointer-events-none has-disabled:text-gray-200 dark:has-disabled:text-neutral-700
+                                    `}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      id={`eventType-checkbox-${eventType.id}`}
+                                      className="hidden peer"
+                                      name="eventTypes"
+                                      checked={selectedEventTypes.has(eventType.id)}
+                                      onChange={() => handleEventTypeToggle(eventType.id)}
+                                    />
+                                    <span className="flex shrink-0 justify-center items-center size-0 bg-green-500 text-transparent rounded-full transition-all duration-200 peer-checked:size-4 peer-checked:me-1.5 peer-checked:text-white">
+                                      <svg className="shrink-0 size-2.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M20 6 9 17l-5-5" />
+                                      </svg>
+                                    </span>
+                                    <span className="block">
+                                      {eventType.name}
+                                    </span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         </div>
                         {/* End Input */}
                         <div>
                           <label htmlFor="restrictions" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Booking Policy
+                            Restrictions
                           </label>
                             <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                                <EditorToolbar editor={restrictionsEditorInstance.current} editorId="restrictions-editor" />
-                                <div className="h-40 overflow-auto" ref={restrictionsEditorRef}></div>
-                            </div>
+        <EditorToolbar editor={restrictionsEditorInstance.current} editorId="restrictions-editor" />
+        <div className="h-40 overflow-auto" ref={restrictionsEditorRef}></div>
+      </div>
 
                         </div>
-<div>
-  <label htmlFor="returnDeliveryPolicy" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-    Legal and Compliance
-  </label>
-  <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-    <EditorToolbar editor={returnDeliveryEditorInstance.current} editorId="return-delivery-editor" />
-    <div className="h-40 overflow-auto" ref={returnDeliveryEditorRef}></div>
-  </div>
-</div>
+
                       </div>
                       {/* End Body */}
                     </div>

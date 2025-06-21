@@ -288,25 +288,57 @@ useEffect(() => {
     if (!cancellationEditorRef.current) return;
 
     const editor = new Editor({
-      element: cancellationEditorRef.current,
-      extensions: [
-        StarterKit,
-        Placeholder.configure({
-          placeholder: 'Enter cancellation policy...',
-          emptyNodeClass: 'before:text-stone-400',
-        }),
-        Paragraph,
-        Bold,
-        Underline,
-        BulletList,
-        OrderedList,
-        ListItem,
-        Blockquote,
-      ],
-      onUpdate: ({ editor }) => {
-        setCancellationPolicy(editor.getHTML());
-      },
-    });
+  element: cancellationEditorRef.current,
+  extensions: [
+    StarterKit.configure({
+      history: false
+    }),
+    Placeholder.configure({
+      placeholder: 'Enter cancellation policy...',
+      emptyNodeClass: 'before:text-stone-400'
+    }),
+    Paragraph.configure({
+      HTMLAttributes: {
+        class: 'text-sm text-stone-800 dark:text-stone-200'
+      }
+    }),
+    Bold.configure({
+      HTMLAttributes: {
+        class: 'font-bold'
+      }
+    }),
+    Underline,
+    TiptapLink.configure({
+      HTMLAttributes: {
+        class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
+      }
+    }),
+    BulletList.configure({
+      HTMLAttributes: {
+        class: 'list-disc list-inside text-stone-800 dark:text-white'
+      }
+    }),
+    OrderedList.configure({
+      HTMLAttributes: {
+        class: 'list-decimal list-inside text-stone-800 dark:text-white'
+      }
+    }),
+    ListItem.configure({
+      HTMLAttributes: {
+        class: 'marker:text-sm'
+      }
+    }),
+    Blockquote.configure({
+      HTMLAttributes: {
+        class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
+      }
+    })
+  ],
+  onUpdate: ({ editor }) => {
+    setCancellationPolicy(editor.getHTML());
+  },
+  content: cancellationPolicy || '',
+});
 
     cancellationEditorInstance.current = editor;
 
@@ -1638,7 +1670,7 @@ useEffect(() => {
                           <div className="relative">
                             {/* Fixed Category Display with Same Styling */}
                             <div className="hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-1.5 sm:py-2 px-4 pe-9 flex text-nowrap w-full cursor-default bg-white border border-stone-200 rounded-lg text-start sm:text-sm text-stone-800 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200">
-                              <span className="truncate">Catering & Beverages</span>
+                              <span className="truncate">{session?.user?.vendor_profile?.subcategory?.category?.name}</span>
                             </div>
                           </div>
                           {/* End Select */}
@@ -1655,7 +1687,7 @@ useEffect(() => {
                           <div className="relative">
                             {/* Fixed Category Display with Same Styling */}
                             <div className="hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-1.5 sm:py-2 px-4 pe-9 flex text-nowrap w-full cursor-default bg-white border border-stone-200 rounded-lg text-start sm:text-sm text-stone-800 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200">
-                              <span className="truncate">Live Food Counters Vendor</span>
+                              <span className="truncate">{session?.user?.vendor_profile?.subcategory?.name}</span>
                             </div>
                           </div>
                           {/* End Select */}
