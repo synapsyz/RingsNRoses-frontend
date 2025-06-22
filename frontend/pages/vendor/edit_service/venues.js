@@ -159,6 +159,7 @@ export default function EditService() {
 
 
   const thumbnailUploaderRef = useRef(null);
+  const [faqs, setFaqs] = useState([]); // 1. Add state for FAQs
 
 
 
@@ -290,6 +291,19 @@ export default function EditService() {
           // Pass this clean array of URL strings to the state
           setInitialGallery(imageUrls);
         }
+
+
+
+
+        if (venueData.faq_details && Array.isArray(venueData.faq_details)) {
+                    const loadedFaqs = venueData.faq_details.map((faq, index) => ({
+                        // Create a unique ID for React's key prop during this editing session
+                        id: `faq-${index}-${Date.now()}`, 
+                        question: faq.question || '',
+                        answer: faq.answer || ''
+                    }));
+                    setFaqs(loadedFaqs);
+                }
 
         setWebsiteLink(venueData.website_link || ''); // Assuming these fields exist
         setInstagramLink(venueData.instagram_link || '');
@@ -673,6 +687,16 @@ export default function EditService() {
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
 
 
+    // 3. Prepare the FAQ data for the API
+        const faqsForApi = faqs
+            .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '') // Ensure FAQ is not empty
+            .map((faq, index) => ({
+                question: faq.question,
+                answer: faq.answer,
+                order: index + 1, // Add the order field as expected by the backend
+            }));
+
+
     // 3. Prepare data for the PUT request
     const formData = {
       name: venueName,
@@ -700,7 +724,11 @@ export default function EditService() {
       thumbnail_url: finalThumbnailKey,
       // --- FIX END ---
       gallery_images: finalGalleryList,
+      faqs: faqsForApi,
     };
+
+
+ 
 
     console.log("Submitting updated data:", formData);
 
@@ -957,7 +985,7 @@ export default function EditService() {
                   </div>
 
                   {/* End Variants Card */}
-                  <FAQEditor />
+                  <FAQEditor faqs={faqs} setFaqs={setFaqs} />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     {/* Header */}
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
