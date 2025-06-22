@@ -40,7 +40,7 @@ const SearchBar = () => {
 
     try {
       const response = await fetch(
-        `https://6d88-183-82-206-189.ngrok-free.app/api/v1/search/?query=${encodeURIComponent(searchQuery)}`,
+        `http://localhost:8000/api/v1/search/?query=${encodeURIComponent(searchQuery)}`,
         {
           headers: {
             ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),

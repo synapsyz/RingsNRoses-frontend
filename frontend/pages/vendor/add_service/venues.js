@@ -15,6 +15,8 @@ import ListItem from '@tiptap/extension-list-item';
 import Blockquote from '@tiptap/extension-blockquote';
 import FAQEditor from '@/components/FAQEditor'; // Assuming this component exists
 import { Link as TiptapLink } from '@tiptap/extension-link';
+import ThumbnailUploader from '@/components/ThumbnailUploader'; // Adjust the path as needed
+
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
 let api_url;
@@ -182,7 +184,7 @@ const [facebookLink, setFacebookLink] = useState('');
 
 
   // Hardcoded for now as per your request. In a real app, you'd fetch these.
-  const subcategory = 1; // Assuming Banquet Halls is subcategory 1
+  const subcategory = session?.user?.vendor_profile.subcategory.id; // Assuming Banquet Halls is subcategory 1
   const vendorId = session?.user?.vendor_profile.id; // Placeholder: Replace with actual session.user.id
 console.log(vendorId);
 
@@ -514,7 +516,7 @@ useEffect(() => {
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
       advance_payment_required: parseFloat(advancePaymentRequired),
-      events_supported: Array.from(selectedEventTypes),
+      event_types: Array.from(selectedEventTypes),
       per_plate_price: parseFloat(perPlatePrice), // Added per_plate_price field
       guest_capacity: parseInt(guestCapacity),
       manager_name: managerName,
@@ -531,7 +533,6 @@ useEffect(() => {
 
   const config = {
     headers: {
-      'Content-Type': 'multipart/form-data',
       'Authorization': `Bearer ${accessToken}`
     },
   };
@@ -1301,42 +1302,7 @@ useEffect(() => {
 
                     {/* Body */}
                     <div className="p-5 space-y-4">
-                      <div>
-                        <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                          Thumbnail
-                        </label>
-
-                        {/* Logo Upload Group */}
-                        <div className="flex flex-wrap items-center gap-3 sm:gap-5">
-                          <span className="flex justify-center items-center size-20 border-2 border-dotted border-stone-300 text-stone-400 rounded-full dark:border-neutral-700 dark:text-neutral-600">
-                            <svg className="shrink-0 size-7" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                              <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                              <circle cx="9" cy="9" r="2" />
-                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                            </svg>
-                          </span>
-
-                          <div className="grow">
-                            <div className="flex items-center gap-x-2">
-                              <button type="button" className="py-2 px-3 inline-flex items-center gap-x-2 text-xs font-medium rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:ring-2 focus:ring-green-500">
-                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                                  <polyline points="17 8 12 3 7 8" />
-                                  <line x1="12" x2="12" y1="3" y2="15" />
-                                </svg>
-                                Upload photo
-                              </button>
-                              <button type="button" className="py-2 px-3 inline-flex items-center gap-x-2 text-xs font-medium rounded-lg border border-stone-200 bg-white text-red-500 shadow-2xs hover:bg-stone-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-stone-50 dark:bg-neutral-800 dark:border-neutral-700 dark:text-red-500 dark:hover:bg-neutral-700 dark:focus:bg-neutral-700" disabled>
-                                Delete
-                              </button>
-                            </div>
-                            <p className="mt-2 text-xs text-stone-500 dark:text-neutral-500">
-                              Your image should be square, at least 100x100px, and JPG or PNG.
-                            </p>
-                          </div>
-                        </div>
-                        {/* End Logo Upload Group */}
-                      </div>
+                      <ThumbnailUploader />
 
                       {/* Input */}
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
