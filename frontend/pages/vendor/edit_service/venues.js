@@ -238,6 +238,8 @@ export default function EditService() {
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [restrictions, setRestrictions] = useState('');
   const [location, setLocation] = useState('');
+  const [locationId, setLocationId] = useState('');
+
 
 
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
@@ -253,7 +255,7 @@ export default function EditService() {
       try {
         const response = await api.get(`/venues/${venueId}`, config);
         const venueData = response.data;
-
+        console.log(venueData);
 
         // Populate form fields with fetched data
         setVenueName(venueData.name || '');
@@ -269,8 +271,12 @@ export default function EditService() {
         setAdvancePaymentRequired(venueData.advance_payment_required || '');
         setCancellationPolicy(venueData.cancellation_policy || '');
         setRestrictions(venueData.restrictions || '');
-        setLocation(venueData.location || ''); // Assuming location is a simple ID or string
+        setLocationId(venueData.location_details.id || '');
 
+        setLocation([venueData.location_details.name, venueData.location_details.district_name]
+    .filter(Boolean)
+    .join(' , ')
+);
         // --- FIX START: Store both the display URL and the permanent key ---
         setThumbnailUrl(venueData.thumbnail_url_detail || null); // Use presigned URL for display
         setThumbnailKey(venueData.thumbnail_url || null);       // Store the permanent key
@@ -703,7 +709,7 @@ export default function EditService() {
       vendor: session?.user?.vendor_profile.id,
       subcategory: subcategory,
       services_offered: Array.from(selectedServices),
-      location: selectedLocationData?.locationId || location,
+      location: selectedLocationData?.locationId || locationId,
       about: about,
       starting_price: parseFloat(perPlatePrice),
       contact_number: contactNumber,
@@ -713,6 +719,7 @@ export default function EditService() {
       per_plate_price: parseFloat(perPlatePrice),
       guest_capacity: parseInt(guestCapacity),
       manager_name: managerName,
+      email:emailAddress,
       total_area_sqft: parseFloat(totalAreaSqft),
       advance_booking_notice: parseInt(advanceBookingNotice),
       restrictions: restrictions,
@@ -720,9 +727,7 @@ export default function EditService() {
       instagram_link: instagramLink,
       facebook_link: facebookLink,
       terms_and_conditions: termsAndConditions,
-      // --- FIX START: Use the final determined key ---
       thumbnail_url: finalThumbnailKey,
-      // --- FIX END ---
       gallery_images: finalGalleryList,
       faqs: faqsForApi,
     };

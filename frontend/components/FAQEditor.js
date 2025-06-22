@@ -1,7 +1,7 @@
 // components/FAQEditor.js
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
@@ -17,6 +17,15 @@ import Blockquote from '@tiptap/extension-blockquote';
 // A leaner, reusable toolbar for each FAQ's answer editor
 const EditorToolbar = ({ editor }) => {
     if (!editor) return null;
+
+    const [_, setForceUpdate] = useState(0);
+    useEffect(() => {
+        if (editor) {
+            const updateHandler = () => setForceUpdate(c => c + 1);
+            editor.on('transaction', updateHandler);
+            return () => editor.off('transaction', updateHandler);
+        }
+    }, [editor]);
 
     return (
         <div className="flex align-middle gap-x-0.5 border-b border-stone-200 p-2 dark:bg-neutral-800 dark:border-neutral-700">
@@ -36,27 +45,46 @@ const EditorToolbar = ({ editor }) => {
     );
 };
 
-// The Tiptap editor component for a single FAQ answer
 const AnswerEditor = ({ content, onContentChange }) => {
     const editorRef = useRef(null);
     const editorInstance = useRef(null);
+    const [isEditorReady, setIsEditorReady] = useState(false);
 
     useEffect(() => {
-        if (editorRef.current && !editorInstance.current) {
-            const editor = new Editor({
-                element: editorRef.current,
-                extensions: [
-                    StarterKit,
-                    Placeholder.configure({ placeholder: 'Write the answer here...' }),
-                    Paragraph, Bold, Underline, BulletList, OrderedList, ListItem, Blockquote, Link
-                ],
-                content: content,
-                onUpdate: ({ editor }) => {
-                    onContentChange(editor.getHTML());
-                },
-            });
-            editorInstance.current = editor;
-        }
+        if (!editorRef.current) return;
+
+        const editor = new Editor({
+            element: editorRef.current,
+            extensions: [
+                StarterKit,
+                Placeholder.configure({ placeholder: 'Write the answer here...' }),
+                Paragraph.configure({
+                    HTMLAttributes: { class: 'text-base text-stone-800 dark:text-stone-200' }
+                }),
+                Bold.configure({ HTMLAttributes: { class: 'font-bold' } }),
+                Underline,
+                Link.configure({
+                    HTMLAttributes: { class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-green-500' }
+                }),
+                BulletList.configure({
+                    HTMLAttributes: { class: 'list-disc list-inside text-stone-800 dark:text-white' }
+                }),
+                OrderedList.configure({
+                    HTMLAttributes: { class: 'list-decimal list-inside text-stone-800 dark:text-white' }
+                }),
+                ListItem.configure({ HTMLAttributes: { class: 'marker:text-base' } }),
+                Blockquote.configure({
+                    HTMLAttributes: { class: 'relative border-s-4 ps-4 sm:ps-6 border-stone-300 dark:border-neutral-700 text-stone-800 dark:text-white' }
+                })
+            ],
+            onUpdate: ({ editor }) => {
+                onContentChange(editor.getHTML());
+            },
+            content: content || '',
+        });
+
+        editorInstance.current = editor;
+        setIsEditorReady(true);
 
         return () => {
             if (editorInstance.current) {
@@ -64,30 +92,28 @@ const AnswerEditor = ({ content, onContentChange }) => {
                 editorInstance.current = null;
             }
         };
-    }, []); // Empty dependency array ensures this runs only once per component instance
+    }, []);
 
-    // Update content if it changes from props
     useEffect(() => {
-      if (editorInstance.current && content !== editorInstance.current.getHTML()) {
-        editorInstance.current.commands.setContent(content);
-      }
+        if (editorInstance.current && content !== editorInstance.current.getHTML()) {
+            editorInstance.current.commands.setContent(content, false);
+        }
     }, [content]);
 
     return (
         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-            <EditorToolbar editor={editorInstance.current} />
-            <div className="h-40 overflow-auto tiptap-editor-field" ref={editorRef}></div>
+            <EditorToolbar editor={isEditorReady ? editorInstance.current : null} />
+            <div className="overflow-auto tiptap-editor-field" ref={editorRef}></div>
         </div>
     );
 };
 
-
 export default function FAQEditor({ faqs, setFaqs }) {
-    
+
     const addFaq = () => {
         setFaqs([
             ...faqs,
-            { id: `new-${Date.now()}`, question: '', answer: '' }
+            { id: `new-${Date.now()}`, question: '', answer: '', isOpen: true }
         ]);
     };
 
@@ -95,8 +121,18 @@ export default function FAQEditor({ faqs, setFaqs }) {
         setFaqs(faqs.filter(faq => faq.id !== id));
     };
 
+    // MODIFIED: This function now uses the "functional update" form for setFaqs.
+    // This is the fix for the state-clearing bug.
     const handleFaqChange = (id, field, value) => {
-        setFaqs(faqs.map(faq => faq.id === id ? { ...faq, [field]: value } : faq));
+        setFaqs(currentFaqs =>
+            currentFaqs.map(faq =>
+                faq.id === id ? { ...faq, [field]: value } : faq
+            )
+        );
+    };
+
+    const toggleFaq = (id) => {
+        setFaqs(faqs.map(faq => faq.id === id ? { ...faq, isOpen: !faq.isOpen } : faq));
     };
 
     return (
@@ -108,28 +144,50 @@ export default function FAQEditor({ faqs, setFaqs }) {
             </div>
             <div className="p-5 space-y-6">
                 {faqs.map((faq, index) => (
-                    <div key={faq.id} className="p-4 border border-stone-200 rounded-lg space-y-3 dark:border-neutral-700">
-                        <div className="flex justify-between items-center">
+                    <div key={faq.id} className="border border-stone-200 rounded-lg dark:border-neutral-700 overflow-hidden">
+                        <div
+                            className="p-4 flex justify-between items-center cursor-pointer"
+                            onClick={() => toggleFaq(faq.id)}
+                        >
                             <h3 className="font-semibold text-stone-700 dark:text-neutral-300">Question {index + 1}</h3>
-                            <button
-                                type="button"
-                                onClick={() => deleteFaq(faq.id)}
-                                className="text-sm font-medium text-red-500 hover:text-red-700"
-                            >
-                                Delete
-                            </button>
+                            <div className="flex items-center gap-x-4">
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        deleteFaq(faq.id);
+                                    }}
+                                    className="text-sm font-medium text-red-500 hover:text-red-700"
+                                >
+                                    Delete
+                                </button>
+                                <svg
+                                    className={`w-5 h-5 text-stone-600 dark:text-neutral-400 transition-transform duration-300 ${faq.isOpen ? 'rotate-180' : ''}`}
+                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                                >
+                                    <path d="m6 9 6 6 6-6" />
+                                </svg>
+                            </div>
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Enter the question"
-                            className="py-2 px-3 block w-full border border-stone-200 rounded-lg text-sm focus:border-green-500 focus:ring-green-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300"
-                            value={faq.question}
-                            onChange={(e) => handleFaqChange(faq.id, 'question', e.target.value)}
-                        />
-                        <AnswerEditor
-                            content={faq.answer}
-                            onContentChange={(newAnswer) => handleFaqChange(faq.id, 'answer', newAnswer)}
-                        />
+                        <div
+                            className={`transition-[max-height] duration-500 ease-in-out overflow-hidden ${faq.isOpen ? 'max-h-[1000px]' : 'max-h-0'}`}
+                        >
+                            <div className="px-4 pb-4 space-y-3">
+                                <input
+                                    type="text"
+                                    placeholder="Enter the question"
+                                    // MODIFIED: Increased font size for a bigger input box
+                                    className="py-3 px-3 block w-full border border-stone-200 rounded-lg text-base focus:border-green-500 focus:ring-green-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300"
+                                    value={faq.question}
+                                    onChange={(e) => handleFaqChange(faq.id, 'question', e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                />
+                                <AnswerEditor
+                                    content={faq.answer}
+                                    onContentChange={(newAnswer) => handleFaqChange(faq.id, 'answer', newAnswer)}
+                                />
+                            </div>
+                        </div>
                     </div>
                 ))}
                 <button
@@ -140,7 +198,6 @@ export default function FAQEditor({ faqs, setFaqs }) {
                     + Add FAQ
                 </button>
             </div>
-            {/* Simple CSS for toolbar buttons */}
             <style jsx>{`
                 .btn-toolbar {
                     width: 2rem;
@@ -171,6 +228,24 @@ export default function FAQEditor({ faqs, setFaqs }) {
                 }
                 .dark .btn-toolbar.active {
                     background-color: #404040; /* neutral-700 */
+                }
+                .tiptap-editor-field .ProseMirror {
+                    padding: 0.5rem;
+                    /* MODIFIED: Increased min-height for a much larger editor */
+                    min-height: 20rem; /* 320px */
+                }
+                .tiptap-editor-field .ProseMirror:focus {
+                    outline: none;
+                }
+                .ProseMirror p.is-editor-empty:first-child::before {
+                  content: attr(data-placeholder);
+                  float: left;
+                  color: #a8a29e; /* stone-400 */
+                  pointer-events: none;
+                  height: 0;
+                }
+                .dark .ProseMirror p.is-editor-empty:first-child::before {
+                    color: #a3a3a3; /* neutral-400 */
                 }
             `}</style>
         </div>

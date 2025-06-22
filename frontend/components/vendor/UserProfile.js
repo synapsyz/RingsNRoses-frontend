@@ -1,6 +1,14 @@
-import React, { useState, useEffect } from 'react'; // 1. Import useState and useEffect
-import Link from 'next/link';
+// Add 'use client' at the top to mark this as a Client Component
+'use client'; 
+
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+// 1. Import the useRouter hook from next/navigation
+import { useRouter } from 'next/navigation'; 
+
+import { useSession, signOut } from 'next-auth/react';
+
 
 const dummyUser = {
   name: 'James Collison',
@@ -22,7 +30,7 @@ const menuItems = [
     href: '/account',
     label: 'My account',
     icon: (
-       <svg className="shrink-0 mt-0.5 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg className="shrink-0 mt-0.5 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
         <circle cx="12" cy="7" r="4" />
       </svg>
@@ -30,24 +38,43 @@ const menuItems = [
   },
 ];
 
-
 const UserProfile = () => {
-  // 2. State to manage the visual "checked" state of the toggle
+  // 2. Initialize router and state for loading feedback
+  const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // 3. Effect to sync the toggle's state with the actual page theme
   useEffect(() => {
-    // This runs when the component first loads on the client
-    // It checks the <html> tag and sets our component's state to match
     setIsDarkMode(document.documentElement.classList.contains('dark'));
-  }, []); // The empty array ensures this effect runs only once on mount
+  }, []);
 
-  // 4. Handler to update our component's state when the toggle is clicked
   const handleToggleChange = (e) => {
     setIsDarkMode(e.target.checked);
-    // Note: We don't need to add the theme-switching logic here.
-    // The `data-hs-theme-switch` attribute on the input is still
-    // handled by Preline JS, which does the real work. This just keeps our UI in sync.
+  };
+
+  // 3. Create the sign-out handler function
+const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      // 1. Tell the server to clear the session.
+      const response =     await signOut({ redirect: false }); // Using await if signOut returns a Promise
+      
+
+      if (response.ok) {
+        // 2. Refresh the UI to reflect the unauthenticated state.
+        router.refresh(); 
+
+        // 3. Redirect to the new vendor login page.
+        router.push('/vendor/login'); // MODIFIED
+        
+      } else {
+        console.error('Sign out failed');
+      }
+    } catch (error) {
+      console.error('An error occurred during sign out:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   return (
@@ -88,8 +115,8 @@ const UserProfile = () => {
                   type="checkbox"
                   id="dark-mode-toggle"
                   className="peer sr-only"
-                  checked={isDarkMode}      // Bind the input's checked status to our state
-                  onChange={handleToggleChange} // Update our state when it's clicked
+                  checked={isDarkMode}
+                  onChange={handleToggleChange}
                 />
                 <span className="absolute inset-0 bg-stone-200 rounded-full transition-colors peer-checked:bg-green-600 dark:bg-neutral-700 dark:peer-checked:bg-green-500"></span>
                 <span className="absolute top-3/4 start-0.5 -translate-y-1/2 size-5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-full dark:bg-neutral-400 dark:peer-checked:bg-white"></span>
@@ -99,9 +126,14 @@ const UserProfile = () => {
 
           {/* Sign Out */}
           <div className="p-1">
-            <Link href="/sign-out" className="flex items-center gap-x-3 py-2 px-3 rounded-lg text-sm text-stone-800 hover:bg-stone-100 dark:text-neutral-300 dark:hover:bg-neutral-800">
-              Sign out
-            </Link>
+            {/* 6. Changed Link to a button and attached the handler */}
+            <button
+              onClick={handleSignOut}
+              disabled={isSigningOut}
+              className="w-full flex items-center gap-x-3 py-2 px-3 rounded-lg text-sm text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-300 dark:hover:bg-neutral-800"
+            >
+              {isSigningOut ? 'Signing out...' : 'Sign out'}
+            </button>
           </div>
         </div>
       </div>

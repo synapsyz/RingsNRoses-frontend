@@ -6,13 +6,12 @@ import { usePathname } from 'next/navigation'; // Hook to detect the active page
 // We define the structure of our navigation here.
 // This makes it easy to add, remove, or change links and dropdowns.
 const navLinks = [
-  { type: 'link', label: 'Overview', href: '/dashboard' },
+  { type: 'link', label: 'Dashboard', href: '/vendor/dashboard' },
   {
     type: 'dropdown',
     label: 'Service',
     sublinks: [
-      { label: 'Add Service', href: '/add_service' },
-      { label: 'Edit Service', href: '/edit/service' },
+      { label: 'Add/Edit Service', href: '/vendor/edit_service/venues' },
       { label: 'Preview', href: '/service/preview' },
     ],
   },

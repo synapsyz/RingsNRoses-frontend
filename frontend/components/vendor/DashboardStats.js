@@ -32,7 +32,7 @@ const statsData = [
   },
   {
     id: 4,
-    title: 'Reviews',
+    title: 'Bookings',
     value: '150',
     subtext: '12 reviews',
     change: '4.4%',
