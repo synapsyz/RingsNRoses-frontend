@@ -219,6 +219,7 @@ export default function EditService() {
     headers: { Authorization: `Bearer ${accessToken}` },
   };
 
+  
   const [eventTypes, setEventTypes] = useState([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
