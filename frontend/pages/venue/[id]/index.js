@@ -78,6 +78,15 @@ const api = axios.create({
       ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })    }
   });
 export default function ProductDetail() {
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(today.getDate()).padStart(2, '0');
+    setCurrentDate(`${year}-${month}-${day}`);
+  }, []); // Empty dependency array means this runs once on mount
   const [isLocationSelectorOpen, setIsLocationSelectorOpen] = useState(false);
   const [selectedLocationName, setSelectedLocationName] = useState('Chennai');
   const { data: session, status } = useSession();
@@ -554,6 +563,7 @@ const config = {
 
 
           <div className="max-w-[85rem] basis-full w-full mx-auto py-3 px-4 sm:px-6 lg:px-8">
+          
             <div className="w-full flex md:flex-nowrap md:items-center gap-2 lg:gap-6">
               {/* <!-- Logo --> */}
               <div className="order-1 md:w-auto flex items-center gap-x-1">
@@ -1556,6 +1566,7 @@ const config = {
 
           {/* <!-- ========== MAIN CONTENT ========== --> */}
           <main id="content">
+          
             {/* <!-- Product Details: Gallery Slider --> */}
             <div className="w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
               <div className="pt-6">
@@ -1565,7 +1576,7 @@ const config = {
                     <li className="flex items-center">
 
                       <a className="py-0.5 px-1.5 flex items-center gap-x-1 text-sm rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="listing.html">
-                        {venueData?.subcategory?.category?.name}
+                        {venueData?.subcategory?.category?.name || session?.user?.vendor_profile.subcategory.category.name}
                       </a>
                       <svg className="shrink-0 overflow-visible size-4  text-gray-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round"></path>
@@ -1574,7 +1585,7 @@ const config = {
                     <li className="flex items-center truncate">
 
                       <a className="py-0.5 px-1.5 flex items-center truncate gap-x-1 text-sm truncate rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="listing.html">
-                        <span className="truncate"> {venueData?.subcategory?.name}</span>
+                        <span className="truncate"> {venueData?.subcategory?.name || session?.user?.vendor_profile.subcategory.name}</span>
                       </a>
                       <svg className="shrink-0 overflow-visible size-4  text-gray-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round"></path>
@@ -2203,8 +2214,8 @@ const config = {
                         <h2 className="text-xl font-semibold text-sm text-gray-800 dark:text-neutral-200 mb-4">Services Offered</h2>
                         {/* <p className="text-gray-700 leading-relaxed">
                        */}<p className="mt-3 text-sm text-gray-800 dark:text-neutral-200">
-                          VM Grand Mahal is a beautifull area to host all your functions, from pre-wedding ceremonies. The abundance of establishments  offered by them  is mentioned below:
-                        </p>
+  {venueData?.name} is a beautifull area to host all your functions, from pre-wedding ceremonies. The abundance of establishments offered by them is mentioned below:
+</p>
 
                         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 sm:gap-x-10 lg:gap-y-12 lg:gap-x-16">
                           {/* <!-- Icon Block --> */}
@@ -2241,20 +2252,11 @@ const config = {
                   </p>
                  */}
                           <div>
-                            <p
-                              className={`text-gray-800 dark:text-neutral-200 leading-relaxed ${!expanded ? "line-clamp-2" : ""
-                                }`}
-                            >
-                              {venueData?.about}
-                            </p>
-                            {venueData?.about?.length > 100 && (
-                              < button
-                                className="mt-2 text-blue-600 hover:underline"
-                                onClick={() => setExpanded(!expanded)}
-                              >
-                                {expanded ? "View Less" : "View More"}
-                              </button>
-                            )}
+                            <div
+  className="space-y-4 text-sm text-gray-800 dark:text-neutral-200" // Adjust classNames as needed for styling
+  dangerouslySetInnerHTML={{ __html: venueData.about }}
+/>
+                            
                           </div>
                           {/* <div className="mt-10">
                   <h2 className="text-xl font-semibold mb-4">Facilities and Capacity</h2>
@@ -2270,24 +2272,85 @@ const config = {
                       <strong>VM Grand Mahal</strong> offers comfortable guest accommodations and expert decor vendors to enhance your wedding experience. With diverse cuisines and heartfelt service, they ensure every ceremony is memorable and flawlessly executed.
                   </p>
                 </div> */}
-                          <div className="mt-10">
-                            <h2 className="text-xl font-semibold mb-4">Facilities and Capacity</h2>
-                            {facilityText.map((facilityText, idx) => (
-                              <p key={idx} className={`text-gray-800 dark:text-neutral-200 leading-relaxed mb-2 ${expanded1 ? '' : 'line-clamp-1'} transition-all`}>
-                                {facilityText}
-                              </p>
-                            ))}
-                            {/* <p className={`text-gray-700 leading-relaxed mb-2 ${expanded1 ? '' : 'line-clamp-2'} transition-all`}>
-  {facilityText}
-</p> */}
-                            <button
-                              onClick={() => setExpandedfacilities(!expanded1)}
-                              className="mt-2 text-blue-600 hover:underline"
-                            >
-                              {expanded1 ? 'View less' : 'View more'}
-                            </button>
-                          </div>
+                          <div className="mt-6">
+  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+    Event Types Supported
+  </h3>
+  <ul className="list-disc list-inside text-sm text-gray-700 dark:text-neutral-300">
+    {venueData?.event_types_details?.map((event) => (
+      <li key={event.id}>{event.name}</li>
+    ))}
+  </ul>
+</div>
 
+{/* FAQ Section */}
+{/* FAQ Section */}
+<div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+  <div className="max-w-2xl mx-auto text-center mb-10 lg:mb-14">
+    <h2 className="text-xl font-semibold md:text-xl md:leading-tight text-gray-800 dark:text-neutral-200">
+      Frequently Asked Questions
+    </h2>
+  </div>
+
+  <div className="max-w-5xl mx-auto">
+    <div className="hs-accordion-group divide-y divide-gray-200 dark:divide-neutral-800">
+      {venueData?.faq_details && venueData.faq_details.map((faq, index) => (
+        <div
+          className="hs-accordion pb-3 active" // 'active' for default open, remove if all should be closed initially
+          id={`hs-basic-with-title-and-arrow-stretched-heading-${faq.id || index}`}
+          key={faq.id || index}
+        >
+          <button
+            className="hs-accordion-toggle group pb-3 inline-flex items-center justify-between gap-x-3 w-full font-semibold text-start text-gray-800 transition hover:text-gray-500 dark:text-neutral-200 dark:hover:text-neutral-400"
+            aria-controls={`hs-basic-with-title-and-arrow-stretched-collapse-${faq.id || index}`}
+          >
+            {faq.question}
+            <svg
+              className="hs-accordion-active:hidden block flex-shrink-0 size-5 text-gray-600 group-hover:text-gray-500 dark:text-neutral-400 dark:group-hover:text-neutral-400"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+            <svg
+              className="hs-accordion-active:block hidden flex-shrink-0 size-5 text-gray-600 group-hover:text-gray-500 dark:text-neutral-400 dark:group-hover:text-neutral-400"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="m18 15-6-6-6 6" />
+            </svg>
+          </button>
+          <div
+            id={`hs-basic-with-title-and-arrow-stretched-collapse-${faq.id || index}`}
+            className="hs-accordion-content w-full overflow-hidden transition-[height] duration-300"
+            aria-labelledby={`hs-basic-with-title-and-arrow-stretched-heading-${faq.id || index}`}
+          >
+            <p
+              className="text-gray-800 dark:text-neutral-200"
+              dangerouslySetInnerHTML={{ __html: faq.answer }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+{/* End FAQ Section */}
+{/* End FAQ Section */}
 
                           {/* <!-- Grid --> */}
                           {/* <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 sm:gap-x-10 lg:gap-y-12 lg:gap-x-16"> */}
@@ -2381,6 +2444,7 @@ const config = {
             }'>
                       {/* <!-- Product Details --> */}
                       <div className="lg:ps-12 h-full flex flex-col">
+                      
                         <h1 className="font-semibold text-2xl text-gray-800 dark:text-neutral-200">
                           {venueData?.name}
                         </h1>
@@ -2394,7 +2458,7 @@ const config = {
 
                           </svg>
                           <a href="#" className="text-blue-600 hover:underline">
-                            {venueData?.location?.name}, {venueData?.location?.district_name}
+                            {venueData?.location_details?.name}, {venueData?.location_details?.district_name}
                           </a>
                         </div>
                         {/* <!-- End Badge Group --> */}
@@ -2544,10 +2608,12 @@ const config = {
                                     min="{{ today }}"
                                   /> */}
                                     <input
-                                      type="date"
-                                      style={{ width: '215px' }}
-                                      className="py-2 ps-20 pe-8 inline-block border-gray-200 rounded-full text-sm text-gray-800 cursor-pointer hover:bg-gray-50 focus:border-emerald-500 focus:ring-emerald-500 focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-300 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                                    />
+  type="date"
+  style={{ width: '215px' }}
+  className="py-2 ps-20 pe-8 inline-block border-gray-200 rounded-full text-sm text-gray-800 cursor-pointer hover:bg-gray-50 focus:border-emerald-500 focus:ring-emerald-500 focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800 dark:border-neutral-700 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+  min={currentDate}
+  value={currentDate}
+/>
                                   </div>
                                 </div>
                                 {/* <!-- End Price Group --> */}
@@ -2654,9 +2720,9 @@ const config = {
                                     </h2>
 
                                     <div className="mt-1.5">
-                                      <p className="text-sm text-gray-800 dark:text-neutral-200">
-                                        The VM Grand Hall can accommodate anywhere from 20 to 1,000 guests, making it perfect for both intimate gatherings and grand celebrations.
-                                      </p>
+                                     <p className="text-sm text-gray-800 dark:text-neutral-200">
+  {venueData?.name} can accommodate upto {venueData?.guest_capacity} guests, making it perfect for both intimate gatherings and grand celebrations.
+</p>
                                     </div>
                                   </div>
                                 </div>
@@ -3373,7 +3439,25 @@ const config = {
       </div>
       {/* <!-- End Product Detail Modal --> */}
       {/* <!-- ========== END SECONDARY CONTENT ========== --> */}
+<div className="fixed right-0 top-1/2 -translate-y-1/2 flex flex-col items-center space-y-4 p-2 bg-white dark:bg-neutral-800 shadow-lg rounded-l-lg z-50">
+        {venueData?.website_link && (
+          <a href={venueData.website_link} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-500">
+            <svg className="flex-shrink-0 size-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          </a>
+        )}
 
+        {venueData?.instagram_link && (
+          <a href={venueData.instagram_link} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-500">
+            <svg className="flex-shrink-0 size-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.5" y1="6.5" y2="6.5"/></svg>
+          </a>
+        )}
+
+        {venueData?.facebook_link && (
+          <a href={venueData.facebook_link} target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-emerald-600 dark:text-neutral-400 dark:hover:text-emerald-500">
+            <svg className="flex-shrink-0 size-6" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+        )}
+      </div>
     </div>
 
   )
