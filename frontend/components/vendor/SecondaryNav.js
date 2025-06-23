@@ -12,7 +12,7 @@ const navLinks = [
     label: 'Service',
     sublinks: [
       { label: 'Add/Edit Service', href: '/vendor/edit_service/venues' },
-      { label: 'Preview', href: '/service/preview' },
+      { label: 'Preview', href: '/vendor/preview/venues' },
     ],
   },
 //   {
