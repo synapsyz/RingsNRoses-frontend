@@ -839,7 +839,7 @@ export default function Signup() {
                                             style={{ accentColor: '#E91E63' }}
                                         />
                                         <label htmlFor="is-whatsapp" className="text-sm text-gray-800 dark:text-neutral-200">
-                                            Is this number on <span style={{ color: '#E91E63' }}>WhatsApp?</span>
+                                            Is this number on <span style={{ color: '#128c7e' }}>WhatsApp?</span>
                                         </label>
                                     </div>
 
