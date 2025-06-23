@@ -207,7 +207,7 @@ useEffect(() => {
   }
 }, [categories.length, isLoading, isMobile]);
 
-  const buildParamKey = () => {
+ const buildParamKey = useCallback(() => {
     return JSON.stringify({
       categoryName,
       selectedCapacity,
@@ -216,8 +216,8 @@ useEffect(() => {
       sortBy,
       checkedItems,
     });
-  };
-   const buildParams = () => {
+  }, [categoryName, selectedCapacity, selectedPriceRange, isOn, sortBy, checkedItems]);
+   const buildParams = useCallback(() => {
     const params = {};
     if (selectedCapacity) {
       params.min_capacity = selectedCapacity.min;
@@ -231,12 +231,10 @@ useEffect(() => {
     if (sortBy === 'priceLowToHigh') params.ordering = 'price';
     if (sortBy === 'priceHighToLow') params.ordering = '-price';
     return params;
-  };
+  }, [selectedCapacity, selectedPriceRange, isOn, sortBy]); // Dependencies for buildParams
 const fetchItems = useCallback(async () => {
     // Only proceed if the session status is "authenticated"
-    // The 'status' variable here refers to the one from useSession() in the component scope
     if (status === "authenticated") {
-      // It's good practice to re-capture the latest accessToken and config here for safety
       const currentAccessToken = session.accessToken;
       const currentConfig = {
         headers: { Authorization: `Bearer ${currentAccessToken}` },
@@ -246,6 +244,7 @@ const fetchItems = useCallback(async () => {
       const selectedSubIds = Object.entries(checkedItems)
         .filter(([, isChecked]) => isChecked)
         .map(([id]) => id);
+
       const paramKey = buildParamKey();
 
       if (categoryItemsCache.current[paramKey]) {
@@ -268,7 +267,7 @@ const fetchItems = useCallback(async () => {
             const res = await api.get(
               `/categories/${currentCategoryName}/subcategories/${subId}/`,
               {
-                ...currentConfig, // Use currentConfig here
+                ...currentConfig,
                 params,
               }
             );
@@ -280,10 +279,10 @@ const fetchItems = useCallback(async () => {
         }
         setHasMore(false);
       } else {
-        console.log("Config for categories:", currentConfig); // Log the current config
+        console.log("Config for categories:", currentConfig);
         try {
           const res = await api.get(`/categories/${currentCategoryName}/`, {
-            ...currentConfig, // Use currentConfig here
+            ...currentConfig,
             params,
           });
           allItems = res.data.results;
@@ -302,21 +301,17 @@ const fetchItems = useCallback(async () => {
       setCategoryItems(allItems);
 
     } else {
-      // This block runs if status is 'loading' or 'unauthenticated'
       console.log("Not authenticated or session loading. Cannot fetch items for categories.");
-      // You might want to clear items, show a loading spinner, or redirect here.
-      // For example, if you want to show a loading state while status is 'loading'
-      // or clear items if 'unauthenticated', you would handle that here.
     }
-  })
+}, [status, session, categoryName,  checkedItems, buildParamKey, buildParams]); // Corrected dependencies
 
-   useEffect(() => {
-    if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
-    fetchTimeout.current = setTimeout(() => {
-      fetchItems();
-    }, 500);
-    return () => clearTimeout(fetchTimeout.current);
-  }, [fetchItems]);
+useEffect(() => {
+  if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
+  fetchTimeout.current = setTimeout(() => {
+    fetchItems();
+  }, 500);
+  return () => clearTimeout(fetchTimeout.current);
+}, [fetchItems]); // This dependency is now correct, as fetchItems will re-render when its internal dependencies change.
     // useEffect(() => {
     //     if (categories.length === 0 && !isLoading) {
     //       setIsLoading(true);
@@ -553,11 +548,6 @@ const fetchItems = useCallback(async () => {
     document.documentElement.classList.add('dark');
   }
 }, []);
-
-
-
-
-
 useEffect(() => {
   const handleClickOutside = (event) => {
     if (
@@ -643,6 +633,11 @@ useEffect(() => {
     }
   }
 }, [router.isReady, subcategoryName, subcategories, checkedItems]);
+useEffect(() => {
+  // Reset when category changes
+  setCheckedItems({});
+}, [selectedCategoryId]);
+
   return (
     <>
       

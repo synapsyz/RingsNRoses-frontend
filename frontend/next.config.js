@@ -6,6 +6,7 @@ const nextConfig = {
       'encrypted-tbn0.gstatic.com',
       "cf-img-a-in.tosshub.com",
       "www.mconventions.com",
+      "images.unsplash.com",
     ],
      // Add this line with the hostname
   },

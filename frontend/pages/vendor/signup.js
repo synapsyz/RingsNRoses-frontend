@@ -80,10 +80,12 @@ export default function Signup() {
 
 
     useEffect(() => {
-        if (status === "authenticated") {
-            router.push("/"); // Change this to your desired page
-        }
-    }, [status, router]);
+
+          if (status === "authenticated") {
+            router.push("/vendor/dashboard"); // Change this to your desired page
+          }
+        }, [status, router]);
+
 
 
 
@@ -119,14 +121,16 @@ export default function Signup() {
                 user_type: "vendor",
             });
 
-            if (res.ok) {
-                router.push("vendor/dashboard"); // Or vendor dashboard: /vendor/dashboard
-            } else {
-                setError("Login failed after vendor signup.");
-            }
-        } catch (err) {
-            console.error("Vendor signup error:", err);
-            console.error("Signup error:", err.response?.data || err.message);
+
+    if (res.ok) {
+      router.push("/vendor/dashboard"); // Or vendor dashboard: /vendor/dashboard
+    } else {
+      setError("Login failed after vendor signup.");
+    }
+  } catch (err) {
+    console.error("Vendor signup error:", err);
+    console.error("Signup error:", err.response?.data || err.message);
+
 
             let errorKey = Object.keys(err.response?.data)
             let errorValue = Object.values(err.response?.data)

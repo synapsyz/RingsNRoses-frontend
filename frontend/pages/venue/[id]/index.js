@@ -2208,7 +2208,7 @@ const config = {
 
                         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 sm:gap-x-10 lg:gap-y-12 lg:gap-x-16">
                           {/* <!-- Icon Block --> */}
-                        {venueData?.services_offered
+                        {venueData?.services_offered_details
                         ?.filter((feature) => feature?.svg_icon_url)
                         .map((feature, index) => (
                           <div key={index} className="flex gap-3 text-gray-800 dark:text-neutral-200">
@@ -2602,24 +2602,24 @@ const config = {
                                           Types:
                                         </span>
                                         <div>
-                                              {venueData?.services_offered && (
+                                              {venueData?.services_offered_details && (
       <>
-        {venueData.services_offered.some(service => service.name === "is_veg_available") &&
-         venueData.services_offered.some(service => service.name === "is_non_veg_available") && (
+        {venueData.services_offered_details.some(service => service.name === "is_veg_available") &&
+         venueData.services_offered_details.some(service => service.name === "is_non_veg_available") && (
           <button type="button" className="flex items-center gap-x-1 text-start font-medium text-sm text-emerald-600 underline-offset-4 hover:underline focus:outline-hidden focus:underline dark:text-neutral-200 dark:hover:text-neutral-300 dark:focus:text-neutral-300">
             Veg & Non-veg
           </button>
         )}
 
-        {venueData.services_offered.some(service => service.name === "is_veg_available") &&
-         !venueData.services_offered.some(service => service.name === "is_non_veg_available") && (
+        {venueData.services_offered_details.some(service => service.name === "is_veg_available") &&
+         !venueData.services_offered_details.some(service => service.name === "is_non_veg_available") && (
           <button type="button" className="flex items-center gap-x-1 text-start font-medium text-sm text-emerald-600 underline-offset-4 hover:underline focus:outline-hidden focus:underline dark:text-neutral-200 dark:hover:text-neutral-300 dark:focus:text-neutral-300">
             Veg
           </button>
         )}
 
-        {!venueData.services_offered.some(service => service.name === "is_veg_available") &&
-         venueData.services_offered.some(service => service.name === "is_non_veg_available") && (
+        {!venueData.services_offered_details.some(service => service.name === "is_veg_available") &&
+         venueData.services_offered_details.some(service => service.name === "is_non_veg_available") && (
           <button type="button" className="flex items-center gap-x-1 text-start font-medium text-sm text-emerald-600 underline-offset-4 hover:underline focus:outline-hidden focus:underline dark:text-neutral-200 dark:hover:text-neutral-300 dark:focus:text-neutral-300">
             Non-veg
           </button>
