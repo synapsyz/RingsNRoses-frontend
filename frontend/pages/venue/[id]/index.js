@@ -1632,7 +1632,7 @@ const config = {
       >
         <img
           className="bg-gray-100 size-full object-cover rounded-md sm:rounded-lg dark:bg-neutral-800"
-          src={src.image}
+          src={src.image_url}
           alt={`Thumbnail ${index}`}
         />
       </div>
@@ -1653,7 +1653,7 @@ const config = {
               data-hs-carousel-slide
             >
               <img
-                src={src.image}
+                src={src.image_url}
                 alt={`Venue image ${index}`}
                 className="w-full h-full object-cover rounded-lg"
               />
