@@ -212,7 +212,13 @@ export default function EditService() {
   const [instagramLink, setInstagramLink] = useState('');
   const [facebookLink, setFacebookLink] = useState('');
 
+  const { data: session, status } = useSession();
+  let accessToken = session?.accessToken;
+  let config = {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  };
 
+  
   const [eventTypes, setEventTypes] = useState([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
