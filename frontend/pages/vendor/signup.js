@@ -120,7 +120,7 @@ export default function Signup() {
             });
 
             if (res.ok) {
-                router.push("/dashboard"); // Or vendor dashboard: /vendor/dashboard
+                router.push("vendor/dashboard"); // Or vendor dashboard: /vendor/dashboard
             } else {
                 setError("Login failed after vendor signup.");
             }
