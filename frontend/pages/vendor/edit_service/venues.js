@@ -402,10 +402,11 @@ export default function EditService() {
           }
         }),
         Blockquote.configure({
-          HTMLAttributes: {
-            class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
-          }
-        })
+  HTMLAttributes: {
+    class: 'border-l-4 pl-4 italic text-stone-800 dark:text-white'
+  }
+})
+
       ],
       onUpdate: ({ editor }) => {
         setAbout(editor.getHTML());
@@ -420,12 +421,8 @@ export default function EditService() {
         editorInstance.current.destroy();
       }
     };
-  }, []); // Re-initialize when 'about' content changes
-  useEffect(() => {
-    if (editorInstance.current && about) {
-      editorInstance.current.commands.setContent(about);
-    }
-  }, [about]);
+  }, []); // Re-initialize when 'about' content changes 
+  
   useEffect(() => {
     if (!cancellationEditorRef.current) return;
 
@@ -903,7 +900,12 @@ export default function EditService() {
                         {/* Tiptap */}
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <EditorToolbar editor={editorInstance.current} editorId="main-editor" />
-                          <div className="h-40 overflow-auto" ref={editorRef}></div>
+<div
+  ref={editorRef}
+  className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200"
+  contentEditable
+/>
+
                         </div>
                         {/* End Tiptap */}
                       </div>
@@ -982,7 +984,7 @@ export default function EditService() {
                       {/* Input */}
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                         <EditorToolbar editor={termsEditorInstance.current} editorId="terms-editor" />
-                        <div className="h-40 overflow-auto" ref={termsEditorRef}></div>
+                        <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={termsEditorRef} contentEditable></div>
                       </div>
                       {/* End Input */}
                     </div>
@@ -1007,7 +1009,7 @@ export default function EditService() {
 
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                         <EditorToolbar editor={cancellationEditorInstance.current} editorId="cancellation-editor" />
-                        <div className="h-40 overflow-auto" ref={cancellationEditorRef}></div>
+                        <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={cancellationEditorRef} contentEditable></div>
                       </div>
 
 
@@ -1385,7 +1387,7 @@ export default function EditService() {
                           </label>
                           <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                             <EditorToolbar editor={restrictionsEditorInstance.current} editorId="restrictions-editor" />
-                            <div className="h-40 overflow-auto" ref={restrictionsEditorRef}></div>
+                            <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={restrictionsEditorRef} contentEditable></div>
                           </div>
 
                         </div>
