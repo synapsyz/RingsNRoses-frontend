@@ -238,9 +238,11 @@ export default function EditService() {
   const [locationId, setLocationId] = useState('');
   const [venueId, setvenueId] = useState('');
   const [gstNumber, setGstNumber] = useState('');
-  const [address, setAddress] = useState('');
   const [alternativeNumber, setAlternativeNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
+  const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
+  // --- ADDITION: State for the new address field ---
+  const [address, setAddress] = useState('');
 
 
 
@@ -283,9 +285,12 @@ export default function EditService() {
         setRestrictions(venueData.restrictions || '');
         setLocationId(venueData.location_details.id || '');
         setGstNumber(venueData.gst_number || '');
-        setAddress(venueData.address || '');
         setAlternativeNumber(venueData.alternative_number || '');
         setYearsOfExperience(venueData.years_of_experience || '');
+        setBusinessRegistrationNumber(venueData.business_registration_number || '');
+        // --- ADDITION: Populate address field from API ---
+        setAddress(venueData.address || '');
+
 
         setLocation([venueData.location_details.name, venueData.location_details.district_name]
           .filter(Boolean)
@@ -729,9 +734,11 @@ export default function EditService() {
       gallery_images: finalGalleryList,
       faqs: faqsForApi,
       gst_number: gstNumber,
-      address: address,
       alternative_number: alternativeNumber,
       years_of_experience: parseInt(yearsOfExperience),
+      business_registration_number: businessRegistrationNumber,
+      // --- ADDITION: Add address to form data ---
+      address: address,
     };
 
 
@@ -921,18 +928,18 @@ export default function EditService() {
                           />
                         </div>
 
-                        {/* Row 3: Address */}
+                        {/* Row 3: Business Registration Number */}
                         <div>
-                          <label htmlFor="address" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Address
+                          <label htmlFor="businessRegistrationNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Business Registration Number
                           </label>
                           <input
-                            id="address"
+                            id="businessRegistrationNumber"
                             type="text"
                             className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Enter Address"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
+                            placeholder="Enter Business Registration Number"
+                            value={businessRegistrationNumber}
+                            onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
                           />
                         </div>
 
@@ -1307,6 +1314,25 @@ export default function EditService() {
                       {/* End Body */}
                     </div>
 
+                    {/* --- ADDITION: New, separate card for Address --- */}
+                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
+                          Address
+                        </h2>
+                      </div>
+                      <div className="p-5">
+                        <textarea
+                          id="fullAddress"
+                          className="py-2 px-3 block w-full border-stone-200 rounded-lg text-sm focus:border-green-500 focus:ring-green-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400"
+                          rows="4"
+                          placeholder="Enter the full address of the venue."
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                        ></textarea>
+                      </div>
+                    </div>
+
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       {/* Header */}
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
@@ -1533,73 +1559,9 @@ export default function EditService() {
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
 
-      <Script>
-        {`
-          (function () {
-            window.addEventListener('load', () => {
-              // Ensure HSSelect is initialized if you plan to use it for dynamic selects
-              // For now, the select is fixed, so this might not be strictly necessary for your current setup
-              // but it's good practice if you introduce dynamic options later.
-              if (window.HSStaticMethods && typeof window.HSStaticMethods.autoInit === 'function') {
-                window.HSStaticMethods.autoInit();
-              }
-
-              const copyMarkupEl = document.getElementById('copy-markup');
-              if (copyMarkupEl) {
-                // Assuming HSCopyMarkup is part of Preline.js and initialized elsewhere
-                // If not, this part might need to be adjusted or removed if not directly used.
-                const instance = HSCopyMarkup.getInstance(copyMarkupEl);
-
-                instance.on('copy', (el) => {
-                  const currentQty = instance.items.length;
-                  const labels = el.querySelectorAll('label');
-                  const inputs = el.querySelectorAll('input');
-                  const disabledDeleteBtn = instance.wrapper.querySelector('[data-hs-copy-markup-delete-item].disabled');
-
-                  new HSInputNumber(el.querySelector('[data-hs-input-number]'));
-
-                  el.classList.remove('hidden', '[--ignore-for-count]');
-
-                  labels.forEach((label) => {
-                    const forAttr = label.getAttribute('for');
-                    const input = Array.from(inputs).find((input) => input.getAttribute('id') === forAttr);
-                    const newIdentifier = \`\${forAttr}-\${currentQty}\`;
-
-                    label.setAttribute('for', newIdentifier);
-                    if (input) input.setAttribute('id', newIdentifier);
-                  });
-
-                  if (disabledDeleteBtn) {
-                    if (
-                      disabledDeleteBtn.tagName === 'BUTTON' ||
-                      disabledDeleteBtn.tagName === 'INPUT'
-                    ) disabledDeleteBtn.removeAttribute('disabled');
-
-                    disabledDeleteBtn.classList.remove('disabled');
-                  }
-                });
-
-                instance.on('delete', (el) => {
-                  const currentQty = instance.items.length;
-
-                  if (currentQty === 1) {
-                    const deleteBtn = instance.items[0].querySelector('[data-hs-copy-markup-delete-item]');
-
-                    if (deleteBtn) {
-                      if (
-                        deleteBtn.tagName === 'BUTTON' ||
-                        deleteBtn.tagName === 'INPUT'
-                      ) deleteBtn.setAttribute('disabled', 'disabled');
-
-                      deleteBtn.classList.add('disabled');
-                    }
-                  }
-                });
-              }
-            });
-          })();
-        `}
-      </Script>
+      {/* REMOVED the old, problematic script tag that was causing the error.
+        The initialization is now handled correctly by the useEffect hook inside the component.
+      */}
     </>
   );
 }
