@@ -6,8 +6,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 // --- Dynamic Import for ApexCharts ---
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-// --- DATA UPDATED: Now includes all months for 2023 and 2024 ---
-const masterChartData = {
+// --- Monthly Data Source ---
+const monthlyMasterChartData = {
   categories: [
     '2023-01-01T00:00:00.000Z', '2023-02-01T00:00:00.000Z', '2023-03-01T00:00:00.000Z',
     '2023-04-01T00:00:00.000Z', '2023-05-01T00:00:00.000Z', '2023-06-01T00:00:00.000Z',
@@ -26,6 +26,40 @@ const masterChartData = {
   }
 };
 
+// --- Function to generate daily data from monthly data ---
+const generateDailyData = (monthlyData) => {
+    const dailyCategories = [];
+    const dailySeries = {
+        profileViews: { name: 'Profile Views', data: [] },
+        quoteRequests: { name: 'Quote Requests', data: [] },
+        callRequests: { name: 'Call Requests', data: [] },
+        bookings: { name: 'Bookings', data: [] }
+    };
+
+    monthlyData.categories.forEach((monthStr, index) => {
+        const monthDate = new Date(monthStr);
+        const year = monthDate.getUTCFullYear();
+        const month = monthDate.getUTCMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const currentDate = new Date(Date.UTC(year, month, day));
+            dailyCategories.push(currentDate.toISOString());
+
+            Object.keys(dailySeries).forEach(key => {
+                const monthlyValue = monthlyData.series[key].data[index];
+                const dailyValue = (monthlyValue / daysInMonth) * (1 + (Math.random() - 0.5) * 0.4);
+                dailySeries[key].data.push(Math.max(0, Math.round(dailyValue)));
+            });
+        }
+    });
+
+    return { categories: dailyCategories, series: dailySeries };
+};
+
+// --- Generate and store daily data ---
+const dailyMasterChartData = generateDailyData(monthlyMasterChartData);
+
 // --- Configuration for Selectable Metrics ---
 const seriesConfig = {
     profileViews: { name: 'Profile Views', color: '#06b6d4' },
@@ -35,7 +69,7 @@ const seriesConfig = {
 };
 
 const OrdersChart = () => {
-  // --- STATE MANAGEMENT: Default range updated to last 6 months of new data ---
+  // --- STATE MANAGEMENT: Default range set to 6 months ---
   const [dateRange, setDateRange] = useState([new Date('2024-07-01'), new Date('2024-12-31')]);
   const [startDate, endDate] = dateRange;
 
@@ -44,7 +78,7 @@ const OrdersChart = () => {
 
   const [chartData, setChartData] = useState({ series: [], categories: [] });
 
-  // --- DATA FILTERING LOGIC ---
+  // --- DATA FILTERING LOGIC: Updated with conditional daily/monthly view ---
   useEffect(() => {
     if (!startDate || !endDate || !series1Key || !series2Key) {
       setChartData({ series: [], categories: [] });
@@ -58,20 +92,42 @@ const OrdersChart = () => {
         { name: seriesConfig[series2Key].name, data: [] }
       ]
     };
-
-    const series1Data = masterChartData.series[series1Key].data;
-    const series2Data = masterChartData.series[series2Key].data;
     
-    const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
+    // --- NEW: Calculate difference in days ---
+    const diffTime = Math.abs(endDate - startDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    masterChartData.categories.forEach((category, index) => {
-      const categoryDate = new Date(category);
-      if (categoryDate >= startDate && categoryDate <= endDate) {
-        newFilteredData.categories.push(monthFormatter.format(categoryDate));
-        newFilteredData.series[0].data.push(series1Data[index]);
-        newFilteredData.series[1].data.push(series2Data[index]);
-      }
-    });
+    // --- NEW: Conditional Logic ---
+    if (diffDays <= 30) {
+        // --- Daily View Logic ---
+        const series1Data = dailyMasterChartData.series[series1Key].data;
+        const series2Data = dailyMasterChartData.series[series2Key].data;
+        const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+
+        dailyMasterChartData.categories.forEach((category, index) => {
+            const categoryDate = new Date(category);
+            categoryDate.setHours(0,0,0,0);
+            if (categoryDate >= startDate && categoryDate <= endDate) {
+                newFilteredData.categories.push(dayFormatter.format(categoryDate));
+                newFilteredData.series[0].data.push(series1Data[index]);
+                newFilteredData.series[1].data.push(series2Data[index]);
+            }
+        });
+    } else {
+        // --- Monthly View Logic ---
+        const series1Data = monthlyMasterChartData.series[series1Key].data;
+        const series2Data = monthlyMasterChartData.series[series2Key].data;
+        const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
+
+        monthlyMasterChartData.categories.forEach((category, index) => {
+            const categoryDate = new Date(category);
+            if (categoryDate >= startDate && categoryDate <= endDate) {
+                newFilteredData.categories.push(monthFormatter.format(categoryDate));
+                newFilteredData.series[0].data.push(series1Data[index]);
+                newFilteredData.series[1].data.push(series2Data[index]);
+            }
+        });
+    }
 
     setChartData(newFilteredData);
 
@@ -98,9 +154,9 @@ const OrdersChart = () => {
     },
     xaxis: {
       type: 'category',
-      categories: chartData.categories, 
+      categories: chartData.categories,
       labels: {
-         style: { colors: '#6b7280', fontSize: '12px' }
+          style: { colors: '#6b7280', fontSize: '12px' }
       },
       axisBorder: { show: false },
       axisTicks: { show: false },
@@ -140,7 +196,6 @@ const OrdersChart = () => {
   ));
   CustomDateInput.displayName = 'CustomDateInput';
 
-  // --- UI & TRANSITION UPDATES: The select component is now custom-styled ---
   const ComparisonSelect = ({ value, onChange, disabledOption }) => (
     <div className="relative">
       <select
@@ -173,13 +228,12 @@ const OrdersChart = () => {
             </h2>
             <div className="flex items-center gap-x-2">
                  <DatePicker
-                    selectsRange={true}
-                    startDate={startDate}
-                    endDate={endDate}
-                    onChange={(update) => setDateRange(update)}
-                    dateFormat="MMM yyyy"
-                    showMonthYearPicker
-                    customInput={<CustomDateInput />}
+                   selectsRange={true}
+                   startDate={startDate}
+                   endDate={endDate}
+                   onChange={(update) => setDateRange(update)}
+                   dateFormat="MMM d, yyyy"
+                   customInput={<CustomDateInput />}
                  />
             </div>
         </div>
@@ -202,11 +256,11 @@ const OrdersChart = () => {
       <div className="p-4 md:p-5">
         {typeof window !== 'undefined' && (
              <Chart
-                options={chartOptions}
-                series={chartData.series}
-                type="bar"
-                height={350}
-            />
+               options={chartOptions}
+               series={chartData.series}
+               type="bar"
+               height={350}
+             />
         )}
       </div>
     </div>
