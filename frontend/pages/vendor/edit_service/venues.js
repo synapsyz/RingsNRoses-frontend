@@ -149,9 +149,7 @@ export default function EditService() {
 
   // ... other states
   const [thumbnailUrl, setThumbnailUrl] = useState(null); // Holds the URL for display
-  // --- FIX START: Add state for the permanent thumbnail key ---
   const [thumbnailKey, setThumbnailKey] = useState(null); // Holds the permanent key from DB
-  // --- FIX END ---
   const [thumbnailFile, setThumbnailFile] = useState(null); // Holds the new file for upload
   const [initialGallery, setInitialGallery] = useState([]); // Holds initial media from API
   const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]); // Holds the list of existing media after user deletes some
@@ -187,10 +185,7 @@ export default function EditService() {
   const handleDeleteThumbnail = () => {
     setThumbnailUrl(null);
     setThumbnailFile(null);
-    // --- FIX START: Also clear the permanent key when deleting ---
     setThumbnailKey(null);
-    // --- FIX END ---
-    // If you have a ref to the file input, you might want to clear it too
     if (thumbnailUploaderRef.current) {
       thumbnailUploaderRef.current.clearFile(); // Assuming your uploader has such a method
     }
@@ -219,7 +214,7 @@ export default function EditService() {
     headers: { Authorization: `Bearer ${accessToken}` },
   };
 
-  
+
   const [eventTypes, setEventTypes] = useState([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
@@ -242,6 +237,12 @@ export default function EditService() {
   const [location, setLocation] = useState('');
   const [locationId, setLocationId] = useState('');
   const [venueId, setvenueId] = useState('');
+  const [gstNumber, setGstNumber] = useState('');
+  const [alternativeNumber, setAlternativeNumber] = useState('');
+  const [yearsOfExperience, setYearsOfExperience] = useState('');
+  const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
+  // --- ADDITION: State for the new address field ---
+  const [address, setAddress] = useState('');
 
 
 
@@ -250,12 +251,12 @@ export default function EditService() {
 
   const subcategory = session?.user?.vendor_profile?.subcategory.id; // Assuming Banquet Halls is subcategory 1 for venues
   useEffect(() => {
-  // This code will only run when the `session` object changes, preventing the loop.
-  const serviceId = session?.user?.vendor_profile?.service_id;
-  if (serviceId) {
-    setVenueId(serviceId);
-  }
-}, [session]); // The dependency array [session] is crucial.
+    // This code will only run when the `session` object changes, preventing the loop.
+    const serviceId = session?.user?.vendor_profile?.service_id;
+    if (serviceId) {
+      setVenueId(serviceId);
+    }
+  }, [session]); // The dependency array [session] is crucial.
 
   // Fetch venue details on component mount or venueId change
   useEffect(() => {
@@ -283,15 +284,20 @@ export default function EditService() {
         setCancellationPolicy(venueData.cancellation_policy || '');
         setRestrictions(venueData.restrictions || '');
         setLocationId(venueData.location_details.id || '');
+        setGstNumber(venueData.gst_number || '');
+        setAlternativeNumber(venueData.alternative_number || '');
+        setYearsOfExperience(venueData.years_of_experience || '');
+        setBusinessRegistrationNumber(venueData.business_registration_number || '');
+        // --- ADDITION: Populate address field from API ---
+        setAddress(venueData.address || '');
+
 
         setLocation([venueData.location_details.name, venueData.location_details.district_name]
-    .filter(Boolean)
-    .join(' , ')
-);
-        // --- FIX START: Store both the display URL and the permanent key ---
+          .filter(Boolean)
+          .join(' , ')
+        );
         setThumbnailUrl(venueData.thumbnail_url_detail || null); // Use presigned URL for display
         setThumbnailKey(venueData.thumbnail_url || null);       // Store the permanent key
-        // --- FIX END ---
 
         // Set selected services and event types
         if (venueData.services_offered_details) {
@@ -302,10 +308,7 @@ export default function EditService() {
         }
 
         if (venueData.images && Array.isArray(venueData.images)) {
-          // Use .map() to create an array of just the image URLs
           const imageUrls = venueData.images.map(imageObject => imageObject.image_url);
-
-          // Pass this clean array of URL strings to the state
           setInitialGallery(imageUrls);
         }
 
@@ -313,14 +316,13 @@ export default function EditService() {
 
 
         if (venueData.faq_details && Array.isArray(venueData.faq_details)) {
-                    const loadedFaqs = venueData.faq_details.map((faq, index) => ({
-                        // Create a unique ID for React's key prop during this editing session
-                        id: `faq-${index}-${Date.now()}`, 
-                        question: faq.question || '',
-                        answer: faq.answer || ''
-                    }));
-                    setFaqs(loadedFaqs);
-                }
+          const loadedFaqs = venueData.faq_details.map((faq, index) => ({
+            id: `faq-${index}-${Date.now()}`,
+            question: faq.question || '',
+            answer: faq.answer || ''
+          }));
+          setFaqs(loadedFaqs);
+        }
 
         setWebsiteLink(venueData.website_link || ''); // Assuming these fields exist
         setInstagramLink(venueData.instagram_link || '');
@@ -670,34 +672,24 @@ export default function EditService() {
   };
 
   const [showSuccess, setShowSuccess] = useState(false);
-const [popupMessage, setPopupMessage] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // if (!venueId) {
-    //   setFormMessage({ type: 'error', text: 'Error: Venue ID not found for update.' });
-    //   return;
-    // }
 
     setFormMessage({ type: 'info', text: 'Updating venue, please wait...' });
 
 
-    // --- FIX START: Corrected logic for handling thumbnail key ---
-    // 1. Determine the final thumbnail key
-    let finalThumbnailKey = thumbnailKey; // Default to the existing key (or null if deleted)
+    let finalThumbnailKey = thumbnailKey;
 
-    // If a new file has been selected, upload it and get its key
     if (thumbnailFile) {
       const uploadResult = await thumbnailUploaderRef.current.upload();
       if (!uploadResult.success) {
         setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
         return;
       }
-      finalThumbnailKey = uploadResult.key; // Use the new key from the successful upload
+      finalThumbnailKey = uploadResult.key;
     }
-    // --- FIX END ---
 
-    // 2. Upload Gallery Media
     const galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
       setFormMessage({ type: 'error', text: `Gallery upload failed: ${galleryResult.message}` });
@@ -706,17 +698,15 @@ const [popupMessage, setPopupMessage] = useState('');
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
 
 
-    // 3. Prepare the FAQ data for the API
-        const faqsForApi = faqs
-            .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '') // Ensure FAQ is not empty
-            .map((faq, index) => ({
-                question: faq.question,
-                answer: faq.answer,
-                order: index + 1, // Add the order field as expected by the backend
-            }));
+    const faqsForApi = faqs
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '') // Ensure FAQ is not empty
+      .map((faq, index) => ({
+        question: faq.question,
+        answer: faq.answer,
+        order: index + 1, // Add the order field as expected by the backend
+      }));
 
 
-    // 3. Prepare data for the PUT request
     const formData = {
       name: venueName,
       vendor: session?.user?.vendor_profile.id,
@@ -732,7 +722,7 @@ const [popupMessage, setPopupMessage] = useState('');
       per_plate_price: parseFloat(perPlatePrice),
       guest_capacity: parseInt(guestCapacity),
       manager_name: managerName,
-      email:emailAddress,
+      email: emailAddress,
       total_area_sqft: parseFloat(totalAreaSqft),
       advance_booking_notice: parseInt(advanceBookingNotice),
       restrictions: restrictions,
@@ -743,57 +733,57 @@ const [popupMessage, setPopupMessage] = useState('');
       thumbnail_url: finalThumbnailKey,
       gallery_images: finalGalleryList,
       faqs: faqsForApi,
+      gst_number: gstNumber,
+      alternative_number: alternativeNumber,
+      years_of_experience: parseInt(yearsOfExperience),
+      business_registration_number: businessRegistrationNumber,
+      // --- ADDITION: Add address to form data ---
+      address: address,
     };
 
 
- 
+
 
     console.log("Submitting updated data:", formData);
 
-try {
-  const accessToken = session?.accessToken;
-  const config = {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${accessToken}`
-    },
-  };
+    try {
+      const accessToken = session?.accessToken;
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`
+        },
+      };
 
-  // Determine the action for clearer messaging in success and error states
-  const action = venueId ? 'update' : 'create';
+      const action = venueId ? 'update' : 'create';
 
-  if (action === 'update') {
-    // --- UPDATE (PUT) ---
-    const response = await api.put(`/venues/${venueId}/`, formData, config);
-    console.log("Venue updated successfully:", response.data);
-    setFormMessage({ type: 'success', text: 'Venue updated successfully!' });
+      if (action === 'update') {
+        const response = await api.put(`/venues/${venueId}/`, formData, config);
+        console.log("Venue updated successfully:", response.data);
+        setFormMessage({ type: 'success', text: 'Venue updated successfully!' });
 
-  } else {
-    // --- CREATE (POST) ---
-    const response = await api.post('/venues/', formData, config);
-    console.log("Venue created successfully:", response.data);
-    setFormMessage({ type: 'success', text: 'Venue created successfully!' });
+      } else {
+        const response = await api.post('/venues/', formData, config);
+        console.log("Venue created successfully:", response.data);
+        setFormMessage({ type: 'success', text: 'Venue created successfully!' });
 
-    // OPTIONAL: After creating, you might want to redirect to the new edit page.
-    // For example: router.push(`/vendor/services/edit/${response.data.id}`);
-  }
+      }
 
-} catch (error) {
-  // Use the 'action' variable to make error messages dynamic and accurate
-  const action = venueId ? 'update' : 'create';
-  
-  console.error(`Error trying to ${action} venue:`, error);
-  
-  if (error.response) {
-    console.error("Error data:", error.response.data);
-    setFormMessage({ 
-      type: 'error', 
-      text: `Error: ${error.response.data.detail || `Failed to ${action} venue.`}` 
-    });
-  } else if (error.request) {
-    setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
-  }
-}
+    } catch (error) {
+      const action = venueId ? 'update' : 'create';
+
+      console.error(`Error trying to ${action} venue:`, error);
+
+      if (error.response) {
+        console.error("Error data:", error.response.data);
+        setFormMessage({
+          type: 'error',
+          text: `Error: ${error.response.data.detail || `Failed to ${action} venue.`}`
+        });
+      } else if (error.request) {
+        setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
+      }
+    }
   };
 
 
@@ -849,8 +839,9 @@ try {
                         onDelete={handleDeleteThumbnail}
                       />
 
-                      {/* Input */}
+                      {/* --- REORDERED INPUTS --- */}
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
+                        {/* Row 1: Name */}
                         <div>
                           <label htmlFor="venueName" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Name
@@ -874,9 +865,11 @@ try {
                             onChange={(e) => setVenueName(e.target.value)}
                           />
                         </div>
+
+                        {/* Row 1: Contact Person */}
                         <div>
                           <label htmlFor="managerName" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Manager Name
+                            Contact Person
                           </label>
                           <input
                             id="managerName"
@@ -887,12 +880,8 @@ try {
                             onChange={(e) => setManagerName(e.target.value)}
                           />
                         </div>
-                      </div>
-                      {/* End Input */}
 
-                      {/* Input Grid */}
-                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        {/* Input */}
+                        {/* Row 2: Contact Number */}
                         <div>
                           <label htmlFor="contactNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Contact Number
@@ -906,9 +895,8 @@ try {
                             onChange={(e) => setContactNumber(e.target.value)}
                           />
                         </div>
-                        {/* End Input */}
 
-                        {/* Input */}
+                        {/* Row 2: Email Address */}
                         <div>
                           <label htmlFor="emailAddress" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Email Address
@@ -924,9 +912,67 @@ try {
                             />
                           </div>
                         </div>
-                        {/* End Input */}
+
+                        {/* Row 3: Alternative Number */}
+                        <div>
+                          <label htmlFor="alternativeNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Alternative Number
+                          </label>
+                          <input
+                            id="alternativeNumber"
+                            type="text"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="Enter Alternative Number"
+                            value={alternativeNumber}
+                            onChange={(e) => setAlternativeNumber(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Row 3: Business Registration Number */}
+                        <div>
+                          <label htmlFor="businessRegistrationNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Business Registration Number
+                          </label>
+                          <input
+                            id="businessRegistrationNumber"
+                            type="text"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="Enter Business Registration Number"
+                            value={businessRegistrationNumber}
+                            onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Row 4: GST Number */}
+                        <div>
+                          <label htmlFor="gstNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            GST Number
+                          </label>
+                          <input
+                            id="gstNumber"
+                            type="text"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="Enter GST Number"
+                            value={gstNumber}
+                            onChange={(e) => setGstNumber(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Row 4: Years of Experience */}
+                        <div>
+                          <label htmlFor="yearsOfExperience" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                            Years of Experience
+                          </label>
+                          <input
+                            id="yearsOfExperience"
+                            type="number"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="Enter Years of Experience"
+                            value={yearsOfExperience}
+                            onChange={(e) => setYearsOfExperience(e.target.value)}
+                          />
+                        </div>
                       </div>
-                      {/* End Input Grid */}
 
                       {/* Textarea Input */}
                       <div>
@@ -958,7 +1004,7 @@ try {
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
-                        Services Offered
+                        Facilities
                       </h2>
                     </div>
                     <div className="p-4">
@@ -1268,6 +1314,25 @@ try {
                       {/* End Body */}
                     </div>
 
+                    {/* --- ADDITION: New, separate card for Address --- */}
+                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
+                          Address
+                        </h2>
+                      </div>
+                      <div className="p-5">
+                        <textarea
+                          id="fullAddress"
+                          className="py-2 px-3 block w-full border-stone-200 rounded-lg text-sm focus:border-green-500 focus:ring-green-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400"
+                          rows="4"
+                          placeholder="Enter the full address of the venue."
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                        ></textarea>
+                      </div>
+                    </div>
+
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       {/* Header */}
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
@@ -1433,11 +1498,11 @@ try {
                 {/* End Col */}
 
                 {showSuccess && (
-  <SuccessPopup
-    message={popupMessage}
-    onClose={() => setShowSuccess(false)}
-  />
-)}
+                  <SuccessPopup
+                    message={popupMessage}
+                    onClose={() => setShowSuccess(false)}
+                  />
+                )}
 
                 {/* Form message display */}
                 {formMessage.text && (
@@ -1494,73 +1559,9 @@ try {
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
 
-      <Script>
-        {`
-          (function () {
-            window.addEventListener('load', () => {
-              // Ensure HSSelect is initialized if you plan to use it for dynamic selects
-              // For now, the select is fixed, so this might not be strictly necessary for your current setup
-              // but it's good practice if you introduce dynamic options later.
-              if (window.HSStaticMethods && typeof window.HSStaticMethods.autoInit === 'function') {
-                window.HSStaticMethods.autoInit();
-              }
-
-              const copyMarkupEl = document.getElementById('copy-markup');
-              if (copyMarkupEl) {
-                // Assuming HSCopyMarkup is part of Preline.js and initialized elsewhere
-                // If not, this part might need to be adjusted or removed if not directly used.
-                const instance = HSCopyMarkup.getInstance(copyMarkupEl);
-
-                instance.on('copy', (el) => {
-                  const currentQty = instance.items.length;
-                  const labels = el.querySelectorAll('label');
-                  const inputs = el.querySelectorAll('input');
-                  const disabledDeleteBtn = instance.wrapper.querySelector('[data-hs-copy-markup-delete-item].disabled');
-
-                  new HSInputNumber(el.querySelector('[data-hs-input-number]'));
-
-                  el.classList.remove('hidden', '[--ignore-for-count]');
-
-                  labels.forEach((label) => {
-                    const forAttr = label.getAttribute('for');
-                    const input = Array.from(inputs).find((input) => input.getAttribute('id') === forAttr);
-                    const newIdentifier = \`\${forAttr}-\${currentQty}\`;
-
-                    label.setAttribute('for', newIdentifier);
-                    if (input) input.setAttribute('id', newIdentifier);
-                  });
-
-                  if (disabledDeleteBtn) {
-                    if (
-                      disabledDeleteBtn.tagName === 'BUTTON' ||
-                      disabledDeleteBtn.tagName === 'INPUT'
-                    ) disabledDeleteBtn.removeAttribute('disabled');
-
-                    disabledDeleteBtn.classList.remove('disabled');
-                  }
-                });
-
-                instance.on('delete', (el) => {
-                  const currentQty = instance.items.length;
-
-                  if (currentQty === 1) {
-                    const deleteBtn = instance.items[0].querySelector('[data-hs-copy-markup-delete-item]');
-
-                    if (deleteBtn) {
-                      if (
-                        deleteBtn.tagName === 'BUTTON' ||
-                        deleteBtn.tagName === 'INPUT'
-                      ) deleteBtn.setAttribute('disabled', 'disabled');
-
-                      deleteBtn.classList.add('disabled');
-                    }
-                  }
-                });
-              }
-            });
-          })();
-        `}
-      </Script>
+      {/* REMOVED the old, problematic script tag that was causing the error.
+        The initialization is now handled correctly by the useEffect hook inside the component.
+      */}
     </>
   );
 }
