@@ -57,24 +57,26 @@ const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
       // 1. Tell the server to clear the session.
-      const response =     await signOut({ redirect: false }); // Using await if signOut returns a Promise
+      //const response =     await signOut({ redirect: false }); // Using await if signOut returns a Promise
       
+     const response = await signOut({ redirect: true, callbackUrl: '/vendor/login' });
 
-      if (response.ok) {
+      /* if (response.ok) {
         // 2. Refresh the UI to reflect the unauthenticated state.
-        router.refresh(); 
+        //router.refresh(); 
 
         // 3. Redirect to the new vendor login page.
-        router.push('/vendor/login'); // MODIFIED
+        //router.push('/vendor/login'); // MODIFIED
         
       } else {
         console.error('Sign out failed');
-      }
+      }*/
     } catch (error) {
       console.error('An error occurred during sign out:', error);
     } finally {
-      setIsSigningOut(false);
-    }
+      setIsSigningOut(false); 
+    } 
+
   };
 
   return (
