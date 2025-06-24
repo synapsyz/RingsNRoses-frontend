@@ -16,7 +16,7 @@ async function initiateUpload(filename, contentType, size) {
 }
 
 
-const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpdate }, ref) {
+const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpdate, pathPrefix}, ref) {
   const [existingMedia, setExistingMedia] = useState(initialMedia);
   const [newFiles, setNewFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -34,7 +34,7 @@ const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpd
 
         setIsUploading(true);
         const uploadedKeys = [];
-        const pathPrefix = 'vendors/gallery'; // A different path for gallery images
+        // const pathPrefix = 'vendors/gallery'; // A different path for gallery images
 
         // Loop through each new file and upload it
         for (const file of newFiles) {

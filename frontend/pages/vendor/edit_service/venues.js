@@ -23,6 +23,7 @@ import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
 import SecondaryNav from '@/components/vendor/SecondaryNav'; // 1. Import SecondaryNav
 import MediaManager from '@/components/MediaManager'; // Adjust path as needed
+import SuccessPopup from '@/components/SuccessPopup'; // Adjust path as needed
 
 let api_url;
 let isNgrok;
@@ -218,6 +219,7 @@ export default function EditService() {
     headers: { Authorization: `Bearer ${accessToken}` },
   };
 
+  
   const [eventTypes, setEventTypes] = useState([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
@@ -239,13 +241,21 @@ export default function EditService() {
   const [restrictions, setRestrictions] = useState('');
   const [location, setLocation] = useState('');
   const [locationId, setLocationId] = useState('');
+  const [venueId, setvenueId] = useState('');
+
 
 
 
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
 
   const subcategory = session?.user?.vendor_profile?.subcategory.id; // Assuming Banquet Halls is subcategory 1 for venues
-  const venueId = session?.user?.vendor_profile?.service_id; // Get venue ID from session as specified
+  useEffect(() => {
+  // This code will only run when the `session` object changes, preventing the loop.
+  const serviceId = session?.user?.vendor_profile?.service_id;
+  if (serviceId) {
+    setVenueId(serviceId);
+  }
+}, [session]); // The dependency array [session] is crucial.
 
   // Fetch venue details on component mount or venueId change
   useEffect(() => {
@@ -259,6 +269,7 @@ export default function EditService() {
 
         // Populate form fields with fetched data
         setVenueName(venueData.name || '');
+        setvenueId(venueData.id || '');
         setManagerName(venueData.manager_name || '');
         setContactNumber(venueData.contact_number || '');
         setEmailAddress(venueData.email || ''); // Assuming email field exists in API response
@@ -402,11 +413,10 @@ export default function EditService() {
           }
         }),
         Blockquote.configure({
-  HTMLAttributes: {
-    class: 'border-l-4 pl-4 italic text-stone-800 dark:text-white'
-  }
-})
-
+          HTMLAttributes: {
+            class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
+          }
+        })
       ],
       onUpdate: ({ editor }) => {
         setAbout(editor.getHTML());
@@ -421,8 +431,12 @@ export default function EditService() {
         editorInstance.current.destroy();
       }
     };
-  }, []); // Re-initialize when 'about' content changes 
-  
+  }, []); // Re-initialize when 'about' content changes
+  useEffect(() => {
+    if (editorInstance.current && about) {
+      editorInstance.current.commands.setContent(about);
+    }
+  }, [about]);
   useEffect(() => {
     if (!cancellationEditorRef.current) return;
 
@@ -655,13 +669,15 @@ export default function EditService() {
     });
   };
 
+  const [showSuccess, setShowSuccess] = useState(false);
+const [popupMessage, setPopupMessage] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!venueId) {
-      setFormMessage({ type: 'error', text: 'Error: Venue ID not found for update.' });
-      return;
-    }
+    // if (!venueId) {
+    //   setFormMessage({ type: 'error', text: 'Error: Venue ID not found for update.' });
+    //   return;
+    // }
 
     setFormMessage({ type: 'info', text: 'Updating venue, please wait...' });
 
@@ -734,29 +750,50 @@ export default function EditService() {
 
     console.log("Submitting updated data:", formData);
 
-    try {
-      const accessToken = session?.accessToken;
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        },
-      };
+try {
+  const accessToken = session?.accessToken;
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${accessToken}`
+    },
+  };
 
-      const response = await api.put(`/venues/${venueId}/`, formData, config);
-      console.log("Venue updated successfully:", response.data);
-      setFormMessage({ type: 'success', text: 'Venue updated successfully!' });
-    } catch (error) {
-      console.error("Error updating venue:", error);
-      if (error.response) {
-        console.error("Error data:", error.response.data);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to update venue.'}` });
-      } else if (error.request) {
-        setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
-      } else {
-        setFormMessage({ type: 'error', text: `Error: ${error.message}` });
-      }
-    }
+  // Determine the action for clearer messaging in success and error states
+  const action = venueId ? 'update' : 'create';
+
+  if (action === 'update') {
+    // --- UPDATE (PUT) ---
+    const response = await api.put(`/venues/${venueId}/`, formData, config);
+    console.log("Venue updated successfully:", response.data);
+    setFormMessage({ type: 'success', text: 'Venue updated successfully!' });
+
+  } else {
+    // --- CREATE (POST) ---
+    const response = await api.post('/venues/', formData, config);
+    console.log("Venue created successfully:", response.data);
+    setFormMessage({ type: 'success', text: 'Venue created successfully!' });
+
+    // OPTIONAL: After creating, you might want to redirect to the new edit page.
+    // For example: router.push(`/vendor/services/edit/${response.data.id}`);
+  }
+
+} catch (error) {
+  // Use the 'action' variable to make error messages dynamic and accurate
+  const action = venueId ? 'update' : 'create';
+  
+  console.error(`Error trying to ${action} venue:`, error);
+  
+  if (error.response) {
+    console.error("Error data:", error.response.data);
+    setFormMessage({ 
+      type: 'error', 
+      text: `Error: ${error.response.data.detail || `Failed to ${action} venue.`}` 
+    });
+  } else if (error.request) {
+    setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
+  }
+}
   };
 
 
@@ -900,12 +937,7 @@ export default function EditService() {
                         {/* Tiptap */}
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <EditorToolbar editor={editorInstance.current} editorId="main-editor" />
-<div
-  ref={editorRef}
-  className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200"
-  contentEditable
-/>
-
+                          <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={editorRef} contentEditable></div>
                         </div>
                         {/* End Tiptap */}
                       </div>
@@ -1399,6 +1431,13 @@ export default function EditService() {
                   </div>
                 </div>
                 {/* End Col */}
+
+                {showSuccess && (
+  <SuccessPopup
+    message={popupMessage}
+    onClose={() => setShowSuccess(false)}
+  />
+)}
 
                 {/* Form message display */}
                 {formMessage.text && (
