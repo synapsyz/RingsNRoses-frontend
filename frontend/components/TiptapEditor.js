@@ -10,6 +10,7 @@ import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Blockquote from '@tiptap/extension-blockquote';
 import { Link as TiptapLink } from '@tiptap/extension-link';
+import Italic from '@tiptap/extension-italic'; // Import Italic extension
 
 const EditorToolbar = ({ editor }) => {
     if (!editor) return null;
@@ -29,7 +30,7 @@ const EditorToolbar = ({ editor }) => {
                 <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4" /><line x1="4" x2="20" y1="20" y2="20" /></svg>
             </button>
             {/* Link */}
-            <button type="button" onClick={() => { const url = window.prompt('Enter URL'); editor.chain().focus().setLink({ href: url }).run();}} className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 ${editor.isActive('link') ? 'bg-stone-100' : ''}`}>
+            <button type="button" onClick={() => { const url = window.prompt('Enter URL'); if (url) editor.chain().focus().setLink({ href: url }).run();}} className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 ${editor.isActive('link') ? 'bg-stone-100' : ''}`}>
                 <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
             </button>
             {/* Ordered List */}
@@ -57,17 +58,50 @@ const TiptapEditor = ({ content, onUpdate, placeholder }) => {
             const editor = new Editor({
                 element: editorRef.current,
                 extensions: [
-                    StarterKit,
-                    Placeholder.configure({ placeholder }),
-                    Paragraph,
-                    Bold,
-                    Underline,
-                    TiptapLink,
-                    BulletList,
-                    OrderedList,
-                    ListItem,
-                    Blockquote,
-                ],
+                        StarterKit.configure({
+                          history: false
+                        }),
+                        Placeholder.configure({
+                          placeholder: placeholder,
+                          emptyNodeClass: 'before:text-stone-400'
+                        }),
+                        Paragraph.configure({
+                          HTMLAttributes: {
+                            class: 'text-sm text-stone-800 dark:text-stone-200'
+                          }
+                        }),
+                        Bold.configure({
+                          HTMLAttributes: {
+                            class: 'font-bold'
+                          }
+                        }),
+                        Underline,
+                        TiptapLink.configure({
+                          HTMLAttributes: {
+                            class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
+                          }
+                        }),
+                        BulletList.configure({
+                          HTMLAttributes: {
+                            class: 'list-disc list-inside text-stone-800 dark:text-white'
+                          }
+                        }),
+                        OrderedList.configure({
+                          HTMLAttributes: {
+                            class: 'list-decimal list-inside text-stone-800 dark:text-white'
+                          }
+                        }),
+                        ListItem.configure({
+                          HTMLAttributes: {
+                            class: 'marker:text-sm'
+                          }
+                        }),
+                        Blockquote.configure({
+                          HTMLAttributes: {
+                            class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
+                          }
+                        })
+                      ],
                 content: content,
                 onUpdate: ({ editor }) => {
                     onUpdate(editor.getHTML());
@@ -76,24 +110,26 @@ const TiptapEditor = ({ content, onUpdate, placeholder }) => {
             editorInstance.current = editor;
         }
 
+        // Cleanup function
         return () => {
             if (editorInstance.current) {
                 editorInstance.current.destroy();
                 editorInstance.current = null;
             }
         };
-    }, []);
+    }, []); // Empty dependency array ensures this runs once on mount
 
     useEffect(() => {
+        // Update content only if it's different from the editor's current content
         if (editorInstance.current && content !== editorInstance.current.getHTML()) {
-            editorInstance.current.commands.setContent(content);
+            editorInstance.current.commands.setContent(content, false); // false to prevent dispatching an update event
         }
-    }, [content]);
+    }, [content]); // Re-run when content prop changes
 
     return (
         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
             <EditorToolbar editor={editorInstance.current} />
-            <div className="h-40 overflow-auto" ref={editorRef}></div>
+            <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={editorRef} contentEditable></div>
         </div>
     );
 };

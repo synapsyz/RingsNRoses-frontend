@@ -1,7 +1,7 @@
 import React from 'react';
 
 const CheckboxGroup = ({ items, selectedItems, onToggle, name }) => (
-  <div className="flex flex-wrap gap-4">
+  <div className="flex flex-wrap gap-3">
     {items.map(item => (
       <label
         key={item.id}

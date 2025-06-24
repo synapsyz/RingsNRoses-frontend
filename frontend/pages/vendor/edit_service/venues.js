@@ -237,6 +237,7 @@ export default function EditService() {
   const [location, setLocation] = useState('');
   const [locationId, setLocationId] = useState('');
   const [venueId, setvenueId] = useState('');
+
   const [gstNumber, setGstNumber] = useState('');
   const [alternativeNumber, setAlternativeNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
@@ -247,16 +248,19 @@ export default function EditService() {
 
 
 
+
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
 
   const subcategory = session?.user?.vendor_profile?.subcategory.id; // Assuming Banquet Halls is subcategory 1 for venues
   useEffect(() => {
+
     // This code will only run when the `session` object changes, preventing the loop.
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
       setVenueId(serviceId);
     }
   }, [session]); // The dependency array [session] is crucial.
+
 
   // Fetch venue details on component mount or venueId change
   useEffect(() => {
@@ -672,9 +676,11 @@ export default function EditService() {
   };
 
   const [showSuccess, setShowSuccess] = useState(false);
+
   const [popupMessage, setPopupMessage] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
+
 
     setFormMessage({ type: 'info', text: 'Updating venue, please wait...' });
 
@@ -746,6 +752,7 @@ export default function EditService() {
 
     console.log("Submitting updated data:", formData);
 
+
     try {
       const accessToken = session?.accessToken;
       const config = {
@@ -784,6 +791,7 @@ export default function EditService() {
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
       }
     }
+
   };
 
 
@@ -983,7 +991,7 @@ export default function EditService() {
                         {/* Tiptap */}
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <EditorToolbar editor={editorInstance.current} editorId="main-editor" />
-                          <div className="h-40 overflow-auto" ref={editorRef}></div>
+                          <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={editorRef} contentEditable></div>
                         </div>
                         {/* End Tiptap */}
                       </div>
@@ -1062,7 +1070,7 @@ export default function EditService() {
                       {/* Input */}
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                         <EditorToolbar editor={termsEditorInstance.current} editorId="terms-editor" />
-                        <div className="h-40 overflow-auto" ref={termsEditorRef}></div>
+                        <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={termsEditorRef} contentEditable></div>
                       </div>
                       {/* End Input */}
                     </div>
@@ -1087,7 +1095,7 @@ export default function EditService() {
 
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                         <EditorToolbar editor={cancellationEditorInstance.current} editorId="cancellation-editor" />
-                        <div className="h-40 overflow-auto" ref={cancellationEditorRef}></div>
+                        <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={cancellationEditorRef} contentEditable></div>
                       </div>
 
 
@@ -1484,7 +1492,7 @@ export default function EditService() {
                           </label>
                           <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                             <EditorToolbar editor={restrictionsEditorInstance.current} editorId="restrictions-editor" />
-                            <div className="h-40 overflow-auto" ref={restrictionsEditorRef}></div>
+                            <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={restrictionsEditorRef} contentEditable></div>
                           </div>
 
                         </div>
@@ -1498,12 +1506,12 @@ export default function EditService() {
                 {/* End Col */}
 
                 {showSuccess && (
+
                   <SuccessPopup
                     message={popupMessage}
                     onClose={() => setShowSuccess(false)}
                   />
                 )}
-
                 {/* Form message display */}
                 {formMessage.text && (
                   <div className={`fixed bottom-24 start-1/2 -translate-x-1/2 p-4 rounded-lg shadow-md text-white ${formMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
