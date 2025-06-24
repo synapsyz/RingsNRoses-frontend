@@ -1,4 +1,5 @@
 // pages/_app.js
+'use client';
 
 import { useEffect } from 'react';
 import { SessionProvider } from 'next-auth/react';
