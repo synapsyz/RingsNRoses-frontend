@@ -87,13 +87,16 @@ export default function AddProduct() {
   const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
   const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
   const mediaManagerRefVeg = useRef(null); // New ref for Veg gallery
-
+const [address, setAddress] = useState('');
   // New states and refs for Non-Veg gallery when 'veg-non-veg' is selected
   const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
   const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState([]);
   const [newGalleryFilesNonVeg, setNewGalleryFilesNonVeg] = useState([]);
   const mediaManagerRefNonVeg = useRef(null); // New ref for Non-Veg gallery
-
+  const [alternativeNumber, setAlternativeNumber] = useState('');
+  const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
+  const [gstNumber, setGstNumber] = useState('');
+  const [yearsOfExperience, setYearsOfExperience] = useState('');
   const subcategory = 1;
   const vendorId = session?.user?.vendor_profile?.id;
 
@@ -149,6 +152,7 @@ export default function AddProduct() {
           setWebsiteLink(data.website_link || '');
           setInstagramLink(data.instagram_link || '');
           setFacebookLink(data.facebook_link || '');
+          setAddress(data.address || '');
 
           if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
           if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
@@ -241,6 +245,7 @@ export default function AddProduct() {
       website_link: websiteLink,
       instagram_link: instagramLink,
       facebook_link: facebookLink,
+      address: address,
     };
 
     console.log("Submitting data:", formData);
@@ -306,6 +311,47 @@ export default function AddProduct() {
                         <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
                         <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abccaters@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
                       </div>
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
+                      <FormInput
+        id="alternativeNumber"
+        label="Alternative Number"
+        type="text"
+        placeholder="Enter Alternative Number"
+        value={alternativeNumber}
+        onChange={(e) => setAlternativeNumber(e.target.value)}
+      />
+
+      {/* Row 3: Business Registration Number using FormInput component */}
+      <FormInput
+        id="businessRegistrationNumber"
+        label="Business Registration Number"
+        type="text"
+        placeholder="Enter Business Registration Number"
+        value={businessRegistrationNumber}
+        onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
+      />
+</div>
+<div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
+      {/* Row 4: GST Number using FormInput component */}
+      <FormInput
+        id="gstNumber"
+        label="GST Number"
+        type="text"
+        placeholder="Enter GST Number"
+        value={gstNumber}
+        onChange={(e) => setGstNumber(e.target.value)}
+      />
+
+      {/* Row 4: Years of Experience using FormInput component */}
+      <FormInput
+        id="yearsOfExperience"
+        label="Years of Experience"
+        type="number"
+        placeholder="Enter Years of Experience"
+        value={yearsOfExperience}
+        onChange={(e) => setYearsOfExperience(e.target.value)}
+      />
+      </div>
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Description (About)</label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
@@ -481,7 +527,23 @@ export default function AddProduct() {
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
                     </div>
-
+<div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
+                          Address
+                        </h2>
+                      </div>
+                      <div className="p-5">
+                        <textarea
+                          id="fullAddress"
+                          className="py-2 px-3 block w-full border-stone-200 rounded-lg text-sm focus:border-green-500 focus:ring-green-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400"
+                          rows="4"
+                          placeholder="Enter the full address of the venue."
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                        ></textarea>
+                      </div>
+                    </div>
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
   <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
     <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Customization Options</h2>
