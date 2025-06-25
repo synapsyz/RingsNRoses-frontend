@@ -257,7 +257,7 @@ export default function EditService() {
     // This code will only run when the `session` object changes, preventing the loop.
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
-      setVenueId(serviceId);
+      setvenueId(serviceId);
     }
   }, [session]); // The dependency array [session] is crucial.
 

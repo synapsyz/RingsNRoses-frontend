@@ -15,8 +15,8 @@ import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
 import Pricing from '@/components/Pricing';
-import FoodPackageRadioGroup from '@/components/FoodPackageRadioGroup.js';
-import AddressInput from '@/components/AddressInput'; // Adjust the path if necessary
+import AddressInput from '@/components/AddressInput';
+import PhotographyPackages from '@/components/PhotographyPackages'; // Adjust the path based on where you saved it
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => process.env.NEXT_PUBLIC_APP_ENV === 'development' ? process.env.NEXT_PUBLIC_API_LOCALHOST : process.env.NEXT_PUBLIC_HOST;
@@ -44,7 +44,7 @@ export default function AddProduct() {
   const thumbnailUploaderRef = useRef(null);
   const [faqs, setFaqs] = useState([]);
   const router = useRouter();
-  const [cateringId, setCateringId] = useState(null);
+  const [photographyId, setPhotographyId] = useState(null);
   const editorRef = useRef(null);
   const editorInstance = useRef(null);
   const cancellationEditorRef = useRef(null);
@@ -55,15 +55,15 @@ export default function AddProduct() {
   const [selectedLocationData, setSelectedLocationData] = useState(null);
   const { data: session, status } = useSession();
   const [eventTypes, setEventTypes] = useState([]);
-  const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
+  const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [selectedServices, setSelectedServices] = useState(new Set());
   const [Name, setName] = useState('');
   const [contactName, setcontactName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [about, setAbout] = useState('');
-  const [perPlatePrice, setPerPlatePrice] = useState('');
+  const [startingPrice, setStartingPrice] = useState('');
   const [advancePayment, setAdvancePayment] = useState('');
   const [guestCapacity, setGuestCapacity] = useState('');
   const [eventSpaces, setEventSpaces] = useState('');
@@ -83,23 +83,91 @@ export default function AddProduct() {
   const [websiteLink, setWebsiteLink] = useState('');
   const [instagramLink, setInstagramLink] = useState('');
   const [facebookLink, setFacebookLink] = useState('');
-  const [selectedFoodPackage, setSelectedFoodPackage] = useState('');
-    const [initialGalleryVeg, setInitialGalleryVeg] = useState([]);
-  const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
-  const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
-  const mediaManagerRefVeg = useRef(null); // New ref for Veg gallery
-const [address, setAddress] = useState('');
-  // New states and refs for Non-Veg gallery when 'veg-non-veg' is selected
-  const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
-  const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState([]);
-  const [newGalleryFilesNonVeg, setNewGalleryFilesNonVeg] = useState([]);
-  const mediaManagerRefNonVeg = useRef(null); // New ref for Non-Veg gallery
+  const [address, setAddress] = useState('');
   const [alternativeNumber, setAlternativeNumber] = useState('');
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
   const vendorId = session?.user?.vendor_profile?.id;
+  const [photographyPackages, setPhotographyPackages] = useState([]);
+
+  const togglePackage = (idToToggle) => {
+    setPhotographyPackages(currentPackages =>
+      currentPackages.map(pkg =>
+        pkg.id === idToToggle
+          ? { ...pkg, isOpen: !pkg.isOpen }
+          : { ...pkg, isOpen: false }
+      )
+    );
+  };
+
+  const addPackage = () => {
+    setPhotographyPackages(currentPackages => [
+      ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
+      { id: `pkg-${Date.now()}`, name: '', description: '', pricing: '', equipment: [], isOpen: true, equipmentInput: '' }
+    ]);
+  };
+
+  const handlePackageChange = (id, field, value) => {
+    setPhotographyPackages(currentPackages =>
+      currentPackages.map(pkg =>
+        pkg.id === id ? { ...pkg, [field]: value } : pkg
+      )
+    );
+  };
+
+
+const handleEquipmentBlur = (id, value) => {
+  const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
+
+  setPhotographyPackages(currentPackages =>
+    currentPackages.map(pkg => {
+      if (pkg.id === id) {
+        const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentArray]));
+        return { ...pkg, equipment: updatedEquipment };
+      }
+      return pkg;
+    })
+  );
+};
+
+const handleEquipmentKeyDown = (id, e) => {
+  if (e.key === ',' || e.key === '.') {
+    e.preventDefault();
+    const newTag = e.target.value.trim();
+
+    if (newTag) {
+      setPhotographyPackages(currentPackages =>
+        currentPackages.map(pkg => {
+          if (pkg.id === id) {
+            const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
+            console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
+            return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
+          }
+          return pkg;
+        })
+      );
+    } else {
+      console.log(`[KEY DOWN DEBUG] No new tag to add.`);
+    }
+  }
+};
+
+  const removeEquipmentTag = (packageId, tagToRemove) => {
+    setPhotographyPackages(currentPackages =>
+      currentPackages.map(pkg => {
+        if (pkg.id === packageId) {
+          return { ...pkg, equipment: pkg.equipment.filter(tag => tag !== tagToRemove) };
+        }
+        return pkg;
+      })
+    );
+  };
+
+  const deletePackage = (id) => {
+    setPhotographyPackages(photographyPackages.filter(pkg => pkg.id !== id));
+  };
 
   const handleFileChange = (file) => {
     if (file) {
@@ -120,29 +188,27 @@ const [address, setAddress] = useState('');
   useEffect(() => {
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
-      setCateringId(serviceId);
+      setPhotographyId(serviceId);
     }
   }, [session]);
 
   useEffect(() => {
-    const fetchCateringData = async () => {
-      if (cateringId) {
+    const fetchPhotographyData = async () => {
+      if (photographyId) {
         try {
           const config = {
             headers: { Authorization: `Bearer ${session?.accessToken}` },
           };
-          const response = await api.get(`/catering/${cateringId}/`, config);
+          const response = await api.get(`/photography/${photographyId}/`, config);
           const data = response.data;
           setName(data.name || '');
           setcontactName(data.manager_name || '');
           setContactNumber(data.contact_number || '');
           setEmailAddress(data.email_address || '');
           setAboutContent(data.about || '');
-          setPerPlatePrice(data.per_plate_price || '');
+          setStartingPrice(data.starting_price || '');
           setAdvancePayment(data.advance_payment || '');
-          setGuestCapacity(data.guest_capacity || '');
           setEventSpaces(data.event_spaces || '');
-          setTotalAreaSqft(data.total_area_sqft || '');
           setAdvanceBookingNotice(data.advance_booking_notice || '');
           setAdvancePaymentRequired(data.advance_payment_required || '');
           setCancellationPolicy(data.cancellation_policy || '');
@@ -154,23 +220,41 @@ const [address, setAddress] = useState('');
           setInstagramLink(data.instagram_link || '');
           setFacebookLink(data.facebook_link || '');
           setAddress(data.address || '');
+          setAlternativeNumber(data.alternative_number || '');
+          setBusinessRegistrationNumber(data.business_registration_number || '');
+          setGstNumber(data.gst_number || '');
+          setYearsOfExperience(data.years_of_experience || '');
 
           if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
           if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
-          if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.commands.setContent(data.return_delivery_policy || '');
+          if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.setContent(data.return_delivery_policy || '');
 
           setSelectedServices(new Set(data.services_offered || []));
           setSelectedEventTypes(new Set(data.events_supported || []));
 
+          if (data.packages && Array.isArray(data.packages)) {
+            const loadedPackages = data.packages.map(pkg => ({
+              id: pkg.id,
+              name: pkg.name || '',
+              description: pkg.description || '',
+              pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
+              equipment: Array.isArray(pkg.equipment) ? pkg.equipment : [],
+              isOpen: false,
+              equipmentInput: ''
+            }));
+            setPhotographyPackages(loadedPackages);
+          } else {
+            setPhotographyPackages([]);
+          }
         } catch (error) {
-          console.error("Error fetching catering data:", error);
-          setFormMessage({ type: 'error', text: 'Failed to load catering data.' });
+          console.error("Error fetching photography data:", error);
+          setFormMessage({ type: 'error', text: 'Failed to load photography data.' });
         }
       }
     };
-    fetchCateringData();
-  }, [cateringId, session]);
+    fetchPhotographyData();
+  }, [photographyId, session]);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -227,15 +311,13 @@ const [address, setAddress] = useState('');
       services_offered: Array.from(selectedServices),
       location: selectedLocationData?.locationId || location,
       about: aboutContent,
-      starting_price: parseFloat(perPlatePrice),
+      starting_price: parseFloat(startingPrice),
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
       events_supported: Array.from(selectedEventTypes),
-      per_plate_price: parseFloat(perPlatePrice),
       manager_name: contactName,
       email_address: emailAddress,
       advance_payment: parseFloat(advancePayment),
-      guest_capacity: parseInt(guestCapacity),
       event_spaces: eventSpaces,
       total_area_sqft: parseFloat(totalAreaSqft),
       advance_booking_notice: advanceBookingNotice,
@@ -247,9 +329,20 @@ const [address, setAddress] = useState('');
       instagram_link: instagramLink,
       facebook_link: facebookLink,
       address: address,
+      alternative_number: alternativeNumber,
+      business_registration_number: businessRegistrationNumber,
+      gst_number: gstNumber,
+      years_of_experience: yearsOfExperience,
+      packages: photographyPackages.map(pkg => ({
+        id: pkg.id,
+        name: pkg.name,
+        description: pkg.description,
+        price: parseFloat(pkg.pricing),
+        equipment: pkg.equipment
+      })),
     };
 
-    console.log("Submitting data:", formData);
+    console.log("Submitting data for Photography:", formData);
 
     try {
       const accessToken = session?.accessToken;
@@ -261,21 +354,21 @@ const [address, setAddress] = useState('');
       };
 
       let response;
-      if (cateringId) {
-        response = await api.put(`/catering/${cateringId}/`, formData, config);
-        setFormMessage({ type: 'success', text: 'Catering updated successfully!' });
+      if (photographyId) {
+        response = await api.put(`/photography/${photographyId}/`, formData, config);
+        setFormMessage({ type: 'success', text: 'Photography service updated successfully!' });
       } else {
-        response = await api.post("/catering/", formData, config);
-        setFormMessage({ type: 'success', text: 'Catering added successfully!' });
+        response = await api.post("/photography/", formData, config);
+        setFormMessage({ type: 'success', text: 'Photography service added successfully!' });
       }
       console.log("Operation successful:", response.data);
     } catch (error) {
-      console.error("Error adding/updating Catering:", error);
+      console.error("Error adding/updating Photography service:", error);
       if (error.response) {
         console.error("Error data:", error.response.data);
         console.error("Error status:", error.response.status);
         console.error("Error headers:", error.response.headers);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Catering.'}` });
+        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Photography service.'}` });
       } else if (error.request) {
         console.error("Error request:", error.request);
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
@@ -300,164 +393,98 @@ const [address, setAddress] = useState('');
                 <div className="lg:col-span-4 space-y-4">
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Services info</h2>
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Photography Service Info</h2>
                     </div>
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="CateringName" label="Name" placeholder="ABC Catering" value={Name} onChange={(e) => setName(e.target.value)} required />
-                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="PhotographyName" label="Service Name" placeholder="ABC Photography" value={Name} onChange={(e) => setName(e.target.value)} required />
+                        <FormInput id="contactName" label="Contact Person Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abccaters@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abcphoto@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                      <FormInput
-        id="alternativeNumber"
-        label="Alternative Number"
-        type="text"
-        placeholder="Enter Alternative Number"
-        value={alternativeNumber}
-        onChange={(e) => setAlternativeNumber(e.target.value)}
-      />
+                        <FormInput
+                          id="alternativeNumber"
+                          label="Alternative Number"
+                          type="text"
+                          placeholder="Enter Alternative Number"
+                          value={alternativeNumber}
+                          onChange={(e) => setAlternativeNumber(e.target.value)}
+                        />
 
-      {/* Row 3: Business Registration Number using FormInput component */}
-      <FormInput
-        id="businessRegistrationNumber"
-        label="Business Registration Number"
-        type="text"
-        placeholder="Enter Business Registration Number"
-        value={businessRegistrationNumber}
-        onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
-      />
-</div>
-<div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-      {/* Row 4: GST Number using FormInput component */}
-      <FormInput
-        id="gstNumber"
-        label="GST Number"
-        type="text"
-        placeholder="Enter GST Number"
-        value={gstNumber}
-        onChange={(e) => setGstNumber(e.target.value)}
-      />
+                        <FormInput
+                          id="businessRegistrationNumber"
+                          label="Business Registration Number"
+                          type="text"
+                          placeholder="Enter Business Registration Number"
+                          value={businessRegistrationNumber}
+                          onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
+                        />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
+                        <FormInput
+                          id="gstNumber"
+                          label="GST Number"
+                          type="text"
+                          placeholder="Enter GST Number"
+                          value={gstNumber}
+                          onChange={(e) => setGstNumber(e.target.value)}
+                        />
 
-      {/* Row 4: Years of Experience using FormInput component */}
-      <FormInput
-        id="yearsOfExperience"
-        label="Years of Experience"
-        type="number"
-        placeholder="Enter Years of Experience"
-        value={yearsOfExperience}
-        onChange={(e) => setYearsOfExperience(e.target.value)}
-      />
-      </div>
+                        <FormInput
+                          id="yearsOfExperience"
+                          label="Years of Experience"
+                          type="number"
+                          placeholder="Enter Years of Experience"
+                          value={yearsOfExperience}
+                          onChange={(e) => setYearsOfExperience(e.target.value)}
+                        />
+                      </div>
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Description (About)</label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your catering service..." />
+                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your photography service..." />
                         </div>
                       </div>
                     </div>
                   </div>
 
-<MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery'} />
- <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Food Packages</h2>
-  </div>
-  {/* Button Group */}
-  <FoodPackageRadioGroup
-    selectedFoodPackage={selectedFoodPackage}
-    onSelect={setSelectedFoodPackage}
-  />
-  {/* End Button Group */}
-</div>
+                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery/photography'} />
 
-{/* Conditional Rendering for MediaManager(s) */}
-{selectedFoodPackage === 'veg' && (
-  <div className="mt-6"> {/* Add margin-top for spacing */}
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200 mb-4">Upload Veg Menu here</h2>
-    <MediaManager
-      ref={mediaManagerRef} // Use the original ref and states for single selections
-      initialMedia={initialGallery}
-      onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }}
-      pathPrefix={'vendors/gallery/veg'} // Specific path for Veg uploads
-    />
-    <div className='mt-2'>
-        <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-</div>
-  </div>
-)}
-
-{selectedFoodPackage === 'non-veg' && (
-  <div className="mt-6"> {/* Add margin-top for spacing */}
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200 mb-4">Upload Non-Veg Menu here</h2>
-    <MediaManager
-      ref={mediaManagerRef} // Use the original ref and states for single selections
-      initialMedia={initialGallery}
-      onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }}
-      pathPrefix={'vendors/gallery/non-veg'} // Specific path for Non-Veg uploads
-    />
-    <div className='mt-2'>
-        <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-</div>
-  </div>
-)}
-
-{selectedFoodPackage === 'veg-non-veg' && (
-  <div className="mt-6"> {/* Add margin-top for spacing */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Two columns for both */}
-      <div>
-        <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Veg Menu here</h3>
-        <MediaManager
-          ref={mediaManagerRefVeg} // Separate ref for Veg gallery
-          initialMedia={initialGalleryVeg}
-          onUpdate={(existing, newFiles) => { setUpdatedExistingMediaVeg(existing); setNewGalleryFilesVeg(newFiles); }}
-          pathPrefix={'vendors/gallery/veg'}
-        />
-        <div className='mt-2'>
-        <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-</div>
-      </div>
-      <div>
-        <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Non-Veg Menu here</h3>
-        <MediaManager
-          ref={mediaManagerRefNonVeg} // Separate ref for Non-Veg gallery
-          initialMedia={initialGalleryNonVeg}
-          onUpdate={(existing, newFiles) => { setUpdatedExistingMediaNonVeg(existing); setNewGalleryFilesNonVeg(newFiles); }}
-          pathPrefix={'vendors/gallery/non-veg'}
-        />
-<div className='mt-2'>
-        <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-</div>
-      </div>
-      
-    </div>
-  </div>
-)}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cuisine Types Offered</h2>
-  </div>
-  <div className="p-4">
-    <CheckboxGroup
-      items={services}
-      selectedItems={selectedServices}
-      onToggle={handleServiceToggle}
-      name="services"
-    />
-  </div>
-</div>
+                    <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Photography Services Offered</h2>
+                    </div>
+                    <div className="p-4">
+                      <CheckboxGroup
+                        items={services}
+                        selectedItems={selectedServices}
+                        onToggle={handleServiceToggle}
+                        name="services"
+                      />
+                    </div>
+                  </div>
 
+                  <PhotographyPackages
+  photographyPackages={photographyPackages}
+  togglePackage={togglePackage}
+  addPackage={addPackage}
+  handlePackageChange={handlePackageChange}
+  handleEquipmentBlur={handleEquipmentBlur}
+  handleEquipmentKeyDown={handleEquipmentKeyDown}
+  removeEquipmentTag={removeEquipmentTag}
+  deletePackage={deletePackage}
+/>
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Terms and Conditions</h2>
                     </div>
                     <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <TiptapEditor content={termsAndConditions} onUpdate={setTermsAndConditions} placeholder="Outline your terms and conditions..." />
+                        <TiptapEditor content={termsAndConditions} onUpdate={setTermsAndConditions} placeholder="Outline your terms and conditions for photography services..." />
                       </div>
                     </div>
                   </div>
@@ -467,18 +494,19 @@ const [address, setAddress] = useState('');
                     </div>
                     <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <TiptapEditor content={cancellationPolicy} onUpdate={setCancellationPolicy} placeholder="Enter your cancellation policy..." />
+                        <TiptapEditor content={cancellationPolicy} onUpdate={setCancellationPolicy} placeholder="Enter your photography cancellation policy..." />
                       </div>
                     </div>
                   </div>
+
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Social Media Links</h2>
                     </div>
                     <div className="ml-4 mt-2 mr-4 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
                       <FormInput id="websiteLink" label="Website Link" type="url" placeholder="https://example.com" value={websiteLink} onChange={(e) => setWebsiteLink(e.target.value)} />
-                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourvenue" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
-                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourvenue" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
+                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourphotography" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
+                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourphotography" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
                     </div>
                   </div>
                 </div>
@@ -486,7 +514,7 @@ const [address, setAddress] = useState('');
                   <div className="lg:sticky lg:top-5 space-y-4">
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Pricing</h2>
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Deposit Amount</h2>
                       </div>
                       <div className="p-5 space-y-4">
                         <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
@@ -514,9 +542,9 @@ const [address, setAddress] = useState('');
                           </div>
                         </div>
                         <div className="mt-4">
-                          <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Location</label>
+                          <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Service Area Location</label>
                           <div className="relative">
-                            <input id="location" type="text" placeholder="Enter a location" className="py-1.5 sm:py-2 pr-12 pl-4 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1" value={location} onChange={(e) => setLocation(e.target.value)} />
+                            <input id="location" type="text" placeholder="Enter service area location" className="py-1.5 sm:py-2 pr-12 pl-4 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1" value={location} onChange={(e) => setLocation(e.target.value)} />
                             <button type="button" onClick={() => setIsLocationModalOpen(true)} className="absolute inset-y-0 right-2 flex items-center justify-center">
                               <svg className="w-5 h-5" fill="none" stroke="#E91E63" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 11.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
@@ -528,30 +556,30 @@ const [address, setAddress] = useState('');
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
                     </div>
-<AddressInput
-                       heading="Address"
-                       placeholder="Enter the full address of the venue."
-                       value={address}
-                       onChange={(e) => setAddress(e.target.value)}
-                     />
+                    <AddressInput
+                      heading="Business Address"
+                      placeholder="Enter the full business address."
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Customization Options</h2>
-  </div>
-  <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
-    <div>
-      <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Type of Events Catered</label>
-      <div className="p-2">
-        <CheckboxGroup
-          items={eventTypes}
-          selectedItems={selectedEventTypes}
-          onToggle={handleEventTypeToggle}
-          name="eventTypes"
-        />
-      </div>
-    </div>
-  </div>
-</div>
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Events Supported</h2>
+                      </div>
+                      <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
+                        <div>
+                          <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Types of Events Covered</label>
+                          <div className="p-2">
+                            <CheckboxGroup
+                              items={eventTypes}
+                              selectedItems={selectedEventTypes}
+                              onToggle={handleEventTypeToggle}
+                              name="eventTypes"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 {formMessage.text && (
