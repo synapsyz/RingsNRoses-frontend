@@ -13,17 +13,17 @@ import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Blockquote from '@tiptap/extension-blockquote';
-import FAQEditor from '@/components/FAQEditor'; // Assuming this component exists
+import FAQEditor from '@/components/FAQEditor'; 
 import { Link as TiptapLink } from '@tiptap/extension-link';
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from 'next/router'; // Import useRouter
-import ThumbnailUploader from '@/components/ThumbnailUploader'; // Adjust the path as needed
+import { useRouter } from 'next/router'; 
+import ThumbnailUploader from '@/components/ThumbnailUploader'; 
 import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
-import SecondaryNav from '@/components/vendor/SecondaryNav'; // 1. Import SecondaryNav
-import MediaManager from '@/components/MediaManager'; // Adjust path as needed
-import SuccessPopup from '@/components/SuccessPopup'; // Adjust path as needed
+import SecondaryNav from '@/components/vendor/SecondaryNav'; 
+import MediaManager from '@/components/MediaManager'; 
+import SuccessPopup from '@/components/SuccessPopup'; 
 import ConfirmationModal from '@/components/ConfirmationModal';
 
 let api_url;

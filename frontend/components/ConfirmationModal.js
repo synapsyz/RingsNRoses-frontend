@@ -3,10 +3,10 @@ import React, { useEffect, useState, useRef } from 'react';
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children }) => {
     const [inputValue, setInputValue] = useState('');
 
-    // Reset input when modal is opened or closed
+    
     useEffect(() => {
         if (!isOpen) {
-            // Delay reset to allow closing animation to finish
+          
             setTimeout(() => setInputValue(''), 200);
         }
     }, [isOpen]);
