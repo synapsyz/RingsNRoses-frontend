@@ -45,6 +45,78 @@ const api = axios.create({
   }
 });
 
+
+// -- UPDATED: Confirmation Modal with Input Field --
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children }) => {
+    const [inputValue, setInputValue] = useState('');
+
+    // Reset input when modal is opened or closed
+    useEffect(() => {
+        if (!isOpen) {
+            // Delay reset to allow closing animation to finish
+            setTimeout(() => setInputValue(''), 200);
+        }
+    }, [isOpen]);
+
+    const isButtonDisabled = inputValue !== 'CONFIRM';
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity duration-150 ease-linear">
+            <div className="relative bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 transform transition-all duration-300 ease-out scale-95 animate-scale-in">
+                <div className="flex items-start">
+                    <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                        <svg className="h-6 w-6 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                        </svg>
+                    </div>
+                    <div className="ml-4 text-left flex-grow">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100" id="modal-title">{title}</h3>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-500 dark:text-neutral-400">{children}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-5">
+                    <label htmlFor="confirm-input" className="block text-sm font-medium text-gray-700 dark:text-neutral-300">
+                        Type "<strong>CONFIRM</strong>" to delete
+                    </label>
+                    <input
+                        id="confirm-input"
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        placeholder="CONFIRM"
+                        className="mt-1 py-2 px-3 block w-full border border-stone-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white"
+                        autoComplete="off"
+                    />
+                </div>
+
+                <div className="mt-6 sm:flex sm:flex-row-reverse sm:gap-x-3">
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        disabled={isButtonDisabled}
+                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm disabled:bg-red-400 disabled:cursor-not-allowed dark:focus:ring-offset-neutral-800 dark:disabled:bg-red-500/50"
+                    >
+                        Delete
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-neutral-700 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-600 dark:focus:ring-offset-neutral-800"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 const EditorToolbar = ({ editor, editorId }) => {
   if (!editor) return null;
 
@@ -155,6 +227,11 @@ export default function EditService() {
   const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]); // Holds the list of existing media after user deletes some
   const [newGalleryFiles, setNewGalleryFiles] = useState([]); // Holds new File objects to upload
   const mediaManagerRef = useRef(null); // Ref for the new component
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // --- INNOVATIVE MINIMIZE FIX ---
+  const [isActionCardVisible, setIsActionCardVisible] = useState(true);
+  const [isActionCardMinimized, setIsActionCardMinimized] = useState(false);
 
 
   const thumbnailUploaderRef = useRef(null);
@@ -680,7 +757,7 @@ export default function EditService() {
   const [popupMessage, setPopupMessage] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setIsActionCardVisible(false); // --- HIDE ON ACTION ---
 
     setFormMessage({ type: 'info', text: 'Updating venue, please wait...' });
 
@@ -691,6 +768,7 @@ export default function EditService() {
       const uploadResult = await thumbnailUploaderRef.current.upload();
       if (!uploadResult.success) {
         setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        setIsActionCardVisible(true); // Re-show card on error
         return;
       }
       finalThumbnailKey = uploadResult.key;
@@ -699,6 +777,7 @@ export default function EditService() {
     const galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
       setFormMessage({ type: 'error', text: `Gallery upload failed: ${galleryResult.message}` });
+      setIsActionCardVisible(true); // Re-show card on error
       return;
     }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
@@ -790,9 +869,57 @@ export default function EditService() {
       } else if (error.request) {
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
       }
+      setIsActionCardVisible(true); // Re-show card on error
     }
 
   };
+
+    // This function will just open the confirmation modal
+    const handleDeleteClick = () => {
+        setIsDeleteModalOpen(true);
+    };
+
+    // This function runs when the user confirms the deletion in the modal
+    const handleConfirmDelete = async () => {
+        setIsDeleteModalOpen(false); // Close modal immediately
+        setIsActionCardVisible(false); // --- HIDE ON ACTION ---
+
+        if (!venueId) {
+            setFormMessage({ type: 'error', text: 'Cannot delete. Venue ID is missing.' });
+            setIsActionCardVisible(true); // Re-show card on error
+            return;
+        }
+
+        setFormMessage({ type: 'info', text: 'Deleting venue, please wait...' });
+
+        try {
+            const accessToken = session?.accessToken;
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                },
+            };
+            await api.delete(`/venues/${venueId}/`, config);
+
+            setFormMessage({ type: 'success', text: 'Venue deleted successfully!' });
+
+            setTimeout(() => {
+                router.push('/vendor/dashboard'); // Redirect
+            }, 2000);
+
+        } catch (error) {
+            console.error("Error trying to delete venue:", error);
+            if (error.response) {
+                setFormMessage({
+                    type: 'error',
+                    text: `Error: ${error.response.data.detail || 'Failed to delete venue.'}`
+                });
+            } else {
+                setFormMessage({ type: 'error', text: 'Error: No response from server.' });
+            }
+            setIsActionCardVisible(true); // Re-show card on error
+        }
+    };
 
 
   return (
@@ -808,7 +935,7 @@ export default function EditService() {
 
         {/* MAIN CONTENT */}
 
-        <main id="content" className="pb-14 sm:pb-16">
+        <main id="content" className="pb-24 sm:pb-20">
           <div className="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
             {/* Breadcrumb */}
             <ol className="lg:hidden pt-5 flex items-center whitespace-nowrap">
@@ -1519,57 +1646,99 @@ export default function EditService() {
                   </div>
                 )}
 
-                {/* Save/Discard/Delete Floating Card */}
-                <div className="fixed bottom-0 start-1/2 -translate-x-1/2 p-6 z-50 w-full max-w-md mx-auto hs-removing:translate-y-5 hs-removing:opacity-0 transition duration-300">
-                  <div className="py-2 ps-5 pe-2 bg-stone-800 rounded-full shadow-md dark:bg-neutral-950">
-                    <div className="flex justify-between items-center gap-x-3">
-                      <button type="button" className="text-red-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-red-500">
-                        Delete
-                      </button>
 
-                      <div className="inline-flex items-center gap-x-2">
-                        <button type="button" className="text-stone-300 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-neutral-400">
-                          Cancel
-                        </button>
-                        <div className="w-px h-4 bg-stone-700 dark:bg-neutral-700"></div>
+                {/* --- FINAL ACTION BAR FIX --- */}
+                {isActionCardVisible && (
+                  <>
+                    {!isActionCardMinimized ? (
+                       <div className="fixed bottom-0 start-0 end-0 z-40 p-2 transition-transform duration-300">
+                         <div className="mx-auto w-fit bg-stone-800 dark:bg-neutral-950 shadow-lg rounded-xl sm:rounded-full p-2">
+                           <div className="flex items-center justify-center flex-wrap gap-x-3">
+                              <button
+                                type="button"
+                                onClick={handleDeleteClick}
+                                className="text-red-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
+                              >
+                                Delete
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsActionCardVisible(false);
+                                  router.back();
+                                }}
+                                className="text-stone-300 decoration-2 font-medium text-sm hover:underline px-3 py-1"
+                              >
+                                Cancel
+                              </button>
+                              
+                              <div className="w-px h-4 bg-stone-700 dark:bg-neutral-700"></div>
+                              
+                              <button
+                                type="submit"
+                                onClick={handleSubmit}
+                                className="text-green-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
+                              >
+                                Save changes
+                              </button>
+                              
+                              <button
+                                type="button"
+                                onClick={() => setIsActionCardMinimized(true)}
+                                className="size-8 inline-flex justify-center items-center rounded-full text-stone-400 hover:bg-stone-700"
+                                aria-label="Minimize"
+                              >
+                                <span className="sr-only">Minimize</span>
+                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M18 6 6 18" />
+                                  <path d="m6 6 12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                         </div>
+                       </div>
+                    ) : (
+                      /* Minimized Button */
+                      <div className="fixed bottom-6 right-6 z-40">
                         <button
-                          type="submit"
-                          onClick={handleSubmit}
-                          className="text-green-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-green-500"
+                          type="button"
+                          onClick={() => setIsActionCardMinimized(false)}
+                          className="flex items-center justify-center size-14 bg-stone-800 text-white rounded-full shadow-lg hover:bg-stone-700 transition-all duration-300 hover:scale-105 dark:bg-neutral-950"
+                          aria-label="Restore actions"
                         >
-                          Save changes
+                  <span
+                                className="text-green-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
+                              >
+                                Save
+                              </span>
                         </button>
-
-                        {/* Close Button */}
-                        <button type="button" className="size-8 inline-flex justify-center items-center gap-x-2 rounded-full text-stone-400 hover:bg-stone-700 focus:outline-hidden focus:bg-stone-700 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-label="Close">
-                          <span className="sr-only">Close</span>
-                          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
-                          </svg>
-                        </button>
-                        {/* End Close Button */}
                       </div>
-                    </div>
-                  </div>
-                </div>
-                {/* End Save/Discard/Detel Floating Card */}
+                    )}
+                  </>
+                )}
+
+
               </div>
               {/* End Products Grid */}
             </div>
           </div>
         </main>
-
       </div>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Service"
+      >
+        Are you sure you want to delete this service? This action is irreversible.
+      </ConfirmationModal>
 
       {/* Scripts */}
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
 
-      {/* REMOVED the old, problematic script tag that was causing the error.
-        The initialization is now handled correctly by the useEffect hook inside the component.
-      */}
     </>
   );
 }
