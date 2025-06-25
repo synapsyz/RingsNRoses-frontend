@@ -24,6 +24,7 @@ import Header from '@/components/vendor/Header';
 import SecondaryNav from '@/components/vendor/SecondaryNav'; // 1. Import SecondaryNav
 import MediaManager from '@/components/MediaManager'; // Adjust path as needed
 import SuccessPopup from '@/components/SuccessPopup'; // Adjust path as needed
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 let api_url;
 let isNgrok;
@@ -37,7 +38,7 @@ const getApiUrl = () => {
 };
 api_url = getApiUrl();
 
-// Axios instance for backend communication
+
 const api = axios.create({
   baseURL: api_url + "/api/v1",
   headers: {
@@ -46,75 +47,6 @@ const api = axios.create({
 });
 
 
-// -- UPDATED: Confirmation Modal with Input Field --
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, children }) => {
-    const [inputValue, setInputValue] = useState('');
-
-    // Reset input when modal is opened or closed
-    useEffect(() => {
-        if (!isOpen) {
-            // Delay reset to allow closing animation to finish
-            setTimeout(() => setInputValue(''), 200);
-        }
-    }, [isOpen]);
-
-    const isButtonDisabled = inputValue !== 'CONFIRM';
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center transition-opacity duration-150 ease-linear">
-            <div className="relative bg-white dark:bg-neutral-800 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 transform transition-all duration-300 ease-out scale-95 animate-scale-in">
-                <div className="flex items-start">
-                    <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
-                        <svg className="h-6 w-6 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
-                        </svg>
-                    </div>
-                    <div className="ml-4 text-left flex-grow">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-neutral-100" id="modal-title">{title}</h3>
-                        <div className="mt-2">
-                            <p className="text-sm text-gray-500 dark:text-neutral-400">{children}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-5">
-                    <label htmlFor="confirm-input" className="block text-sm font-medium text-gray-700 dark:text-neutral-300">
-                        Type "<strong>CONFIRM</strong>" to delete
-                    </label>
-                    <input
-                        id="confirm-input"
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="CONFIRM"
-                        className="mt-1 py-2 px-3 block w-full border border-stone-300 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:placeholder-neutral-400 dark:text-white"
-                        autoComplete="off"
-                    />
-                </div>
-
-                <div className="mt-6 sm:flex sm:flex-row-reverse sm:gap-x-3">
-                    <button
-                        type="button"
-                        onClick={onConfirm}
-                        disabled={isButtonDisabled}
-                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm disabled:bg-red-400 disabled:cursor-not-allowed dark:focus:ring-offset-neutral-800 dark:disabled:bg-red-500/50"
-                    >
-                        Delete
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-neutral-700 dark:text-neutral-200 dark:border-neutral-600 dark:hover:bg-neutral-600 dark:focus:ring-offset-neutral-800"
-                    >
-                        Cancel
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 
 const EditorToolbar = ({ editor, editorId }) => {
@@ -219,23 +151,23 @@ const EditorToolbar = ({ editor, editorId }) => {
 
 export default function EditService() {
 
-  // ... other states
-  const [thumbnailUrl, setThumbnailUrl] = useState(null); // Holds the URL for display
-  const [thumbnailKey, setThumbnailKey] = useState(null); // Holds the permanent key from DB
-  const [thumbnailFile, setThumbnailFile] = useState(null); // Holds the new file for upload
-  const [initialGallery, setInitialGallery] = useState([]); // Holds initial media from API
-  const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]); // Holds the list of existing media after user deletes some
-  const [newGalleryFiles, setNewGalleryFiles] = useState([]); // Holds new File objects to upload
-  const mediaManagerRef = useRef(null); // Ref for the new component
+
+  const [thumbnailUrl, setThumbnailUrl] = useState(null); 
+  const [thumbnailKey, setThumbnailKey] = useState(null); 
+  const [thumbnailFile, setThumbnailFile] = useState(null); 
+  const [initialGallery, setInitialGallery] = useState([]); 
+  const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]); 
+  const [newGalleryFiles, setNewGalleryFiles] = useState([]); 
+  const mediaManagerRef = useRef(null); 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // --- INNOVATIVE MINIMIZE FIX ---
+ 
   const [isActionCardVisible, setIsActionCardVisible] = useState(true);
   const [isActionCardMinimized, setIsActionCardMinimized] = useState(false);
 
 
   const thumbnailUploaderRef = useRef(null);
-  const [faqs, setFaqs] = useState([]); // 1. Add state for FAQs
+  const [faqs, setFaqs] = useState([]);
 
 
 
@@ -244,18 +176,17 @@ export default function EditService() {
     setNewGalleryFiles(newFiles);
   };
 
-  // Placeholder for your actual upload logic
   async function uploadFile(file, accessToken) {
     console.log(`Uploading ${file.name}...`);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate upload
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     return { success: true, key: `media/uploads/${Date.now()}-${file.name}` };
   }
 
 
   const handleFileChange = (file) => {
     if (file) {
-      setThumbnailFile(file); // Store the file object for upload
-      setThumbnailUrl(URL.createObjectURL(file)); // Set the local preview URL
+      setThumbnailFile(file); 
+      setThumbnailUrl(URL.createObjectURL(file)); 
     }
   };
 
@@ -264,7 +195,7 @@ export default function EditService() {
     setThumbnailFile(null);
     setThumbnailKey(null);
     if (thumbnailUploaderRef.current) {
-      thumbnailUploaderRef.current.clearFile(); // Assuming your uploader has such a method
+      thumbnailUploaderRef.current.clearFile(); 
     }
   };
 
@@ -297,12 +228,12 @@ export default function EditService() {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState(new Set());
 
-  // Form state for venue details
+ 
   const [venueName, setVenueName] = useState('');
   const [managerName, setManagerName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
-  const [about, setAbout] = useState(''); // This will come from Tiptap editor
+  const [about, setAbout] = useState(''); 
   const [perPlatePrice, setPerPlatePrice] = useState('');
   const [guestCapacity, setGuestCapacity] = useState('');
   const [eventSpaces, setEventSpaces] = useState('');
@@ -314,12 +245,10 @@ export default function EditService() {
   const [location, setLocation] = useState('');
   const [locationId, setLocationId] = useState('');
   const [venueId, setvenueId] = useState('');
-
   const [gstNumber, setGstNumber] = useState('');
   const [alternativeNumber, setAlternativeNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
-  // --- ADDITION: State for the new address field ---
   const [address, setAddress] = useState('');
 
 
@@ -328,18 +257,15 @@ export default function EditService() {
 
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
 
-  const subcategory = session?.user?.vendor_profile?.subcategory.id; // Assuming Banquet Halls is subcategory 1 for venues
+  const subcategory = session?.user?.vendor_profile?.subcategory.id; 
   useEffect(() => {
 
-    // This code will only run when the `session` object changes, preventing the loop.
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
       setVenueId(serviceId);
     }
-  }, [session]); // The dependency array [session] is crucial.
+  }, [session]);
 
-
-  // Fetch venue details on component mount or venueId change
   useEffect(() => {
     const fetchVenueDetails = async () => {
       if (!venueId || status !== 'authenticated') return;
@@ -349,16 +275,15 @@ export default function EditService() {
         const venueData = response.data;
         console.log(venueData);
 
-        // Populate form fields with fetched data
         setVenueName(venueData.name || '');
         setvenueId(venueData.id || '');
         setManagerName(venueData.manager_name || '');
         setContactNumber(venueData.contact_number || '');
-        setEmailAddress(venueData.email || ''); // Assuming email field exists in API response
+        setEmailAddress(venueData.email || ''); 
         setAbout(venueData.about || '');
         setPerPlatePrice(venueData.per_plate_price || '');
         setGuestCapacity(venueData.guest_capacity || '');
-        setEventSpaces(venueData.event_spaces || ''); // Assuming event_spaces field exists
+        setEventSpaces(venueData.event_spaces || ''); 
         setTotalAreaSqft(venueData.total_area_sqft || '');
         setAdvanceBookingNotice(venueData.advance_booking_notice || '');
         setAdvancePaymentRequired(venueData.advance_payment_required || '');
@@ -369,7 +294,6 @@ export default function EditService() {
         setAlternativeNumber(venueData.alternative_number || '');
         setYearsOfExperience(venueData.years_of_experience || '');
         setBusinessRegistrationNumber(venueData.business_registration_number || '');
-        // --- ADDITION: Populate address field from API ---
         setAddress(venueData.address || '');
 
 
@@ -377,10 +301,10 @@ export default function EditService() {
           .filter(Boolean)
           .join(' , ')
         );
-        setThumbnailUrl(venueData.thumbnail_url_detail || null); // Use presigned URL for display
-        setThumbnailKey(venueData.thumbnail_url || null);       // Store the permanent key
+        setThumbnailUrl(venueData.thumbnail_url_detail || null); 
+        setThumbnailKey(venueData.thumbnail_url || null);       
 
-        // Set selected services and event types
+       
         if (venueData.services_offered_details) {
           setSelectedServices(new Set(venueData.services_offered_details.map(service => service.id)));
         }
@@ -405,10 +329,10 @@ export default function EditService() {
           setFaqs(loadedFaqs);
         }
 
-        setWebsiteLink(venueData.website_link || ''); // Assuming these fields exist
+        setWebsiteLink(venueData.website_link || ''); 
         setInstagramLink(venueData.instagram_link || '');
         setFacebookLink(venueData.facebook_link || '');
-        setTermsAndConditions(venueData.terms_and_conditions || ''); // Assuming this field exists
+        setTermsAndConditions(venueData.terms_and_conditions || ''); 
 
       } catch (error) {
         console.error("Error fetching venue details:", error);
@@ -417,12 +341,12 @@ export default function EditService() {
     };
 
     fetchVenueDetails();
-  }, [venueId, status, accessToken]); // Re-fetch when venueId or session status changes
+  }, [venueId, status, accessToken]); 
 
 
 
   useEffect(() => {
-    // Fetch services from the backend
+ 
     const fetchServices = async () => {
       try {
         const response = await api.get("/services/venue/");
@@ -434,7 +358,7 @@ export default function EditService() {
       }
     };
 
-    // Fetch event types from the backend
+    
     const fetchEventTypes = async () => {
       try {
         const response = await api.get("/event-types/");
@@ -450,7 +374,7 @@ export default function EditService() {
     fetchEventTypes();
   }, []);
 
-  // Initialize and update Tiptap editors
+  
   useEffect(() => {
     if (!editorRef.current) return;
 
@@ -514,7 +438,7 @@ export default function EditService() {
         editorInstance.current.destroy();
       }
     };
-  }, []); // Re-initialize when 'about' content changes
+  }, []); 
   useEffect(() => {
     if (editorInstance.current && about) {
       editorInstance.current.commands.setContent(about);
@@ -757,7 +681,7 @@ export default function EditService() {
   const [popupMessage, setPopupMessage] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsActionCardVisible(false); // --- HIDE ON ACTION ---
+    setIsActionCardVisible(false); 
 
     setFormMessage({ type: 'info', text: 'Updating venue, please wait...' });
 
@@ -768,7 +692,7 @@ export default function EditService() {
       const uploadResult = await thumbnailUploaderRef.current.upload();
       if (!uploadResult.success) {
         setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
-        setIsActionCardVisible(true); // Re-show card on error
+        setIsActionCardVisible(true); 
         return;
       }
       finalThumbnailKey = uploadResult.key;
@@ -777,18 +701,18 @@ export default function EditService() {
     const galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
       setFormMessage({ type: 'error', text: `Gallery upload failed: ${galleryResult.message}` });
-      setIsActionCardVisible(true); // Re-show card on error
+      setIsActionCardVisible(true); 
       return;
     }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
 
 
     const faqsForApi = faqs
-      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '') // Ensure FAQ is not empty
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '') 
       .map((faq, index) => ({
         question: faq.question,
         answer: faq.answer,
-        order: index + 1, // Add the order field as expected by the backend
+        order: index + 1, 
       }));
 
 
@@ -822,7 +746,6 @@ export default function EditService() {
       alternative_number: alternativeNumber,
       years_of_experience: parseInt(yearsOfExperience),
       business_registration_number: businessRegistrationNumber,
-      // --- ADDITION: Add address to form data ---
       address: address,
     };
 
@@ -869,24 +792,23 @@ export default function EditService() {
       } else if (error.request) {
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
       }
-      setIsActionCardVisible(true); // Re-show card on error
+      setIsActionCardVisible(true); 
     }
 
   };
 
-    // This function will just open the confirmation modal
     const handleDeleteClick = () => {
         setIsDeleteModalOpen(true);
     };
 
-    // This function runs when the user confirms the deletion in the modal
+   
     const handleConfirmDelete = async () => {
-        setIsDeleteModalOpen(false); // Close modal immediately
-        setIsActionCardVisible(false); // --- HIDE ON ACTION ---
+        setIsDeleteModalOpen(false); 
+        setIsActionCardVisible(false); 
 
         if (!venueId) {
             setFormMessage({ type: 'error', text: 'Cannot delete. Venue ID is missing.' });
-            setIsActionCardVisible(true); // Re-show card on error
+            setIsActionCardVisible(true); 
             return;
         }
 
@@ -904,7 +826,7 @@ export default function EditService() {
             setFormMessage({ type: 'success', text: 'Venue deleted successfully!' });
 
             setTimeout(() => {
-                router.push('/vendor/dashboard'); // Redirect
+                router.push('/vendor/service/preview'); 
             }, 2000);
 
         } catch (error) {
@@ -917,7 +839,7 @@ export default function EditService() {
             } else {
                 setFormMessage({ type: 'error', text: 'Error: No response from server.' });
             }
-            setIsActionCardVisible(true); // Re-show card on error
+            setIsActionCardVisible(true); 
         }
     };
 
@@ -1129,7 +1051,7 @@ export default function EditService() {
                   {/* End Products Card */}
 
                   <MediaManager
-                    ref={mediaManagerRef} // Attach the ref here
+                    ref={mediaManagerRef} 
                     initialMedia={initialGallery}
                     onUpdate={handleGalleryUpdate}
                   />
@@ -1433,13 +1355,13 @@ export default function EditService() {
                           onClose={() => setIsLocationModalOpen(false)}
                           onChange={(locData) => {
                             if (locData?.location) {
-                              setLocation(locData.location); // for display
-                              setSelectedLocationData(locData); // save full object for submission if needed
+                              setLocation(locData.location); 
+                              setSelectedLocationData(locData); 
                             }
                           }}
                           onSave={(locData) => {
-                            setLocation(locData.location); // display selected location
-                            setSelectedLocationData(locData); // optional: use locationId later
+                            setLocation(locData.location); 
+                            setSelectedLocationData(locData); 
                             setIsLocationModalOpen(false);
                           }}
                         />
