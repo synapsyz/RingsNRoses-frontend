@@ -1576,7 +1576,7 @@ const config = {
                     <li className="flex items-center">
 
                       <a className="py-0.5 px-1.5 flex items-center gap-x-1 text-sm rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="listing.html">
-                        {venueData?.subcategory?.category?.name || session?.user?.vendor_profile.subcategory.category.name}
+                        {venueData?.subcategory?.category?.name || session?.user?.vendor_profile?.subcategory?.category?.name}
                       </a>
                       <svg className="shrink-0 overflow-visible size-4  text-gray-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round"></path>
@@ -1585,7 +1585,7 @@ const config = {
                     <li className="flex items-center truncate">
 
                       <a className="py-0.5 px-1.5 flex items-center truncate gap-x-1 text-sm truncate rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="listing.html">
-                        <span className="truncate"> {venueData?.subcategory?.name || session?.user?.vendor_profile.subcategory.name}</span>
+                        <span className="truncate"> {venueData?.subcategory?.name || session?.user?.vendor_profile?.subcategory?.name}</span>
                       </a>
                       <svg className="shrink-0 overflow-visible size-4  text-gray-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round"></path>

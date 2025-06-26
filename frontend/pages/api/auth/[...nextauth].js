@@ -1,13 +1,10 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// The problematic import has been removed.
+// Helper function to decode JWT
+import { jwtDecode } from "jwt-decode";
 
-// Assuming your Django SIMPLE_JWT settings are:
-// "ACCESS_TOKEN_LIFETIME": timedelta(seconds=10),
-const ACCESS_TOKEN_LIFETIME_MINUTES = 15;
-
-const isNgrok = true; // Set to true if using ngrok
+const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development'; // More robust way to set this
 
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -36,10 +33,13 @@ async function refreshAccessToken(refreshToken) {
       throw new Error(data?.detail || "Failed to refresh token");
     }
 
+    const decodedAccessToken = jwtDecode(data.access);
+    const accessTokenExpires = decodedAccessToken.exp * 1000;
+
     return {
       accessToken: data.access,
-      refreshToken: data.refresh || refreshToken,
-      accessTokenExpires: Date.now() + ACCESS_TOKEN_LIFETIME_MINUTES * 60 * 1000,
+      refreshToken: data.refresh || refreshToken, // Fallback to the old refresh token if a new one isn't provided
+      accessTokenExpires,
     };
   } catch (error) {
     console.error("Token refresh error:", error);
@@ -95,17 +95,20 @@ export const authOptions = {
               "Login failed. Please check your credentials."
             );
           }
-          
+
+          // **BUG FIX 1: Decode the token to get the exact expiration**
+          const decodedAccessToken = jwtDecode(data.access);
+          const accessTokenExpires = decodedAccessToken.exp * 1000; // exp is in seconds, convert to milliseconds
+
           return {
-            id: data.user_id || email,
-            name: data.name || email,
+            id: data.user?.id || email,
+            name: data.user?.name || email,
             email,
             user_type,
             accessToken: data.access,
             refreshToken: data.refresh,
             full_user: data.user || {},
-
-            accessTokenExpires: Date.now() + ACCESS_TOKEN_LIFETIME_MINUTES* 60 * 1000,
+            accessTokenExpires,
           };
         } catch (err) {
           console.error("Authorize error:", err.message);
@@ -123,34 +126,37 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user, account }) {
+      // Initial sign in
       if (account && user) {
         return {
-          ...token,
           accessToken: user.accessToken,
           refreshToken: user.refreshToken,
           accessTokenExpires: user.accessTokenExpires,
-          user: user.full_user || {},
+          user: user.full_user,
           user_type: user.user_type,
         };
       }
 
+      // Return previous token if the access token has not expired yet
       if (Date.now() < token.accessTokenExpires) {
         return token;
       }
 
+      // Access token has expired, try to update it
       console.log("Access token expired. Attempting to refresh...");
       const refreshedTokens = await refreshAccessToken(token.refreshToken);
 
       if (refreshedTokens.error) {
-          console.warn("Refresh token failed. User will be logged out.");
-          return {
-              ...token,
-              error: "RefreshAccessTokenError",
-          };
+        console.warn("Refresh token failed. User will be logged out.");
+        return {
+          ...token,
+          error: "RefreshAccessTokenError", // Propagate error
+        };
       }
 
+      // **BUG FIX 2: Persist user details after token refresh**
       return {
-        ...token,
+        ...token, // Keep the old token properties like 'user' and 'user_type'
         accessToken: refreshedTokens.accessToken,
         refreshToken: refreshedTokens.refreshToken,
         accessTokenExpires: refreshedTokens.accessTokenExpires,
@@ -158,11 +164,12 @@ export const authOptions = {
     },
 
     async session({ session, token }) {
+      // **BUG FIX 3: Ensure all necessary data is passed to the session**
       session.accessToken = token.accessToken;
-      session.user = token.user || {};
+      session.user = token.user;
       session.user_type = token.user_type;
-      session.error = token.error;
-      
+      session.error = token.error; // Make sure to pass the error to the client
+
       return session;
     },
   },
