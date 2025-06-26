@@ -257,7 +257,7 @@ export default function EditService() {
     // This code will only run when the `session` object changes, preventing the loop.
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
-      setVenueId(serviceId);
+      setvenueId(serviceId);
     }
   }, [session]); // The dependency array [session] is crucial.
 
@@ -808,7 +808,7 @@ export default function EditService() {
 
         {/* MAIN CONTENT */}
 
-        <main id="content" className="pb-14 sm:pb-16">
+        <main id="content" className="pb-14 sm:pb-20">
           <div className="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
             {/* Breadcrumb */}
             <ol className="lg:hidden pt-5 flex items-center whitespace-nowrap">
@@ -1117,9 +1117,28 @@ export default function EditService() {
                     <div className="ml-2 mt-2 mr-2 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
                       {/* Website Link */}
                       <div>
-                        <label htmlFor="websiteLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                        {/*<label htmlFor="websiteLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                           Website Link
-                        </label>
+                        </label>*/}
+                                                <div className="flex items-center gap-2"> 
+                        <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#A9A9A9"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="lucide lucide-globe-lock"
+  >
+    <path d="M15.686 15A14.5 14.5 0 0 1 12 22a14.5 14.5 0 0 1 0-20 10 10 0 1 0 9.542 13" />
+    <path d="M2 12h8.5" />
+    <path d="M20 6V4a2 2 0 1 0-4 0v2" />
+    <rect width="8" height="5" x="14" y="6" rx="1" />
+  </svg>
+  
                         <input
                           id="websiteLink"
                           type="url"
@@ -1129,12 +1148,30 @@ export default function EditService() {
                           onChange={(e) => setWebsiteLink(e.target.value)}
                         />
                       </div>
+                      </div>
 
                       {/* Instagram Link */}
                       <div>
-                        <label htmlFor="instagramLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                       {/* <label htmlFor="instagramLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                           Instagram Link
-                        </label>
+                        </label>*/}
+                                              <div className="flex items-center gap-2">
+      <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="#A9A9A9"
+  strokeWidth="2"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  className="lucide lucide-instagram-icon"
+>
+  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+</svg>
                         <input
                           id="instagramLink"
                           type="url"
@@ -1144,12 +1181,28 @@ export default function EditService() {
                           onChange={(e) => setInstagramLink(e.target.value)}
                         />
                       </div>
+                      </div>
 
                       {/* Facebook Link */}
                       <div>
-                        <label htmlFor="facebookLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                        {/*<label htmlFor="facebookLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                           Facebook Link
-                        </label>
+                        </label>*/}
+                        <div className="flex items-center gap-2">
+                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="#A9A9A9"
+  strokeWidth="2"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  className="lucide lucide-facebook-icon"
+>
+  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+</svg>
                         <input
                           id="facebookLink"
                           type="url"
@@ -1158,6 +1211,7 @@ export default function EditService() {
                           value={facebookLink}
                           onChange={(e) => setFacebookLink(e.target.value)}
                         />
+                      </div>
                       </div>
                     </div>
                     {/* End Body */}
