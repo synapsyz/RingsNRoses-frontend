@@ -808,7 +808,7 @@ export default function EditService() {
 
         {/* MAIN CONTENT */}
 
-        <main id="content" className="pb-14 sm:pb-16">
+        <main id="content" className="pb-14 sm:pb-20">
           <div className="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
             {/* Breadcrumb */}
             <ol className="lg:hidden pt-5 flex items-center whitespace-nowrap">
@@ -1120,7 +1120,25 @@ export default function EditService() {
                         <label htmlFor="websiteLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                           Website Link
                         </label>
-                        <input
+                        <div className="flex items-center gap-2">
+                        <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#A9A9A9"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="lucide lucide-globe-lock"
+  >
+    <path d="M15.686 15A14.5 14.5 0 0 1 12 22a14.5 14.5 0 0 1 0-20 10 10 0 1 0 9.542 13" />
+    <path d="M2 12h8.5" />
+    <path d="M20 6V4a2 2 0 1 0-4 0v2" />
+    <rect width="8" height="5" x="14" y="6" rx="1" />
+  </svg>
+                       <input
                           id="websiteLink"
                           type="url"
                           className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
@@ -1129,12 +1147,32 @@ export default function EditService() {
                           onChange={(e) => setWebsiteLink(e.target.value)}
                         />
                       </div>
+                      </div>
 
                       {/* Instagram Link */}
                       <div>
                         <label htmlFor="instagramLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                           Instagram Link
                         </label>
+                        
+                      <div className="flex items-center gap-2">
+      {/* 🌐 Globe SVG */}
+      <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="#A9A9A9"
+  strokeWidth="2"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  className="lucide lucide-instagram-icon"
+>
+  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+</svg>
                         <input
                           id="instagramLink"
                           type="url"
@@ -1144,26 +1182,44 @@ export default function EditService() {
                           onChange={(e) => setInstagramLink(e.target.value)}
                         />
                       </div>
+                      </div>
 
                       {/* Facebook Link */}
                       <div>
                         <label htmlFor="facebookLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                           Facebook Link
                         </label>
+
+                        <div className="flex items-center gap-2">
+                        <svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="#A9A9A9"
+  strokeWidth="2"
+  strokeLinecap="round"
+  strokeLinejoin="round"
+  className="lucide lucide-facebook-icon"
+>
+  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+</svg>
                         <input
                           id="facebookLink"
                           type="url"
-                          className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                          placeholder="https://facebook.com/yourvenue"
+                           className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                          placeholder="https://facebook.com/yourvenue" 
                           value={facebookLink}
                           onChange={(e) => setFacebookLink(e.target.value)}
                         />
+                      </div>
                       </div>
                     </div>
                     {/* End Body */}
                   </div>
                 </div>
-                {/* End Col */}
+                {/* End Col */} 
 
                 <div className="lg:col-span-2">
                   <div className="lg:sticky lg:top-5 space-y-4">
@@ -1538,7 +1594,7 @@ export default function EditService() {
                           className="text-green-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-green-500"
                         >
                           Save changes
-                        </button>
+                        </button> 
 
                         {/* Close Button */}
                         <button type="button" className="size-8 inline-flex justify-center items-center gap-x-2 rounded-full text-stone-400 hover:bg-stone-700 focus:outline-hidden focus:bg-stone-700 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-label="Close">
