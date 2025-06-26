@@ -44,13 +44,42 @@ const UserProfile = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  useEffect(() => {
+  /*useEffect(() => {
     setIsDarkMode(document.documentElement.classList.contains('dark'));
+  }, []);*/
+
+  /*const handleToggleChange = (e) => {
+    setIsDarkMode(e.target.checked);
+  };*/
+
+
+// ✅ Load the saved theme on first render
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      setIsDarkMode(true);
+    } else {
+      document.documentElement.classList.remove('dark');
+      setIsDarkMode(false);
+    }
   }, []);
 
+  // ✅ Update dark mode when user toggles the switch
   const handleToggleChange = (e) => {
-    setIsDarkMode(e.target.checked);
+    const enabled = e.target.checked;
+    setIsDarkMode(enabled);
+
+    if (enabled) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   };
+
 
   // 3. Create the sign-out handler function
 const handleSignOut = async () => {
