@@ -12,54 +12,9 @@ import { useRouter } from "next/router";
 import LocationSelector from '@/components/LocationSelector'; // Adjust the path as necessary
 
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
-const relatedItems = [
-  {
-    id: 1,
-    name: 'Elegant Banquet Hall',
-    location: 'Chennai',
-    images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTx_dGPXv0JN3-nkPUgbdbGVT1mzSY6_RNcnQ&s'],
-    per_plate_price: 1000,
-    guest_capacity: '100-550',
-    detail_url: '/venue/1',
-  },
-  {
-    id: 2,
-    name: 'Sugam Resort & Convention Center',
-    location: 'Chennai',
-    images: ['https://static.wixstatic.com/media/0057ed_daaa8ede0ebb479f9bbda20f6db193ed~mv2.jpg/v1/fill/w_716,h_602,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/Copy-of-072A0956-Edit-min-1024x683.jpg'],
-    per_plate_price: 950,
-    guest_capacity: '150-500',
-    detail_url: '/venue/1',
-  },
-  {
-    id: 3,
-    name: 'Mary Lawn Party Hall',
-    location: 'Chennai',
-    images: ['https://images.venuebookingz.com/28254-1686054421-wm-mary10.jpg'],
-    per_plate_price: 750,
-    guest_capacity: '100-350',
-    detail_url: '/venue/1',
-  },
-  {
-    id: 4,
-    name: 'Illam Hospitality & Banquets',
-    location: 'Chennai',
-    images: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR87TsCDhwKtTRhIYWQrwI_Jk2L9lSl7XhYeA&s'],
-    per_plate_price: 1000,
-    guest_capacity: '100-750',
-    detail_url: '/venue/1',
-  },
-  {
-    id: 5,
-    name: 'Sheraton Grand',
-    location: 'Chennai',
-    images: ['https://images.venuebookingz.com/24089-1686048898-wm-thanthai-periyar-community-hall-2.jpg'],
-    per_plate_price: 650,
-    guest_capacity: '50-300',
-    detail_url: '/venue/1',
-  }
-  // more items...
-]
+
+
+
 // Get the base API URL based on the environment
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
@@ -77,6 +32,10 @@ const api = axios.create({
     headers: {
       ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })    }
   });
+
+
+
+
 export default function ProductDetail() {
   const [currentDate, setCurrentDate] = useState('');
 
@@ -100,51 +59,12 @@ export default function ProductDetail() {
   const [isFavorite, setIsFavorite] = useState(false);
   const router = useRouter();
   const [venueId, setVenueId] = useState(null);  // 👈 state to store ID
-  const [favoriteId, setFavoriteId] = useState(null); // CRITICAL: This must hold the ID to delete
+  const [favoriteId, setFavoriteId] = useState(null); // CRITICAL: This must hold the ID to deletesug.data.results.slice(0, 4)
+  const [relatedItems , setrelatedItems] = useState(null); // CRITICAL: This must hold the ID to deletesug.data.results.slice(0, 4)
+
 
   const accessToken = session?.accessToken;
 
-  const handleFavoriteToggle = async (newValue) => {
-
-    console.log(newValue)
-    try {
-
-
-
-      // This is what the server expects:
-const payload = {
-  "content_type": "venue",
-  "object_id": 7
-};
-
-const config = {
-  headers: { 'Authorization': `Bearer ${accessToken}` }
-};
-
-
-      if (!accessToken) {
-        alert('Authentication token is missing. Please log in.');
-        return;
-      }
-      if (newValue) {
-        await api.post('/favorites/', payload, config); // ✅ CORRECT;
-      }
-      else {
-         await api.delete('/favorites/', payload, config); // ✅ CORRECT;
-      }
-
-
-
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.detail || 'Something went wrong.');
-    }
-    console.log("Now favorite:", newValue);
-    // Optionally update backend or state here
-  };
-  const toggleFavorite = () => {
-    setIsFavorite(prev => !prev);
-  };
 
     // Set venueId from router query
     useEffect(() => {
@@ -183,6 +103,44 @@ const config = {
       });
     }
   }, [venueData?.images]);
+
+
+
+  useEffect(() => {
+        
+
+        const fetchVenueData = async () => {
+            setLoading(true);
+            try {
+                const config = {
+  headers: {
+    ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+    'ngrok-skip-browser-warning': 'true',
+  },
+};
+
+const sug = await api.get(`/venues/?location=${venueData?.location_details?.id}`, config);
+
+
+
+
+var apiResponse = sug.data.results.slice(0, 5);
+
+setrelatedItems(apiResponse);
+
+
+
+
+            } catch (err) {
+                console.error("Error fetching venue data:", err);
+                setError("Failed to load venue data.");
+            } finally {
+                //setLoading(false);
+            }
+        };
+
+        fetchVenueData();
+    }, [accessToken,venueData]);
 
 
 
