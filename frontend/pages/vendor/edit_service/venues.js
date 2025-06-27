@@ -743,7 +743,6 @@ export default function EditService() {
       alternative_number: alternativeNumber,
       years_of_experience: parseInt(yearsOfExperience),
       business_registration_number: businessRegistrationNumber,
-      // --- ADDITION: Add address to form data ---
       address: address,
     };
 

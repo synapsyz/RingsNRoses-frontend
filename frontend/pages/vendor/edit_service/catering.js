@@ -412,8 +412,8 @@ export default function AddProduct() {
         }
         return pkg;
       }),
-      faq_details: faqsForApi,
-      images: finalGalleryList,
+      faqs: faqsForApi,
+      gallery_images: finalGalleryList,
       thumbnail_url: finalThumbnailKey,
     };
 
