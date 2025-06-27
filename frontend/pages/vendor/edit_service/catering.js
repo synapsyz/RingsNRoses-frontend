@@ -15,8 +15,10 @@ import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
 import Pricing from '@/components/Pricing';
+import FAQEditor from '@/components/FAQEditor.js';
 import FoodPackageCheckboxGroup from '@/components/FoodPackageCheckboxGroup.js';
-import AddressInput from '@/components/AddressInput'; // Adjust the path if necessary
+import AddressInput from '@/components/AddressInput';
+
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => process.env.NEXT_PUBLIC_APP_ENV === 'development' ? process.env.NEXT_PUBLIC_API_LOCALHOST : process.env.NEXT_PUBLIC_HOST;
@@ -37,11 +39,26 @@ export default function AddProduct() {
   const [thumbnailUrl, setThumbnailUrl] = useState(null);
   const [thumbnailKey, setThumbnailKey] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
+  
+  // Media Manager States - One set for each instance
   const [initialGallery, setInitialGallery] = useState([]);
   const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]);
   const [newGalleryFiles, setNewGalleryFiles] = useState([]);
+  
+  const [initialGalleryVeg, setInitialGalleryVeg] = useState([]);
+  const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
+  const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
+  
+  const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
+  const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState([]);
+  const [newGalleryFilesNonVeg, setNewGalleryFilesNonVeg] = useState([]);
+
+  // Refs for each MediaManager
   const mediaManagerRef = useRef(null);
+  const mediaManagerRefVeg = useRef(null);
+  const mediaManagerRefNonVeg = useRef(null);
   const thumbnailUploaderRef = useRef(null);
+
   const [faqs, setFaqs] = useState([]);
   const router = useRouter();
   const [cateringId, setCateringId] = useState(null);
@@ -63,13 +80,11 @@ export default function AddProduct() {
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [about, setAbout] = useState('');
-  const [perPlatePrice, setPerPlatePrice] = useState('');
   const [advancePayment, setAdvancePayment] = useState('');
   const [guestCapacity, setGuestCapacity] = useState('');
   const [eventSpaces, setEventSpaces] = useState('');
   const [totalAreaSqft, setTotalAreaSqft] = useState('');
   const [advanceBookingNotice, setAdvanceBookingNotice] = useState('');
-  const [advancePaymentRequired, setAdvancePaymentRequired] = useState('');
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [restrictions, setRestrictions] = useState('');
   const [location, setLocation] = useState('');
@@ -83,23 +98,33 @@ export default function AddProduct() {
   const [websiteLink, setWebsiteLink] = useState('');
   const [instagramLink, setInstagramLink] = useState('');
   const [facebookLink, setFacebookLink] = useState('');
-const [selectedFoodPackages, setSelectedFoodPackages] = useState(new Set());
-    const [initialGalleryVeg, setInitialGalleryVeg] = useState([]);
-  const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
-  const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
-  const mediaManagerRefVeg = useRef(null); // New ref for Veg gallery
-const [address, setAddress] = useState('');
-  // New states and refs for Non-Veg gallery when 'veg-non-veg' is selected
-  const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
-  const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState([]);
-  const [newGalleryFilesNonVeg, setNewGalleryFilesNonVeg] = useState([]);
-  const mediaManagerRefNonVeg = useRef(null); // New ref for Non-Veg gallery
+  const [selectedFoodPackages, setSelectedFoodPackages] = useState(new Set());
+  const [address, setAddress] = useState('');
+  const [perPlatePriceVeg, setPerPlatePriceVeg] = useState('');
+  const [perPlatePriceNonVeg, setPerPlatePriceNonVeg] = useState('');
   const [alternativeNumber, setAlternativeNumber] = useState('');
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
+  
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
   const vendorId = session?.user?.vendor_profile?.id;
+
+  // Separate handlers for each MediaManager
+  const handleGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMedia(existingMedia);
+    setNewGalleryFiles(newFiles);
+  };
+
+  const handleVegGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMediaVeg(existingMedia);
+    setNewGalleryFilesVeg(newFiles);
+  };
+
+  const handleNonVegGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMediaNonVeg(existingMedia);
+    setNewGalleryFilesNonVeg(newFiles);
+  };
 
   const handleFileChange = (file) => {
     if (file) {
@@ -123,54 +148,6 @@ const [address, setAddress] = useState('');
       setCateringId(serviceId);
     }
   }, [session]);
-
-  useEffect(() => {
-    const fetchCateringData = async () => {
-      if (cateringId) {
-        try {
-          const config = {
-            headers: { Authorization: `Bearer ${session?.accessToken}` },
-          };
-          const response = await api.get(`/catering/${cateringId}/`, config);
-          const data = response.data;
-          setName(data.name || '');
-          setcontactName(data.manager_name || '');
-          setContactNumber(data.contact_number || '');
-          setEmailAddress(data.email_address || '');
-          setAboutContent(data.about || '');
-          setPerPlatePrice(data.per_plate_price || '');
-          setAdvancePayment(data.advance_payment || '');
-          setGuestCapacity(data.guest_capacity || '');
-          setEventSpaces(data.event_spaces || '');
-          setTotalAreaSqft(data.total_area_sqft || '');
-          setAdvanceBookingNotice(data.advance_booking_notice || '');
-          setAdvancePaymentRequired(data.advance_payment_required || '');
-          setCancellationPolicy(data.cancellation_policy || '');
-          setRestrictions(data.restrictions || '');
-          setLocation(data.location || '');
-          setTermsAndConditions(data.terms_and_conditions || '');
-          setReturnDeliveryPolicy(data.return_delivery_policy || '');
-          setWebsiteLink(data.website_link || '');
-          setInstagramLink(data.instagram_link || '');
-          setFacebookLink(data.facebook_link || '');
-          setAddress(data.address || '');
-
-          if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
-          if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
-          if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
-          if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.commands.setContent(data.return_delivery_policy || '');
-
-          setSelectedServices(new Set(data.services_offered || []));
-          setSelectedEventTypes(new Set(data.events_supported || []));
-
-        } catch (error) {
-          console.error("Error fetching catering data:", error);
-          setFormMessage({ type: 'error', text: 'Failed to load catering data.' });
-        }
-      }
-    };
-    fetchCateringData();
-  }, [cateringId, session]);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -199,6 +176,96 @@ const [address, setAddress] = useState('');
     fetchEventTypes();
   }, []);
 
+  useEffect(() => {
+    const fetchCateringData = async () => {
+      if (cateringId && services.length > 0 && eventTypes.length > 0) {
+        try {
+          const config = {
+            headers: { Authorization: `Bearer ${session?.accessToken}` },
+          };
+          const response = await api.get(`/catering/${cateringId}/`, config);
+          const data = response.data;
+          console.log(data);
+          
+          setName(data.name || '');
+          setcontactName(data.manager_name || '');
+          setContactNumber(data.contact_number || '');
+          setEmailAddress(data.email || '');
+          setAboutContent(data.about || '');
+          setGuestCapacity(data.guest_capacity || '');
+          setEventSpaces(data.event_spaces || '');
+          setTotalAreaSqft(data.total_area_sqft || '');
+          setAdvanceBookingNotice(data.advance_booking_notice || '');
+          setAdvancePayment(data.advance_payment_required || false);
+          setCancellationPolicy(data.cancellation_policy || '');
+          setRestrictions(data.restrictions || '');
+          setLocation(data.location_details?.name || '');
+          setSelectedLocationData(data.location_details ? { locationId: data.location_details.id, location: data.location_details.name } : null);
+          setTermsAndConditions(data.terms_and_conditions || '');
+          setReturnDeliveryPolicy(data.return_delivery_policy || '');
+          setWebsiteLink(data.website_link || '');
+          setInstagramLink(data.instagram_link || '');
+          setFacebookLink(data.facebook_link || '');
+          setAddress(data.address || '');
+          setAlternativeNumber(data.alternative_number || '');
+          setBusinessRegistrationNumber(data.business_registration_number || '');
+          setGstNumber(data.gst_number || '');
+          setYearsOfExperience(data.years_of_experience || '');
+          setThumbnailUrl(data.thumbnail_url_detail || null);
+          setThumbnailKey(data.thumbnail_url || null);    
+
+          if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
+          if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
+          if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
+          if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.commands.setContent(data.return_delivery_policy || '');
+
+          if (data.services_offered_details) {
+            setSelectedServices(new Set(data.services_offered_details.map(service => service.id)));
+          }
+          if (data.event_types_details) {
+            setSelectedEventTypes(new Set(data.event_types_details.map(eventType => eventType.id)));
+          }
+         
+          if (data.faq_details && Array.isArray(data.faq_details)) {
+            const loadedFaqs = data.faq_details.map((faq, index) => ({
+              id: `faq-${index}-${Date.now()}`,
+              question: faq.question || '',
+              answer: faq.answer || ''
+            }));
+            setFaqs(loadedFaqs);
+          }
+
+          const foodPackagesSet = new Set();
+          if (data.packages?.Vegetarian) {
+            foodPackagesSet.add('veg');
+            setPerPlatePriceVeg(data.packages.Vegetarian.starting_price || '');
+            if (data.packages.Vegetarian.images) {
+              setInitialGalleryVeg(data.packages.Vegetarian.images.map(img => img.image_url));
+            }
+          }
+          if (data.packages?.Non_Vegetarian) {
+            foodPackagesSet.add('non-veg');
+            setPerPlatePriceNonVeg(data.packages.Non_Vegetarian.starting_price || '');
+            if (data.packages.Non_Vegetarian.images) {
+              setInitialGalleryNonVeg(data.packages.Non_Vegetarian.images.map(img => img.image_url));
+            }
+          }
+          setSelectedFoodPackages(foodPackagesSet);
+
+          if (data.images && Array.isArray(data.images)) {
+            const imageUrls = data.images.map(imageObject => imageObject.image_url);
+            setInitialGallery(imageUrls);
+          }
+
+        } catch (error) {
+          console.error("Error fetching catering data:", error);
+          setFormMessage({ type: 'error', text: 'Failed to load catering data.' });
+        }
+      }
+    };
+    fetchCateringData();
+  }, [cateringId, session, services, eventTypes]);
+
   const handleServiceToggle = (serviceId) => {
     setSelectedServices(prevSelectedServices => {
       const newSelected = new Set(prevSelectedServices);
@@ -220,34 +287,141 @@ const [address, setAddress] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const foodPackagesData = [];
+    let vegPrice = null;
+    let nonVegPrice = null;
+
+    if (selectedFoodPackages.has('veg') && perPlatePriceVeg) {
+      vegPrice = parseFloat(perPlatePriceVeg);
+      foodPackagesData.push({
+        id: 1,
+        package_type_display: "Vegetarian",
+        package_type: 1,
+        starting_price: vegPrice
+      });
+    }
+    if (selectedFoodPackages.has('non-veg') && perPlatePriceNonVeg) {
+      nonVegPrice = parseFloat(perPlatePriceNonVeg);
+      foodPackagesData.push({
+        id: 2,
+        package_type_display: "Non-Vegetarian",
+        package_type: 2,
+        starting_price: nonVegPrice
+      });
+    }
+
+    let calculatedStartingPrice = null;
+    if (vegPrice !== null && nonVegPrice !== null) {
+        calculatedStartingPrice = Math.min(vegPrice, nonVegPrice);
+    } else if (vegPrice !== null) {
+        calculatedStartingPrice = vegPrice;
+    } else if (nonVegPrice !== null) {
+        calculatedStartingPrice = nonVegPrice;
+    }
+
+    let finalThumbnailKey = thumbnailKey;
+
+    if (thumbnailFile) {
+      const uploadResult = await thumbnailUploaderRef.current.upload();
+      if (!uploadResult.success) {
+        setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        return;
+      }
+      finalThumbnailKey = uploadResult.key;
+    }
+
+    // Upload all galleries separately
+    const galleryResult = await mediaManagerRef.current.upload();
+    if (!galleryResult.success) {
+      setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
+      return;
+    }
+
+    let vegGalleryResult = { success: true, keys: [] };
+    if (selectedFoodPackages.has('veg')) {
+      vegGalleryResult = await mediaManagerRefVeg.current.upload();
+      if (!vegGalleryResult.success) {
+        setFormMessage({ type: 'error', text: `Veg gallery upload failed: ${vegGalleryResult.message}` });
+        return;
+      }
+    }
+
+    let nonVegGalleryResult = { success: true, keys: [] };
+    if (selectedFoodPackages.has('non-veg')) {
+      nonVegGalleryResult = await mediaManagerRefNonVeg.current.upload();
+      if (!nonVegGalleryResult.success) {
+        setFormMessage({ type: 'error', text: `Non-veg gallery upload failed: ${nonVegGalleryResult.message}` });
+        return;
+      }
+    }
+
+    // Combine all gallery results
+    const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
+    const finalVegGalleryList = [...updatedExistingMediaVeg, ...vegGalleryResult.keys];
+    const finalNonVegGalleryList = [...updatedExistingMediaNonVeg, ...nonVegGalleryResult.keys];
+
+    const faqsForApi = faqs
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
+      .map((faq, index) => ({
+        question: faq.question,
+        answer: faq.answer,
+        order: index + 1,
+      }));
+
     const formData = {
       name: Name,
       vendor: vendorId,
       subcategory: subcategory,
       services_offered: Array.from(selectedServices),
-      location: selectedLocationData?.locationId || location,
+      location: selectedLocationData?.locationId || null,
       about: aboutContent,
-      starting_price: parseFloat(perPlatePrice),
+      starting_price: calculatedStartingPrice,
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
-      events_supported: Array.from(selectedEventTypes),
-      per_plate_price: parseFloat(perPlatePrice),
+      event_types: Array.from(selectedEventTypes),
       manager_name: contactName,
-      email_address: emailAddress,
-      advance_payment: parseFloat(advancePayment),
-      guest_capacity: parseInt(guestCapacity),
-      event_spaces: eventSpaces,
-      total_area_sqft: parseFloat(totalAreaSqft),
-      advance_booking_notice: advanceBookingNotice,
-      advance_payment_required: advancePaymentRequired,
-      restrictions: restrictions,
-      terms_and_conditions: termsAndConditions,
-      return_delivery_policy: returnDeliveryPolicy,
-      website_link: websiteLink,
-      instagram_link: instagramLink,
-      facebook_link: facebookLink,
-      address: address,
+      email: emailAddress || null,
+      advance_payment: advancePayment ? parseFloat(advancePayment) : null,
+      guest_capacity: guestCapacity ? parseInt(guestCapacity) : null,
+      event_spaces: eventSpaces || null,
+      total_area_sqft: totalAreaSqft ? parseFloat(totalAreaSqft) : null,
+      advance_booking_notice: advanceBookingNotice || null,
+      advance_payment_required: advancePayment,
+      restrictions: restrictions || null,
+      terms_and_conditions: termsAndConditions || null,
+      return_delivery_policy: returnDeliveryPolicy || null,
+      website_link: websiteLink || null,
+      instagram_link: instagramLink || null,
+      facebook_link: facebookLink || null,
+      address: address || null,
+      alternative_number: alternativeNumber || null,
+      business_registration_number: businessRegistrationNumber || null,
+      gst_number: gstNumber || null,
+      years_of_experience: yearsOfExperience ? parseInt(yearsOfExperience) : null,
+      packages: foodPackagesData.map(pkg => {
+        if (pkg.package_type === 1) { // Vegetarian
+          return {
+            ...pkg,
+            images: finalVegGalleryList
+          };
+        } else if (pkg.package_type === 2) { // Non-Vegetarian
+          return {
+            ...pkg,
+            images: finalNonVegGalleryList
+          };
+        }
+        return pkg;
+      }),
+      faq_details: faqsForApi,
+      images: finalGalleryList,
+      thumbnail_url: finalThumbnailKey,
     };
+
+    Object.keys(formData).forEach(key => {
+      if (formData[key] === null || formData[key] === '') {
+        delete formData[key];
+      }
+    });
 
     console.log("Submitting data:", formData);
 
@@ -267,6 +441,9 @@ const [address, setAddress] = useState('');
       } else {
         response = await api.post("/catering/", formData, config);
         setFormMessage({ type: 'success', text: 'Catering added successfully!' });
+        if (response.data && response.data.id) {
+          setCateringId(response.data.id);
+        }
       }
       console.log("Operation successful:", response.data);
     } catch (error) {
@@ -275,7 +452,7 @@ const [address, setAddress] = useState('');
         console.error("Error data:", error.response.data);
         console.error("Error status:", error.response.status);
         console.error("Error headers:", error.response.headers);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Catering.'}` });
+        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || JSON.stringify(error.response.data) || 'Failed to process Catering.'}` });
       } else if (error.request) {
         console.error("Error request:", error.request);
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
@@ -313,46 +490,41 @@ const [address, setAddress] = useState('');
                         <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abccaters@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                      <FormInput
-        id="alternativeNumber"
-        label="Alternative Number"
-        type="text"
-        placeholder="Enter Alternative Number"
-        value={alternativeNumber}
-        onChange={(e) => setAlternativeNumber(e.target.value)}
-      />
-
-      {/* Row 3: Business Registration Number using FormInput component */}
-      <FormInput
-        id="businessRegistrationNumber"
-        label="Business Registration Number"
-        type="text"
-        placeholder="Enter Business Registration Number"
-        value={businessRegistrationNumber}
-        onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
-      />
-</div>
-<div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-      {/* Row 4: GST Number using FormInput component */}
-      <FormInput
-        id="gstNumber"
-        label="GST Number"
-        type="text"
-        placeholder="Enter GST Number"
-        value={gstNumber}
-        onChange={(e) => setGstNumber(e.target.value)}
-      />
-
-      {/* Row 4: Years of Experience using FormInput component */}
-      <FormInput
-        id="yearsOfExperience"
-        label="Years of Experience"
-        type="number"
-        placeholder="Enter Years of Experience"
-        value={yearsOfExperience}
-        onChange={(e) => setYearsOfExperience(e.target.value)}
-      />
-      </div>
+                        <FormInput
+                          id="alternativeNumber"
+                          label="Alternative Number"
+                          type="text"
+                          placeholder="Enter Alternative Number"
+                          value={alternativeNumber}
+                          onChange={(e) => setAlternativeNumber(e.target.value)}
+                        />
+                        <FormInput
+                          id="businessRegistrationNumber"
+                          label="Business Registration Number"
+                          type="text"
+                          placeholder="Enter Business Registration Number"
+                          value={businessRegistrationNumber}
+                          onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
+                        />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
+                        <FormInput
+                          id="gstNumber"
+                          label="GST Number"
+                          type="text"
+                          placeholder="Enter GST Number"
+                          value={gstNumber}
+                          onChange={(e) => setGstNumber(e.target.value)}
+                        />
+                        <FormInput
+                          id="yearsOfExperience"
+                          label="Years of Experience"
+                          type="number"
+                          placeholder="Enter Years of Experience"
+                          value={yearsOfExperience}
+                          onChange={(e) => setYearsOfExperience(e.target.value)}
+                        />
+                      </div>
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Description (About)</label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
@@ -361,76 +533,71 @@ const [address, setAddress] = useState('');
                       </div>
                     </div>
                   </div>
+                  
+                  <MediaManager
+                    ref={mediaManagerRef}
+                    initialMedia={initialGallery}
+                    onUpdate={handleGalleryUpdate}
+                    pathPrefix='vendors/gallery'
+                  />
+                  
+                  <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                    <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Food Packages</h2>
+                    </div>
+                    <FoodPackageCheckboxGroup
+                      selectedFoodPackages={selectedFoodPackages}
+                      onSelect={setSelectedFoodPackages}
+                    />
+                  </div>
 
-<MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery'} />
- <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Food Packages</h2>
-  </div>
-  {/* Button Group */}
-  <FoodPackageCheckboxGroup
-  selectedFoodPackages={selectedFoodPackages}
-  onSelect={setSelectedFoodPackages}
-/>
+                  {(selectedFoodPackages.has('veg') || selectedFoodPackages.has('non-veg')) && (
+                    <div className={`mt-6 grid gap-6 ${selectedFoodPackages.size === 2 ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
+                      {selectedFoodPackages.has('veg') && (
+                        <div>
+                          <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Veg Menu here</h3>
+                          <MediaManager
+                            ref={mediaManagerRefVeg}
+                            initialMedia={initialGalleryVeg}
+                            onUpdate={handleVegGalleryUpdate}
+                            pathPrefix='vendors/gallery/veg'
+                          />
+                          <div className="mt-2">
+                            <Pricing perPlatePrice={perPlatePriceVeg} setPerPlatePrice={setPerPlatePriceVeg} />
+                          </div>
+                        </div>
+                      )}
 
-  {/* End Button Group */}
-</div>
-
-{(selectedFoodPackages.has('veg') || selectedFoodPackages.has('non-veg')) && (
-  <div className={`mt-6 grid gap-6 ${selectedFoodPackages.size === 2 ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
-    {selectedFoodPackages.has('veg') && (
-      <div>
-        <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Veg Menu here</h3>
-        <MediaManager
-          ref={mediaManagerRefVeg}
-          initialMedia={initialGalleryVeg}
-          onUpdate={(existing, newFiles) => {
-            setUpdatedExistingMediaVeg(existing);
-            setNewGalleryFilesVeg(newFiles);
-          }}
-          pathPrefix={'vendors/gallery/veg'}
-        />
-        <div className="mt-2">
-          <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-        </div>
-      </div>
-    )}
-
-    {selectedFoodPackages.has('non-veg') && (
-      <div>
-        <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Non-Veg Menu here</h3>
-        <MediaManager
-          ref={mediaManagerRefNonVeg}
-          initialMedia={initialGalleryNonVeg}
-          onUpdate={(existing, newFiles) => {
-            setUpdatedExistingMediaNonVeg(existing);
-            setNewGalleryFilesNonVeg(newFiles);
-          }}
-          pathPrefix={'vendors/gallery/non-veg'}
-        />
-        <div className="mt-2">
-          <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-        </div>
-      </div>
-    )}
-  </div>
-)}
-
-
+                      {selectedFoodPackages.has('non-veg') && (
+                        <div>
+                          <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Non-Veg Menu here</h3>
+                          <MediaManager
+                            ref={mediaManagerRefNonVeg}
+                            initialMedia={initialGalleryNonVeg}
+                            onUpdate={handleNonVegGalleryUpdate}
+                            pathPrefix='vendors/gallery/non-veg'
+                          />
+                          <div className="mt-2">
+                            <Pricing perPlatePrice={perPlatePriceNonVeg} setPerPlatePrice={setPerPlatePriceNonVeg} />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cuisine Types Offered</h2>
-  </div>
-  <div className="p-4">
-    <CheckboxGroup
-      items={services}
-      selectedItems={selectedServices}
-      onToggle={handleServiceToggle}
-      name="services"
-    />
-  </div>
-</div>
+                    <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cuisine Types Offered</h2>
+                    </div>
+                    <div className="p-4">
+                      <CheckboxGroup
+                        items={services}
+                        selectedItems={selectedServices}
+                        onToggle={handleServiceToggle}
+                        name="services"
+                      />
+                    </div>
+                  </div>
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
@@ -442,6 +609,9 @@ const [address, setAddress] = useState('');
                       </div>
                     </div>
                   </div>
+                  
+                  <FAQEditor faqs={faqs} setFaqs={setFaqs} />
+                  
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cancellation/Refund Policy</h2>
@@ -452,6 +622,7 @@ const [address, setAddress] = useState('');
                       </div>
                     </div>
                   </div>
+                  
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Social Media Links</h2>
@@ -463,6 +634,7 @@ const [address, setAddress] = useState('');
                     </div>
                   </div>
                 </div>
+                
                 <div className="lg:col-span-2">
                   <div className="lg:sticky lg:top-5 space-y-4">
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -473,6 +645,7 @@ const [address, setAddress] = useState('');
                         <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
                       </div>
                     </div>
+                    
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Service Details</h2>
@@ -509,37 +682,41 @@ const [address, setAddress] = useState('');
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
                     </div>
-<AddressInput
-                       heading="Address"
-                       placeholder="Enter the full address of the venue."
-                       value={address}
-                       onChange={(e) => setAddress(e.target.value)}
-                     />
+                    
+                    <AddressInput
+                      heading="Address"
+                      placeholder="Enter the full address of the venue."
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
+                    
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Customization Options</h2>
-  </div>
-  <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
-    <div>
-      <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Type of Events Catered</label>
-      <div className="p-2">
-        <CheckboxGroup
-          items={eventTypes}
-          selectedItems={selectedEventTypes}
-          onToggle={handleEventTypeToggle}
-          name="eventTypes"
-        />
-      </div>
-    </div>
-  </div>
-</div>
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Customization Options</h2>
+                      </div>
+                      <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
+                        <div>
+                          <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Type of Events Catered</label>
+                          <div className="p-2">
+                            <CheckboxGroup
+                              items={eventTypes}
+                              selectedItems={selectedEventTypes}
+                              onToggle={handleEventTypeToggle}
+                              name="eventTypes"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+                
                 {formMessage.text && (
                   <div className={`fixed bottom-24 start-1/2 -translate-x-1/2 p-4 rounded-lg shadow-md text-white ${formMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
                     {formMessage.text}
                   </div>
                 )}
+                
                 <div className="fixed bottom-0 start-1/2 -translate-x-1/2 p-6 z-50 w-full max-w-md mx-auto hs-removing:translate-y-5 hs-removing:opacity-0 transition duration-300">
                   <div className="py-2 ps-5 pe-2 bg-stone-800 rounded-full shadow-md dark:bg-neutral-950">
                     <div className="flex justify-between items-center gap-x-3">
@@ -570,6 +747,7 @@ const [address, setAddress] = useState('');
           </div>
         </main>
       </div>
+      
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />

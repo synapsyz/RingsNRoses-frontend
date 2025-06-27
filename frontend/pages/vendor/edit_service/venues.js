@@ -1005,6 +1005,7 @@ export default function EditService() {
                     ref={mediaManagerRef} // Attach the ref here
                     initialMedia={initialGallery}
                     onUpdate={handleGalleryUpdate}
+                    pathPrefix = 'vendors/gallery'
                   />
 
 
