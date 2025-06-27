@@ -14,9 +14,9 @@ import FormInput from '@/components/FormInput';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
-import Pricing from '@/components/Pricing';
-import FoodPackageCheckboxGroup from '@/components/FoodPackageCheckboxGroup.js';
+import Pricing from '@/components/Pricing'; // Keep Pricing if applicable, adjust props
 import AddressInput from '@/components/AddressInput'; // Adjust the path if necessary
+
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => process.env.NEXT_PUBLIC_APP_ENV === 'development' ? process.env.NEXT_PUBLIC_API_LOCALHOST : process.env.NEXT_PUBLIC_HOST;
@@ -29,7 +29,7 @@ const api = axios.create({
   }
 });
 
-export default function AddProduct() {
+export default function AddBridalGroomAttire() {
   const [aboutContent, setAboutContent] = useState('');
   const [cancellationPolicyContent, setCancellationPolicyContent] = useState('');
   const [restrictionsContent, setRestrictionsContent] = useState('');
@@ -44,7 +44,7 @@ export default function AddProduct() {
   const thumbnailUploaderRef = useRef(null);
   const [faqs, setFaqs] = useState([]);
   const router = useRouter();
-  const [cateringId, setCateringId] = useState(null);
+  const [bridalgroomattireId, setBridalGroomAttireId] = useState(null); // Changed
   const editorRef = useRef(null);
   const editorInstance = useRef(null);
   const cancellationEditorRef = useRef(null);
@@ -54,21 +54,18 @@ export default function AddProduct() {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [selectedLocationData, setSelectedLocationData] = useState(null);
   const { data: session, status } = useSession();
-  const [eventTypes, setEventTypes] = useState([]);
-  const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
-  const [services, setServices] = useState([]);
-  const [selectedServices, setSelectedServices] = useState(new Set());
+  const [attireTypes, setAttireTypes] = useState([]); // Changed
+  const [selectedAttireTypes, setSelectedAttireTypes] = useState(new Set()); // Changed
+  const [styles, setStyles] = useState([]); // Changed
+  const [selectedStyles, setSelectedStyles] = useState(new Set()); // Changed
   const [Name, setName] = useState('');
   const [contactName, setcontactName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [about, setAbout] = useState('');
-  const [perPlatePrice, setPerPlatePrice] = useState('');
+  const [startingPrice, setStartingPrice] = useState(''); // Changed
   const [advancePayment, setAdvancePayment] = useState('');
-  const [guestCapacity, setGuestCapacity] = useState('');
-  const [eventSpaces, setEventSpaces] = useState('');
-  const [totalAreaSqft, setTotalAreaSqft] = useState('');
-  const [advanceBookingNotice, setAdvanceBookingNotice] = useState('');
+  const [bookingNotice, setBookingNotice] = useState(''); // Changed
   const [advancePaymentRequired, setAdvancePaymentRequired] = useState('');
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [restrictions, setRestrictions] = useState('');
@@ -83,24 +80,23 @@ export default function AddProduct() {
   const [websiteLink, setWebsiteLink] = useState('');
   const [instagramLink, setInstagramLink] = useState('');
   const [facebookLink, setFacebookLink] = useState('');
-const [selectedFoodPackages, setSelectedFoodPackages] = useState(new Set());
-    const [initialGalleryVeg, setInitialGalleryVeg] = useState([]);
-  const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
-  const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
-  const mediaManagerRefVeg = useRef(null); // New ref for Veg gallery
-const [address, setAddress] = useState('');
-  // New states and refs for Non-Veg gallery when 'veg-non-veg' is selected
-  const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
-  const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState([]);
-  const [newGalleryFilesNonVeg, setNewGalleryFilesNonVeg] = useState([]);
-  const mediaManagerRefNonVeg = useRef(null); // New ref for Non-Veg gallery
+  const [address, setAddress] = useState('');
   const [alternativeNumber, setAlternativeNumber] = useState('');
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
-  const subcategory = session?.user?.vendor_profile?.subcategory?.id;
+  const [sizeRanges, setSizeRanges] = useState([]); // Declare sizeRanges state
+  const [selectedSizeRanges, setSelectedSizeRanges] = useState(new Set()); // Declare selectedSizeRanges state
+  const subcategory = session?.user?.vendor_profile?.subcategory?.id; // You might need to change this ID to the actual subcategory ID for Bridal & Groom Attire
   const vendorId = session?.user?.vendor_profile?.id;
-
+const handleSizeRangeToggle = (sizeRangeId) => {
+    setSelectedSizeRanges(prevSelectedSizeRanges => {
+      const newSelected = new Set(prevSelectedSizeRanges);
+      if (newSelected.has(sizeRangeId)) newSelected.delete(sizeRangeId);
+      else newSelected.add(sizeRangeId);
+      return newSelected;
+    });
+  };
   const handleFileChange = (file) => {
     if (file) {
       setThumbnailFile(file);
@@ -120,30 +116,27 @@ const [address, setAddress] = useState('');
   useEffect(() => {
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
-      setCateringId(serviceId);
+      setBridalGroomAttireId(serviceId); // Changed
     }
   }, [session]);
 
   useEffect(() => {
-    const fetchCateringData = async () => {
-      if (cateringId) {
+    const fetchBridalGroomAttireData = async () => { // Changed function name
+      if (bridalgroomattireId) { // Changed
         try {
           const config = {
             headers: { Authorization: `Bearer ${session?.accessToken}` },
           };
-          const response = await api.get(`/catering/${cateringId}/`, config);
+          const response = await api.get(`/bridalgroomattire/${bridalgroomattireId}/`, config); // Changed API endpoint
           const data = response.data;
           setName(data.name || '');
           setcontactName(data.manager_name || '');
           setContactNumber(data.contact_number || '');
           setEmailAddress(data.email_address || '');
           setAboutContent(data.about || '');
-          setPerPlatePrice(data.per_plate_price || '');
+          setStartingPrice(data.starting_price || ''); // Changed
           setAdvancePayment(data.advance_payment || '');
-          setGuestCapacity(data.guest_capacity || '');
-          setEventSpaces(data.event_spaces || '');
-          setTotalAreaSqft(data.total_area_sqft || '');
-          setAdvanceBookingNotice(data.advance_booking_notice || '');
+          setBookingNotice(data.booking_notice || ''); // Changed
           setAdvancePaymentRequired(data.advance_payment_required || '');
           setCancellationPolicy(data.cancellation_policy || '');
           setRestrictions(data.restrictions || '');
@@ -160,59 +153,59 @@ const [address, setAddress] = useState('');
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
           if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.commands.setContent(data.return_delivery_policy || '');
 
-          setSelectedServices(new Set(data.services_offered || []));
-          setSelectedEventTypes(new Set(data.events_supported || []));
+          setSelectedStyles(new Set(data.styles_offered || [])); // Changed
+          setSelectedAttireTypes(new Set(data.attire_types_supported || [])); // Changed
 
         } catch (error) {
-          console.error("Error fetching catering data:", error);
-          setFormMessage({ type: 'error', text: 'Failed to load catering data.' });
+          console.error("Error fetching bridal/groom attire data:", error); // Changed message
+          setFormMessage({ type: 'error', text: 'Failed to load bridal/groom attire data.' }); // Changed message
         }
       }
     };
-    fetchCateringData();
-  }, [cateringId, session]);
+    fetchBridalGroomAttireData(); // Changed function call
+  }, [bridalgroomattireId, session]); // Changed dependency
 
   useEffect(() => {
-    const fetchServices = async () => {
+    const fetchAttireTypes = async () => {
       try {
         const response = await api.get("/services/venue/");
         if (response.data && Array.isArray(response.data.results)) {
-          setServices(response.data.results);
+          setAttireTypes(response.data.results);
         }
       } catch (error) {
-        console.error("Error fetching services:", error);
+        console.error("Error fetching attire types:", error);
       }
     };
 
-    const fetchEventTypes = async () => {
+    const fetchSizeRanges = async () => { // NEW: Function to fetch size ranges
       try {
-        const response = await api.get("/event-types/");
+        const response = await api.get("/event-types/"); // **IMPORTANT:** Adjust this API endpoint if your backend uses a different path for size ranges
         if (response.data && Array.isArray(response.data.results)) {
-          setEventTypes(response.data.results);
+          setSizeRanges(response.data.results);
         }
       } catch (error) {
-        console.error("Error fetching event types:", error);
+        console.error("Error fetching size ranges:", error);
       }
     };
 
-    fetchServices();
-    fetchEventTypes();
+    fetchAttireTypes();
+    fetchSizeRanges(); // Call the new function to fetch size ranges
   }, []);
 
-  const handleServiceToggle = (serviceId) => {
-    setSelectedServices(prevSelectedServices => {
-      const newSelected = new Set(prevSelectedServices);
-      if (newSelected.has(serviceId)) newSelected.delete(serviceId);
-      else newSelected.add(serviceId);
+  const handleStyleToggle = (styleId) => { // Changed function name
+    setSelectedStyles(prevSelectedStyles => { // Changed
+      const newSelected = new Set(prevSelectedStyles);
+      if (newSelected.has(styleId)) newSelected.delete(styleId);
+      else newSelected.add(styleId);
       return newSelected;
     });
   };
 
-  const handleEventTypeToggle = (eventTypeId) => {
-    setSelectedEventTypes(prevSelectedEventTypes => {
-      const newSelected = new Set(prevSelectedEventTypes);
-      if (newSelected.has(eventTypeId)) newSelected.delete(eventTypeId);
-      else newSelected.add(eventTypeId);
+  const handleAttireTypeToggle = (attireTypeId) => { // Changed function name
+    setSelectedAttireTypes(prevSelectedAttireTypes => { // Changed
+      const newSelected = new Set(prevSelectedAttireTypes);
+      if (newSelected.has(attireTypeId)) newSelected.delete(attireTypeId);
+      else newSelected.add(attireTypeId);
       return newSelected;
     });
   };
@@ -224,21 +217,17 @@ const [address, setAddress] = useState('');
       name: Name,
       vendor: vendorId,
       subcategory: subcategory,
-      services_offered: Array.from(selectedServices),
+      styles_offered: Array.from(selectedStyles), // Changed
       location: selectedLocationData?.locationId || location,
       about: aboutContent,
-      starting_price: parseFloat(perPlatePrice),
+      starting_price: parseFloat(startingPrice), // Changed
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
-      events_supported: Array.from(selectedEventTypes),
-      per_plate_price: parseFloat(perPlatePrice),
+      attire_types_supported: Array.from(selectedAttireTypes), // Changed
       manager_name: contactName,
       email_address: emailAddress,
       advance_payment: parseFloat(advancePayment),
-      guest_capacity: parseInt(guestCapacity),
-      event_spaces: eventSpaces,
-      total_area_sqft: parseFloat(totalAreaSqft),
-      advance_booking_notice: advanceBookingNotice,
+      booking_notice: bookingNotice, // Changed
       advance_payment_required: advancePaymentRequired,
       restrictions: restrictions,
       terms_and_conditions: termsAndConditions,
@@ -247,6 +236,10 @@ const [address, setAddress] = useState('');
       instagram_link: instagramLink,
       facebook_link: facebookLink,
       address: address,
+      alternative_number: alternativeNumber,
+      business_registration_number: businessRegistrationNumber,
+      gst_number: gstNumber,
+      years_of_experience: yearsOfExperience,
     };
 
     console.log("Submitting data:", formData);
@@ -261,21 +254,21 @@ const [address, setAddress] = useState('');
       };
 
       let response;
-      if (cateringId) {
-        response = await api.put(`/catering/${cateringId}/`, formData, config);
-        setFormMessage({ type: 'success', text: 'Catering updated successfully!' });
+      if (bridalgroomattireId) { // Changed
+        response = await api.put(`/bridalgroomattire/${bridalgroomattireId}/`, formData, config); // Changed API endpoint
+        setFormMessage({ type: 'success', text: 'Bridal & Groom Attire updated successfully!' }); // Changed message
       } else {
-        response = await api.post("/catering/", formData, config);
-        setFormMessage({ type: 'success', text: 'Catering added successfully!' });
+        response = await api.post("/bridalgroomattire/", formData, config); // Changed API endpoint
+        setFormMessage({ type: 'success', text: 'Bridal & Groom Attire added successfully!' }); // Changed message
       }
       console.log("Operation successful:", response.data);
     } catch (error) {
-      console.error("Error adding/updating Catering:", error);
+      console.error("Error adding/updating Bridal & Groom Attire:", error); // Changed message
       if (error.response) {
         console.error("Error data:", error.response.data);
         console.error("Error status:", error.response.status);
         console.error("Error headers:", error.response.headers);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Catering.'}` });
+        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Bridal & Groom Attire.'}` }); // Changed message
       } else if (error.request) {
         console.error("Error request:", error.request);
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
@@ -300,137 +293,99 @@ const [address, setAddress] = useState('');
                 <div className="lg:col-span-4 space-y-4">
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Services info</h2>
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Attire info</h2> {/* Changed */}
                     </div>
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="CateringName" label="Name" placeholder="ABC Catering" value={Name} onChange={(e) => setName(e.target.value)} required />
+                        <FormInput id="AttireName" label="Attire Service Name" placeholder="Your Attire Shop" value={Name} onChange={(e) => setName(e.target.value)} required /> {/* Changed */}
                         <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abccaters@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="attires@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} /> {/* Changed */}
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                       <FormInput
-        id="alternativeNumber"
-        label="Alternative Number"
-        type="text"
-        placeholder="Enter Alternative Number"
-        value={alternativeNumber}
-        onChange={(e) => setAlternativeNumber(e.target.value)}
-      />
-
-      {/* Row 3: Business Registration Number using FormInput component */}
-      <FormInput
-        id="businessRegistrationNumber"
-        label="Business Registration Number"
-        type="text"
-        placeholder="Enter Business Registration Number"
-        value={businessRegistrationNumber}
-        onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
-      />
-</div>
-<div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-      {/* Row 4: GST Number using FormInput component */}
-      <FormInput
-        id="gstNumber"
-        label="GST Number"
-        type="text"
-        placeholder="Enter GST Number"
-        value={gstNumber}
-        onChange={(e) => setGstNumber(e.target.value)}
-      />
-
-      {/* Row 4: Years of Experience using FormInput component */}
-      <FormInput
-        id="yearsOfExperience"
-        label="Years of Experience"
-        type="number"
-        placeholder="Enter Years of Experience"
-        value={yearsOfExperience}
-        onChange={(e) => setYearsOfExperience(e.target.value)}
-      />
-      </div>
+                        id="alternativeNumber"
+                        label="Alternative Number"
+                        type="text"
+                        placeholder="Enter Alternative Number"
+                        value={alternativeNumber}
+                        onChange={(e) => setAlternativeNumber(e.target.value)}
+                      />
+                      <FormInput
+                        id="businessRegistrationNumber"
+                        label="Business Registration Number"
+                        type="text"
+                        placeholder="Enter Business Registration Number"
+                        value={businessRegistrationNumber}
+                        onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
+                      />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
+                      <FormInput
+                        id="gstNumber"
+                        label="GST Number"
+                        type="text"
+                        placeholder="Enter GST Number"
+                        value={gstNumber}
+                        onChange={(e) => setGstNumber(e.target.value)}
+                      />
+                      <FormInput
+                        id="yearsOfExperience"
+                        label="Years of Experience"
+                        type="number"
+                        placeholder="Enter Years of Experience"
+                        value={yearsOfExperience}
+                        onChange={(e) => setYearsOfExperience(e.target.value)}
+                      />
+                      </div>
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Description (About)</label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your catering service..." />
+                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your bridal and groom attire service..." /> {/* Changed */}
                         </div>
                       </div>
                     </div>
                   </div>
 
-<MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery'} />
- <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Food Packages</h2>
-  </div>
-  {/* Button Group */}
-  <FoodPackageCheckboxGroup
-  selectedFoodPackages={selectedFoodPackages}
-  onSelect={setSelectedFoodPackages}
-/>
+                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/attire-gallery'} /> {/* Changed pathPrefix */}
 
-  {/* End Button Group */}
-</div>
-
-{(selectedFoodPackages.has('veg') || selectedFoodPackages.has('non-veg')) && (
-  <div className={`mt-6 grid gap-6 ${selectedFoodPackages.size === 2 ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
-    {selectedFoodPackages.has('veg') && (
-      <div>
-        <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Veg Menu here</h3>
-        <MediaManager
-          ref={mediaManagerRefVeg}
-          initialMedia={initialGalleryVeg}
-          onUpdate={(existing, newFiles) => {
-            setUpdatedExistingMediaVeg(existing);
-            setNewGalleryFilesVeg(newFiles);
-          }}
-          pathPrefix={'vendors/gallery/veg'}
-        />
-        <div className="mt-2">
-          <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-        </div>
-      </div>
-    )}
-
-    {selectedFoodPackages.has('non-veg') && (
-      <div>
-        <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Non-Veg Menu here</h3>
-        <MediaManager
-          ref={mediaManagerRefNonVeg}
-          initialMedia={initialGalleryNonVeg}
-          onUpdate={(existing, newFiles) => {
-            setUpdatedExistingMediaNonVeg(existing);
-            setNewGalleryFilesNonVeg(newFiles);
-          }}
-          pathPrefix={'vendors/gallery/non-veg'}
-        />
-        <div className="mt-2">
-          <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-        </div>
-      </div>
-    )}
-  </div>
-)}
-
-
+                  {/* Removed Food Packages - Add Attire specific gallery sections if needed */}
+                  {/* Example: You might want separate galleries for Bridal and Groom attire */}
+                  {/* <div className="mt-6">
+                    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200 mb-4">Upload Bridal Attire Gallery</h2>
+                    <MediaManager
+                      ref={mediaManagerRefVeg} // Reusing ref for simplicity or create new ones
+                      initialMedia={initialGalleryVeg}
+                      onUpdate={(existing, newFiles) => { setUpdatedExistingMediaVeg(existing); setNewGalleryFilesVeg(newFiles); }}
+                      pathPrefix={'vendors/attire-gallery/bridal'}
+                    />
+                  </div>
+                  <div className="mt-6">
+                    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200 mb-4">Upload Groom Attire Gallery</h2>
+                    <MediaManager
+                      ref={mediaManagerRefNonVeg} // Reusing ref for simplicity or create new ones
+                      initialMedia={initialGalleryNonVeg}
+                      onUpdate={(existing, newFiles) => { setUpdatedExistingMediaNonVeg(existing); setNewGalleryFilesNonVeg(newFiles); }}
+                      pathPrefix={'vendors/attire-gallery/groom'}
+                    />
+                  </div> */}
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cuisine Types Offered</h2>
-  </div>
-  <div className="p-4">
-    <CheckboxGroup
-      items={services}
-      selectedItems={selectedServices}
-      onToggle={handleServiceToggle}
-      name="services"
-    />
-  </div>
-</div>
+                    <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Attire Types Offered</h2> {/* Changed */}
+                    </div>
+                    <div className="p-4">
+                      <CheckboxGroup
+                        items={attireTypes} // Changed
+                        selectedItems={selectedAttireTypes} // Changed
+                        onToggle={handleAttireTypeToggle} // Changed
+                        name="attireTypes" // Changed
+                      />
+                    </div>
+                  </div>
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
@@ -458,8 +413,8 @@ const [address, setAddress] = useState('');
                     </div>
                     <div className="ml-4 mt-2 mr-4 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
                       <FormInput id="websiteLink" label="Website Link" type="url" placeholder="https://example.com" value={websiteLink} onChange={(e) => setWebsiteLink(e.target.value)} />
-                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourvenue" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
-                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourvenue" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
+                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourattirestore" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} /> {/* Changed placeholder */}
+                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourattirestore" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} /> {/* Changed placeholder */}
                     </div>
                   </div>
                 </div>
@@ -470,6 +425,7 @@ const [address, setAddress] = useState('');
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Pricing</h2>
                       </div>
                       <div className="p-5 space-y-4">
+                        <FormInput id="startingPrice" label="Starting Price" type="number" placeholder="Enter starting price" value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} /> {/* Changed */}
                         <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
                       </div>
                     </div>
@@ -509,30 +465,40 @@ const [address, setAddress] = useState('');
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
                     </div>
-<AddressInput
+                    <AddressInput
                        heading="Address"
-                       placeholder="Enter the full address of the venue."
+                       placeholder="Enter the full address of your store." // Changed placeholder
                        value={address}
                        onChange={(e) => setAddress(e.target.value)}
                      />
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Customization Options</h2>
-  </div>
-  <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
-    <div>
-      <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Type of Events Catered</label>
-      <div className="p-2">
-        <CheckboxGroup
-          items={eventTypes}
-          selectedItems={selectedEventTypes}
-          onToggle={handleEventTypeToggle}
-          name="eventTypes"
-        />
-      </div>
-    </div>
-  </div>
-</div>
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Customization Options</h2>
+                      </div>
+                      <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
+                        <div>
+                            <label htmlFor="sizeRange" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Size Range</label> {/* Changed */}
+                            <div className="p-2">
+                            <CheckboxGroup
+                                items={sizeRanges} // Changed from attireTypes
+                                selectedItems={selectedSizeRanges} // Changed from selectedAttireTypes
+                                onToggle={handleSizeRangeToggle} // Changed from handleAttireTypeToggle
+                                name="sizeRange" // Changed from attireTypes
+                            />
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                    <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Delivery/Return Policy</h2>
+                    </div>
+                    <div id="hs-add-product-return-delivery-policy-card-body" className="p-5 space-y-4">
+                      <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
+                        <TiptapEditor content={returnDeliveryPolicy} onUpdate={setReturnDeliveryPolicy} placeholder="Enter your delivery and return policy..." />
+                      </div>
+                    </div>
+                  </div>
                   </div>
                 </div>
                 {formMessage.text && (
@@ -567,14 +533,14 @@ const [address, setAddress] = useState('');
                 </div>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
-      <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
-      <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
-      <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
+                </div>
+          </main>
+        </div>
+        <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
+        <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
+        <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
 
-      <Script>{`
+        <Script>{`
         (function () {
           window.addEventListener('load', () => {
             if (window.HSStaticMethods && typeof window.HSStaticMethods.autoInit === 'function') {
