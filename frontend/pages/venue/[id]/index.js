@@ -2218,7 +2218,7 @@ const config = {
   {venueData?.name} is a beautifull area to host all your functions, from pre-wedding ceremonies. The abundance of establishments offered by them is mentioned below:
 </p>
 
-                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-y-6 sm:gap-x-10 lg:gap-y-12 lg:gap-x-16">
+                        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-y-6 sm:gap-x-10 lg:gap-y-6 lg:gap-x-16">
                           {/* <!-- Icon Block --> */}
                         {venueData?.services_offered_details
                         ?.filter((feature) => feature?.svg_icon_url)
@@ -2233,7 +2233,7 @@ const config = {
                           </div>
                       ))}
 
-                          <div className="pt-5 pb-5"></div>
+                          <div className="pt-5 pb-8"></div>
                         </div>
 
 
@@ -3028,7 +3028,7 @@ const config = {
         className="hs-overlay hidden size-full fixed top-0 start-0 z-80 overflow-x-hidden overflow-y-auto pointer-events-none"
         role="dialog"
         tabIndex={-1}
-        aria-labelledby="hs-pro-shmnlcm-label"
+        aria-labelledby="hs-pro-shmnlcm-label"offered
         style={{ '--close-when-click-inside': 'true' }} // if you want to keep this CSS variable inline
       >
         <div className="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto h-[calc(100%-56px)] min-h-[calc(100%-56px)] flex items-center">
