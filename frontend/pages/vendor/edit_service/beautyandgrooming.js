@@ -14,9 +14,9 @@ import FormInput from '@/components/FormInput';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
-import Pricing from '@/components/Pricing';
+import Pricing from '@/components/Pricing'; // Assuming Pricing is a generic component
 import AddressInput from '@/components/AddressInput';
-import ServicePackages from '@/components/ServicePackages'; // Changed import from PhotographyPackages to ServicePackages
+import ServicePackages from '@/components/ServicePackages'; // Import the generic ServicePackages component
 
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -30,7 +30,8 @@ const api = axios.create({
   }
 });
 
-export default function AddProduct() {
+export default function AddBeautyAndGroomingProduct() {
+  // === STATE VARIABLES (Adjust as needed for Beauty & Grooming) ===
   const [aboutContent, setAboutContent] = useState('');
   const [cancellationPolicyContent, setCancellationPolicyContent] = useState('');
   const [restrictionsContent, setRestrictionsContent] = useState('');
@@ -43,9 +44,9 @@ export default function AddProduct() {
   const [newGalleryFiles, setNewGalleryFiles] = useState([]);
   const mediaManagerRef = useRef(null);
   const thumbnailUploaderRef = useRef(null);
-  const [faqs, setFaqs] = useState([]);
+  const [faqs, setFaqs] = useState([]); // Consider if FAQs are generic or service-specific
   const router = useRouter();
-  const [photographyId, setPhotographyId] = useState(null);
+  const [beautyGroomingId, setBeautyGroomingId] = useState(null); // Changed ID state
   const editorRef = useRef(null);
   const editorInstance = useRef(null);
   const cancellationEditorRef = useRef(null);
@@ -56,7 +57,7 @@ export default function AddProduct() {
   const [selectedLocationData, setSelectedLocationData] = useState(null);
   const { data: session, status } = useSession();
   const [eventTypes, setEventTypes] = useState([]);
-  const [services, setServices] = useState([]);
+  const [services, setServices] = useState([]); // This might be "Beauty & Grooming Services"
   const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [selectedServices, setSelectedServices] = useState(new Set());
   const [Name, setName] = useState('');
@@ -66,9 +67,9 @@ export default function AddProduct() {
   const [about, setAbout] = useState('');
   const [startingPrice, setStartingPrice] = useState('');
   const [advancePayment, setAdvancePayment] = useState('');
-  const [guestCapacity, setGuestCapacity] = useState('');
-  const [eventSpaces, setEventSpaces] = useState('');
-  const [totalAreaSqft, setTotalAreaSqft] = useState('');
+  const [guestCapacity, setGuestCapacity] = useState(''); // Maybe not relevant for Beauty/Grooming
+  const [eventSpaces, setEventSpaces] = useState(''); // Maybe not relevant for Beauty/Grooming
+  const [totalAreaSqft, setTotalAreaSqft] = useState(''); // Maybe not relevant for Beauty/Grooming
   const [advanceBookingNotice, setAdvanceBookingNotice] = useState('');
   const [advancePaymentRequired, setAdvancePaymentRequired] = useState('');
   const [cancellationPolicy, setCancellationPolicy] = useState('');
@@ -91,10 +92,17 @@ export default function AddProduct() {
   const [yearsOfExperience, setYearsOfExperience] = useState('');
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
   const vendorId = session?.user?.vendor_profile?.id;
-  const [photographyPackages, setPhotographyPackages] = useState([]);
+  const [beautyGroomingPackages, setBeautyGroomingPackages] = useState([]); // Changed package state
+  const [minimumAdvanceBookingTime, setMinimumAdvanceBookingTime] = useState('');
+  // NEW: For legal and compliance / certifications
+const legalMediaManagerRef = useRef(null); // New ref for the certification MediaManager
+const [initialCertifications, setInitialCertifications] = useState([]); // State for pre-existing certs
+const [updatedExistingCertifications, setUpdatedExistingCertifications] = useState([]); // For existing certs after updates
+const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For newly uploaded certs
 
+  // === PACKAGE HANDLERS (Generic, but operate on beautyGroomingPackages) ===
   const togglePackage = (idToToggle) => {
-    setPhotographyPackages(currentPackages =>
+    setBeautyGroomingPackages(currentPackages =>
       currentPackages.map(pkg =>
         pkg.id === idToToggle
           ? { ...pkg, isOpen: !pkg.isOpen }
@@ -104,59 +112,56 @@ export default function AddProduct() {
   };
 
   const addPackage = () => {
-    setPhotographyPackages(currentPackages => [
+    setBeautyGroomingPackages(currentPackages => [
       ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
       { id: `pkg-${Date.now()}`, name: '', description: '', pricing: '', equipment: [], isOpen: true, equipmentInput: '' }
     ]);
   };
 
   const handlePackageChange = (id, field, value) => {
-    setPhotographyPackages(currentPackages =>
+    setBeautyGroomingPackages(currentPackages =>
       currentPackages.map(pkg =>
         pkg.id === id ? { ...pkg, [field]: value } : pkg
       )
     );
   };
 
+  const handleEquipmentBlur = (id, value) => {
+    const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
 
-const handleEquipmentBlur = (id, value) => {
-  const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
+    setBeautyGroomingPackages(currentPackages =>
+      currentPackages.map(pkg => {
+        if (pkg.id === id) {
+          const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentArray]));
+          return { ...pkg, equipment: updatedEquipment };
+        }
+        return pkg;
+      })
+    );
+  };
 
-  setPhotographyPackages(currentPackages =>
-    currentPackages.map(pkg => {
-      if (pkg.id === id) {
-        const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentArray]));
-        return { ...pkg, equipment: updatedEquipment };
+  const handleEquipmentKeyDown = (id, e) => {
+    if (e.key === ',' || e.key === '.') {
+      e.preventDefault();
+      const newTag = e.target.value.trim();
+
+      if (newTag) {
+        setBeautyGroomingPackages(currentPackages =>
+          currentPackages.map(pkg => {
+            if (pkg.id === id) {
+              const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
+              console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
+              return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
+            }
+            return pkg;
+          })
+        );
       }
-      return pkg;
-    })
-  );
-};
-
-const handleEquipmentKeyDown = (id, e) => {
-  if (e.key === ',' || e.key === '.') {
-    e.preventDefault();
-    const newTag = e.target.value.trim();
-
-    if (newTag) {
-      setPhotographyPackages(currentPackages =>
-        currentPackages.map(pkg => {
-          if (pkg.id === id) {
-            const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
-            console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
-            return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
-          }
-          return pkg;
-        })
-      );
-    } else {
-      console.log(`[KEY DOWN DEBUG] No new tag to add.`);
     }
-  }
-};
+  };
 
   const removeEquipmentTag = (packageId, tagToRemove) => {
-    setPhotographyPackages(currentPackages =>
+    setBeautyGroomingPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === packageId) {
           return { ...pkg, equipment: pkg.equipment.filter(tag => tag !== tagToRemove) };
@@ -167,9 +172,10 @@ const handleEquipmentKeyDown = (id, e) => {
   };
 
   const deletePackage = (id) => {
-    setPhotographyPackages(photographyPackages.filter(pkg => pkg.id !== id));
+    setBeautyGroomingPackages(beautyGroomingPackages.filter(pkg => pkg.id !== id));
   };
 
+  // === THUMBNAIL HANDLERS (Same as Photography) ===
   const handleFileChange = (file) => {
     if (file) {
       setThumbnailFile(file);
@@ -186,21 +192,23 @@ const handleEquipmentKeyDown = (id, e) => {
     }
   };
 
+  // === FETCHING DATA (Adjust API endpoint and state updates) ===
   useEffect(() => {
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
-      setPhotographyId(serviceId);
+      setBeautyGroomingId(serviceId); // Set beautyGroomingId
     }
   }, [session]);
 
   useEffect(() => {
-    const fetchPhotographyData = async () => {
-      if (photographyId) {
+    const fetchBeautyGroomingData = async () => {
+      if (beautyGroomingId) { // Use beautyGroomingId
         try {
           const config = {
             headers: { Authorization: `Bearer ${session?.accessToken}` },
           };
-          const response = await api.get(`/photography/${photographyId}/`, config);
+          // IMPORTANT: Adjust this API endpoint for Beauty & Grooming
+          const response = await api.get(`/beauty-grooming/${beautyGroomingId}/`, config);
           const data = response.data;
           setName(data.name || '');
           setcontactName(data.manager_name || '');
@@ -209,7 +217,10 @@ const handleEquipmentKeyDown = (id, e) => {
           setAboutContent(data.about || '');
           setStartingPrice(data.starting_price || '');
           setAdvancePayment(data.advance_payment || '');
-          setEventSpaces(data.event_spaces || '');
+          // Remove guestCapacity, eventSpaces, totalAreaSqft if not applicable
+          // setGuestCapacity(data.guest_capacity || '');
+          // setEventSpaces(data.event_spaces || '');
+          // setTotalAreaSqft(data.total_area_sqft || '');
           setAdvanceBookingNotice(data.advance_booking_notice || '');
           setAdvancePaymentRequired(data.advance_payment_required || '');
           setCancellationPolicy(data.cancellation_policy || '');
@@ -231,8 +242,9 @@ const handleEquipmentKeyDown = (id, e) => {
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
           if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.setContent(data.return_delivery_policy || '');
 
+          // Services/Events Supported will likely be different for Beauty & Grooming
           setSelectedServices(new Set(data.services_offered || []));
-          setSelectedEventTypes(new Set(data.events_supported || []));
+          setSelectedEventTypes(new Set(data.events_supported || [])); // Still relevant for bridal events etc.
 
           if (data.packages && Array.isArray(data.packages)) {
             const loadedPackages = data.packages.map(pkg => ({
@@ -244,34 +256,34 @@ const handleEquipmentKeyDown = (id, e) => {
               isOpen: false,
               equipmentInput: ''
             }));
-            setPhotographyPackages(loadedPackages);
+            setBeautyGroomingPackages(loadedPackages); // Set beautyGroomingPackages
           } else {
-            setPhotographyPackages([]);
+            setBeautyGroomingPackages([]);
           }
         } catch (error) {
-          console.error("Error fetching photography data:", error);
-          setFormMessage({ type: 'error', text: 'Failed to load photography data.' });
+          console.error("Error fetching beauty and grooming data:", error);
+          setFormMessage({ type: 'error', text: 'Failed to load beauty and grooming data.' });
         }
       }
     };
-    fetchPhotographyData();
-  }, [photographyId, session]);
+    fetchBeautyGroomingData();
+  }, [beautyGroomingId, session]); 
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await api.get("/services/venue/");
+        const response = await api.get("/services/venue/"); // Adjust API endpoint
         if (response.data && Array.isArray(response.data.results)) {
           setServices(response.data.results);
         }
       } catch (error) {
-        console.error("Error fetching services:", error);
+        console.error("Error fetching beauty & grooming services:", error);
       }
     };
 
     const fetchEventTypes = async () => {
       try {
-        const response = await api.get("/event-types/");
+        const response = await api.get("/event-types/"); // This might remain the same or need filtering
         if (response.data && Array.isArray(response.data.results)) {
           setEventTypes(response.data.results);
         }
@@ -302,6 +314,7 @@ const handleEquipmentKeyDown = (id, e) => {
     });
   };
 
+  // === SUBMIT HANDLER (Adjust API endpoint and payload) ===
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -319,8 +332,9 @@ const handleEquipmentKeyDown = (id, e) => {
       manager_name: contactName,
       email_address: emailAddress,
       advance_payment: parseFloat(advancePayment),
-      event_spaces: eventSpaces,
-      total_area_sqft: parseFloat(totalAreaSqft),
+      // Remove event_spaces, total_area_sqft if not applicable
+      // event_spaces: eventSpaces,
+      // total_area_sqft: parseFloat(totalAreaSqft),
       advance_booking_notice: advanceBookingNotice,
       advance_payment_required: advancePaymentRequired,
       restrictions: restrictions,
@@ -334,7 +348,7 @@ const handleEquipmentKeyDown = (id, e) => {
       business_registration_number: businessRegistrationNumber,
       gst_number: gstNumber,
       years_of_experience: yearsOfExperience,
-      packages: photographyPackages.map(pkg => ({
+      packages: beautyGroomingPackages.map(pkg => ({ // Use beautyGroomingPackages here
         id: pkg.id,
         name: pkg.name,
         description: pkg.description,
@@ -343,7 +357,7 @@ const handleEquipmentKeyDown = (id, e) => {
       })),
     };
 
-    console.log("Submitting data for Photography:", formData);
+    console.log("Submitting data for Beauty & Grooming:", formData);
 
     try {
       const accessToken = session?.accessToken;
@@ -355,21 +369,23 @@ const handleEquipmentKeyDown = (id, e) => {
       };
 
       let response;
-      if (photographyId) {
-        response = await api.put(`/photography/${photographyId}/`, formData, config);
-        setFormMessage({ type: 'success', text: 'Photography service updated successfully!' });
+      if (beautyGroomingId) {
+        // IMPORTANT: Adjust this API endpoint for Beauty & Grooming update
+        response = await api.put(`/beauty-grooming/${beautyGroomingId}/`, formData, config);
+        setFormMessage({ type: 'success', text: 'Beauty & Grooming service updated successfully!' });
       } else {
-        response = await api.post("/photography/", formData, config);
-        setFormMessage({ type: 'success', text: 'Photography service added successfully!' });
+        // IMPORTANT: Adjust this API endpoint for Beauty & Grooming creation
+        response = await api.post("/beauty-grooming/", formData, config);
+        setFormMessage({ type: 'success', text: 'Beauty & Grooming service added successfully!' });
       }
       console.log("Operation successful:", response.data);
     } catch (error) {
-      console.error("Error adding/updating Photography service:", error);
+      console.error("Error adding/updating Beauty & Grooming service:", error);
       if (error.response) {
         console.error("Error data:", error.response.data);
         console.error("Error status:", error.response.status);
         console.error("Error headers:", error.response.headers);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Photography service.'}` });
+        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Beauty & Grooming service.'}` });
       } else if (error.request) {
         console.error("Error request:", error.request);
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
@@ -392,19 +408,20 @@ const handleEquipmentKeyDown = (id, e) => {
             <div className="py-2 sm:pb-0 sm:pt-5 space-y-5">
               <div className="grid grid-cols-1 lg:grid-cols-6 gap-5">
                 <div className="lg:col-span-4 space-y-4">
+                  {/* === BEAUTY & GROOMING SERVICE INFO === */}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Photography Service Info</h2>
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Beauty & Grooming Service Info</h2> {/* Changed Title */}
                     </div>
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="PhotographyName" label="Service Name" placeholder="ABC Photography" value={Name} onChange={(e) => setName(e.target.value)} required />
-                        <FormInput id="contactName" label="Contact Person Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="ServiceName" label="Service Name" placeholder="Glamour Studio" value={Name} onChange={(e) => setName(e.target.value)} required /> {/* Placeholder changed */}
+                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abcphoto@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="glamourstudio@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} /> {/* Placeholder changed */}
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput
@@ -415,7 +432,6 @@ const handleEquipmentKeyDown = (id, e) => {
                           value={alternativeNumber}
                           onChange={(e) => setAlternativeNumber(e.target.value)}
                         />
-
                         <FormInput
                           id="businessRegistrationNumber"
                           label="Business Registration Number"
@@ -434,7 +450,6 @@ const handleEquipmentKeyDown = (id, e) => {
                           value={gstNumber}
                           onChange={(e) => setGstNumber(e.target.value)}
                         />
-
                         <FormInput
                           id="yearsOfExperience"
                           label="Years of Experience"
@@ -447,17 +462,17 @@ const handleEquipmentKeyDown = (id, e) => {
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Description (About)</label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your photography service..." />
+                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your beauty and grooming service..." /> {/* Placeholder changed */}
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery/photography'} />
+                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery/beauty-grooming'} /> {/* Path Prefix Changed */}
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Photography Services Offered</h2>
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Beauty & Grooming Services Offered</h2> {/* Changed Title */}
                     </div>
                     <div className="p-4">
                       <CheckboxGroup
@@ -469,9 +484,9 @@ const handleEquipmentKeyDown = (id, e) => {
                     </div>
                   </div>
 
-                  {/* Using the generic ServicePackages component */}
+                  {/* === Using the generic ServicePackages component === */}
                   <ServicePackages
-                    packages={photographyPackages} // Renamed prop to 'packages'
+                    packages={beautyGroomingPackages} // Pass beautyGroomingPackages state
                     togglePackage={togglePackage}
                     addPackage={addPackage}
                     handlePackageChange={handlePackageChange}
@@ -479,9 +494,9 @@ const handleEquipmentKeyDown = (id, e) => {
                     handleEquipmentKeyDown={handleEquipmentKeyDown}
                     removeEquipmentTag={removeEquipmentTag}
                     deletePackage={deletePackage}
-                    sectionTitle="Photography Packages" // Specific title for this section
-                    equipmentLabel="Equipment" // Specific label for photography equipment
-                    equipmentPlaceholder="e.g., 2 Cameras, 1 Drone, Lighting Kit" // Specific placeholder
+                    sectionTitle="Beauty & Grooming Packages" // Specific title for this section
+                    equipmentLabel="Products Used" // Specific label for beauty products
+                    equipmentPlaceholder="e.g., Mac Foundation, Hair Spray, Facial Kit" // Specific placeholder
                   />
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -490,7 +505,7 @@ const handleEquipmentKeyDown = (id, e) => {
                     </div>
                     <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <TiptapEditor content={termsAndConditions} onUpdate={setTermsAndConditions} placeholder="Outline your terms and conditions for photography services..." />
+                        <TiptapEditor content={termsAndConditions} onUpdate={setTermsAndConditions} placeholder="Outline your terms and conditions for beauty and grooming services..." /> {/* Placeholder changed */}
                       </div>
                     </div>
                   </div>
@@ -500,7 +515,7 @@ const handleEquipmentKeyDown = (id, e) => {
                     </div>
                     <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <TiptapEditor content={cancellationPolicy} onUpdate={setCancellationPolicy} placeholder="Enter your photography cancellation policy..." />
+                        <TiptapEditor content={cancellationPolicy} onUpdate={setCancellationPolicy} placeholder="Enter your beauty & grooming cancellation policy..." /> {/* Placeholder changed */}
                       </div>
                     </div>
                   </div>
@@ -511,8 +526,8 @@ const handleEquipmentKeyDown = (id, e) => {
                     </div>
                     <div className="ml-4 mt-2 mr-4 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
                       <FormInput id="websiteLink" label="Website Link" type="url" placeholder="https://example.com" value={websiteLink} onChange={(e) => setWebsiteLink(e.target.value)} />
-                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourphotography" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
-                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourphotography" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
+                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourbeautystudio" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} /> {/* Placeholder changed */}
+                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourbeautystudio" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} /> {/* Placeholder changed */}
                     </div>
                   </div>
                 </div>
@@ -524,6 +539,7 @@ const handleEquipmentKeyDown = (id, e) => {
                       </div>
                       <div className="p-5 space-y-4">
                         <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
+                        <FormInput id="minimumAdvanceBookingTime" label="Minimum Advance Booking Time (Days)" type="number" placeholder="e.g., 5" value={minimumAdvanceBookingTime} onChange={(e) => setMinimumAdvanceBookingTime(e.target.value)} />
                       </div>
                     </div>
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -586,6 +602,23 @@ const handleEquipmentKeyDown = (id, e) => {
                         </div>
                       </div>
                     </div>
+<div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Legal and Compliance (for verification, not public)</h2>
+  </div>
+  <div className="p-5 space-y-4">
+    {/* MediaManager for Certifications */}
+    <MediaManager
+      ref={legalMediaManagerRef} // Use the new ref
+      initialMedia={initialCertifications} // Use the new state for initial certs
+      onUpdate={(existing, newFiles) => {
+        setUpdatedExistingCertifications(existing); // Update cert-specific state
+        setNewCertificationFiles(newFiles);       // Update cert-specific state
+      }}
+      pathPrefix={'vendors/certifications'} // Recommended: specific path for certifications
+    />
+  </div>
+</div>
                   </div>
                 </div>
                 {formMessage.text && (

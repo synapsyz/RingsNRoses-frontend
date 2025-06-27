@@ -1,7 +1,7 @@
 import FormInput from './FormInput'; // Make sure this path is correct
 
-const PhotographyPackages = ({
-  photographyPackages,
+const ServicePackages = ({
+  packages, // Renamed from photographyPackages to a more generic 'packages'
   togglePackage,
   addPackage,
   handlePackageChange,
@@ -9,14 +9,17 @@ const PhotographyPackages = ({
   handleEquipmentKeyDown,
   removeEquipmentTag,
   deletePackage,
+  sectionTitle, // New prop for the title (e.g., "Photography Packages", "Beauty & Grooming Packages")
+  equipmentLabel = "Equipment", // New prop for customizable equipment label, with a default
+  equipmentPlaceholder = "e.g., 2 Cameras, 1 Drone, Lighting Kit", // New prop for customizable equipment placeholder
 }) => {
   return (
     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Photography Packages</h2>
+        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">{sectionTitle}</h2> {/* Use sectionTitle prop */}
       </div>
       <div className="p-5 space-y-6">
-        {photographyPackages.map((pkg, index) => (
+        {packages.map((pkg, index) => ( // Use 'packages' prop
           <div key={pkg.id} className="border border-stone-200 rounded-lg dark:border-neutral-700 overflow-hidden">
             <div
               className="p-4 flex justify-between items-center cursor-pointer"
@@ -67,7 +70,7 @@ const PhotographyPackages = ({
                 />
                 <div>
                   <label htmlFor={`packageEquipment-${pkg.id}`} className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                    Equipment
+                    {equipmentLabel} {/* Use equipmentLabel prop */}
                   </label>
                   <div className="flex flex-wrap items-center gap-2 p-1.5 sm:p-2 w-full border border-stone-200 rounded-lg focus-within:z-10 focus-within:border-green-600 focus-within:ring-1 focus-within:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:focus-within:ring-neutral-600">
                     {Array.isArray(pkg.equipment) && pkg.equipment.map((tag, tagIndex) => (
@@ -89,7 +92,7 @@ const PhotographyPackages = ({
                       id={`packageEquipment-${pkg.id}`}
                       type="text"
                       className="flex-grow bg-transparent outline-none sm:text-sm text-stone-800 placeholder:text-stone-500 dark:text-neutral-200 dark:placeholder:text-neutral-500"
-                      placeholder={pkg.equipment.length === 0 ? "e.g., 2 Cameras, 1 Drone, Lighting Kit" : ""}
+                      placeholder={pkg.equipment.length === 0 ? equipmentPlaceholder : ""} 
                       value={pkg.equipmentInput || ''}
                       onChange={(e) => handlePackageChange(pkg.id, 'equipmentInput', e.target.value)}
                       onKeyDown={(e) => handleEquipmentKeyDown(pkg.id, e)}
@@ -114,4 +117,4 @@ const PhotographyPackages = ({
   );
 };
 
-export default PhotographyPackages;
+export default ServicePackages;

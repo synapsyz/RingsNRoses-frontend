@@ -15,7 +15,7 @@ import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
 import Pricing from '@/components/Pricing';
-import FoodPackageRadioGroup from '@/components/FoodPackageRadioGroup.js';
+import FoodPackageCheckboxGroup from '@/components/FoodPackageCheckboxGroup.js';
 import AddressInput from '@/components/AddressInput'; // Adjust the path if necessary
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -83,7 +83,7 @@ export default function AddProduct() {
   const [websiteLink, setWebsiteLink] = useState('');
   const [instagramLink, setInstagramLink] = useState('');
   const [facebookLink, setFacebookLink] = useState('');
-  const [selectedFoodPackage, setSelectedFoodPackage] = useState('');
+const [selectedFoodPackages, setSelectedFoodPackages] = useState(new Set());
     const [initialGalleryVeg, setInitialGalleryVeg] = useState([]);
   const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
   const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
@@ -368,75 +368,56 @@ const [address, setAddress] = useState('');
     <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Food Packages</h2>
   </div>
   {/* Button Group */}
-  <FoodPackageRadioGroup
-    selectedFoodPackage={selectedFoodPackage}
-    onSelect={setSelectedFoodPackage}
-  />
+  <FoodPackageCheckboxGroup
+  selectedFoodPackages={selectedFoodPackages}
+  onSelect={setSelectedFoodPackages}
+/>
+
   {/* End Button Group */}
 </div>
 
-{/* Conditional Rendering for MediaManager(s) */}
-{selectedFoodPackage === 'veg' && (
-  <div className="mt-6"> {/* Add margin-top for spacing */}
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200 mb-4">Upload Veg Menu here</h2>
-    <MediaManager
-      ref={mediaManagerRef} // Use the original ref and states for single selections
-      initialMedia={initialGallery}
-      onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }}
-      pathPrefix={'vendors/gallery/veg'} // Specific path for Veg uploads
-    />
-    <div className='mt-2'>
-        <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-</div>
-  </div>
-)}
-
-{selectedFoodPackage === 'non-veg' && (
-  <div className="mt-6"> {/* Add margin-top for spacing */}
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200 mb-4">Upload Non-Veg Menu here</h2>
-    <MediaManager
-      ref={mediaManagerRef} // Use the original ref and states for single selections
-      initialMedia={initialGallery}
-      onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }}
-      pathPrefix={'vendors/gallery/non-veg'} // Specific path for Non-Veg uploads
-    />
-    <div className='mt-2'>
-        <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-</div>
-  </div>
-)}
-
-{selectedFoodPackage === 'veg-non-veg' && (
-  <div className="mt-6"> {/* Add margin-top for spacing */}
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* Two columns for both */}
+{(selectedFoodPackages.has('veg') || selectedFoodPackages.has('non-veg')) && (
+  <div className={`mt-6 grid gap-6 ${selectedFoodPackages.size === 2 ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
+    {selectedFoodPackages.has('veg') && (
       <div>
         <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Veg Menu here</h3>
         <MediaManager
-          ref={mediaManagerRefVeg} // Separate ref for Veg gallery
+          ref={mediaManagerRefVeg}
           initialMedia={initialGalleryVeg}
-          onUpdate={(existing, newFiles) => { setUpdatedExistingMediaVeg(existing); setNewGalleryFilesVeg(newFiles); }}
+          onUpdate={(existing, newFiles) => {
+            setUpdatedExistingMediaVeg(existing);
+            setNewGalleryFilesVeg(newFiles);
+          }}
           pathPrefix={'vendors/gallery/veg'}
         />
-        <div className='mt-2'>
-        <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-</div>
+        <div className="mt-2">
+          <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
+        </div>
       </div>
+    )}
+
+    {selectedFoodPackages.has('non-veg') && (
       <div>
         <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Non-Veg Menu here</h3>
         <MediaManager
-          ref={mediaManagerRefNonVeg} // Separate ref for Non-Veg gallery
+          ref={mediaManagerRefNonVeg}
           initialMedia={initialGalleryNonVeg}
-          onUpdate={(existing, newFiles) => { setUpdatedExistingMediaNonVeg(existing); setNewGalleryFilesNonVeg(newFiles); }}
+          onUpdate={(existing, newFiles) => {
+            setUpdatedExistingMediaNonVeg(existing);
+            setNewGalleryFilesNonVeg(newFiles);
+          }}
           pathPrefix={'vendors/gallery/non-veg'}
         />
-<div className='mt-2'>
-        <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
-</div>
+        <div className="mt-2">
+          <Pricing perPlatePrice={perPlatePrice} setPerPlatePrice={setPerPlatePrice} />
+        </div>
       </div>
-      
-    </div>
+    )}
   </div>
 )}
+
+
+
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
   <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
     <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cuisine Types Offered</h2>
