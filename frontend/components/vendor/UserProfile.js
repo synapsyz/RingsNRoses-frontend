@@ -1,22 +1,15 @@
 // Add 'use client' at the top to mark this as a Client Component
-'use client'; 
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 // 1. Import the useRouter hook from next/navigation
-import { useRouter } from 'next/navigation'; 
-
+import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 
-
-const dummyUser = {
-  name: 'James Collison',
-  avatar: 'https://images.unsplash.com/photo-1659482633369-9fe69af50bfb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=facearea&facepad=3&w=320&h=320&q=80',
-};
-
 const menuItems = [
-    {
+  {
     href: '/settings',
     label: 'Settings',
     icon: (
@@ -39,26 +32,61 @@ const menuItems = [
 ];
 
 const UserProfile = () => {
-  // 2. Initialize router and state for loading feedback
+  // Move useSession and dependent variables inside the component
+  const { data: session, status } = useSession(); //
+  let User_name = '';
+  const full_name = session?.user?.name;
+
+  if (full_name) {
+    if (full_name.length <= 10) {
+      User_name = full_name;
+    } else {
+      const firstTenChars = full_name.substring(0, 10);
+      const firstSpaceIndex = firstTenChars.indexOf(' ');
+
+      if (firstSpaceIndex === -1) {
+        // No space in the first 10 characters, truncate at 10
+        User_name = firstTenChars;
+      } else if (firstSpaceIndex === 1) {
+        // Space at the second character, look for the next space or truncate at 10
+        const remainingForCheck = full_name.substring(2, 11); // Check up to 11th char (index 10) to include possible space at 10th index
+        const nextSpaceIndex = remainingForCheck.indexOf(' ');
+        if (nextSpaceIndex !== -1) {
+          // Found another space
+          User_name = full_name.substring(0, 2 + nextSpaceIndex);
+        } else {
+          // No other space found within limit, truncate at 10
+          User_name = firstTenChars;
+        }
+      } else {
+        // Space found at an index > 1 and <= 9, truncate at that space
+        User_name = full_name.substring(0, firstSpaceIndex);
+      }
+    }
+  }
+  const User = { //
+    name: User_name,
+    avatar: session?.user?.profile_picture ||'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyszLF_MDtMtg9lz8gpFb94amfo9qOeOqZeg&s',
+  };
+
+
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  // ✅ Load the saved theme on first render
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
+const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark');
       setIsDarkMode(true);
     } else {
       document.documentElement.classList.remove('dark');
       setIsDarkMode(false);
-    }
-  }, []);
-  // ✅ Update dark mode when user toggles the switch
+    }  }, []);
+
   const handleToggleChange = (e) => {
     setIsDarkMode(e.target.checked);
-    const enabled = e.target.checked;
+     const enabled = e.target.checked;
     setIsDarkMode(enabled);
     if (enabled) {
       document.documentElement.classList.add('dark');
@@ -69,31 +97,15 @@ const UserProfile = () => {
     }
   };
 
-  // 3. Create the sign-out handler function
-const handleSignOut = async () => {
+  const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
-      // 1. Tell the server to clear the session.
-      //const response =     await signOut({ redirect: false }); // Using await if signOut returns a Promise
-      
-     const response = await signOut({ redirect: true, callbackUrl: '/vendor/login' });
-
-      /* if (response.ok) {
-        // 2. Refresh the UI to reflect the unauthenticated state.
-        //router.refresh(); 
-
-        // 3. Redirect to the new vendor login page.
-        //router.push('/vendor/login'); // MODIFIED
-        
-      } else {
-        console.error('Sign out failed');
-      }*/
+      await signOut({ redirect: true, callbackUrl: '/vendor/login' }); //
     } catch (error) {
       console.error('An error occurred during sign out:', error);
     } finally {
-      setIsSigningOut(false); 
-    } 
-
+      setIsSigningOut(false);
+    }
   };
 
   return (
@@ -103,13 +115,13 @@ const handleSignOut = async () => {
         <button type="button" className="inline-flex shrink-0 items-center gap-x-1.5 text-start text-stone-800 rounded-full hover:text-stone-600">
           <Image
             className="shrink-0 size-9.5 lg:size-9.5 rounded-full"
-            src={dummyUser.avatar}
-            alt={`${dummyUser.name}'s avatar`}
+            src={User.avatar}
+            alt={`${User.name}'s avatar`}
             width={38}
             height={38}
           />
           <span className="grow hidden lg:block">
-            <span className="text-sm font-medium">{dummyUser.name}</span>
+            <span className="text-sm font-medium">{User.name}</span>
           </span>
         </button>
 
@@ -125,27 +137,23 @@ const handleSignOut = async () => {
           </div>
 
           {/* Dark Mode Toggle */}
-          <div className="px-5 py-3.5 border-y border-stone-200 dark:border-neutral-800">
-            <div className="flex flex-wrap justify-between items-center">
-              <label htmlFor="dark-mode-toggle" className="flex-1 cursor-pointer text-sm text-stone-800 dark:text-neutral-300">Dark mode</label>
-              <label htmlFor="dark-mode-toggle" className="relative inline-block w-11 h-6 cursor-pointer">
-                <input
-                  data-hs-theme-switch
-                  type="checkbox"
-                  id="dark-mode-toggle"
-                  className="peer sr-only"
-                  checked={isDarkMode}
-                  onChange={handleToggleChange}
-                />
-                <span className="absolute inset-0 bg-stone-200 rounded-full transition-colors peer-checked:bg-green-600 dark:bg-neutral-700 dark:peer-checked:bg-green-500"></span>
-                <span className="absolute top-3/4 start-0.5 -translate-y-1/2 size-5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-full dark:bg-neutral-400 dark:peer-checked:bg-white"></span>
-              </label>
-            </div>
-          </div>
+<div className="px-4 py-3 border-y border-stone-200 dark:border-neutral-800">
+  <div className="flex justify-between items-center">
+    <span className="text-sm text-stone-800 dark:text-neutral-300">Dark mode</span>
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        checked={isDarkMode}
+        onChange={handleToggleChange}
+      />
+      <div className="w-11 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600 dark:bg-neutral-700 dark:peer-checked:bg-green-500" />
+    </label>
+  </div>
+</div>
 
           {/* Sign Out */}
           <div className="p-1">
-            {/* 6. Changed Link to a button and attached the handler */}
             <button
               onClick={handleSignOut}
               disabled={isSigningOut}
