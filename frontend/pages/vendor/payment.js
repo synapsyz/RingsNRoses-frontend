@@ -1,9 +1,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { signIn, useSession } from "next-auth/react";
+import CustomHead from '@/components/vendor/Head';
+import Header from '@/components/vendor/Header';
+import SecondaryNav from '@/components/vendor/SecondaryNav';
 const PricingSection = () => {
     const { data: session, status } = useSession();
   return (
+    <>
+    <CustomHead />
+          <Header />
+          <SecondaryNav />
+          
     <div className="relative py-10 md:py-14 px-4 before:absolute before:inset-0 before:-z-1 before:mx-3 lg:before:mx-6 2xl:before:mx-10 before:bg-linear-to-b before:from-gray-100 before:to-transparent before:rounded-2xl dark:before:from-neutral-800">
       <div className="max-w-6xl px-4 sm:px-6 lg:px-8 mx-auto">
         {/* Heading */}
@@ -49,7 +57,7 @@ const PricingSection = () => {
                     "min": 0,
                     "max": 0
                 }' className="font-semibold text-3xl md:text-4xl text-gray-800 dark:text-neutral-200">
-                    5000
+                    99
                 </span>
                 <span className="block mt-0.5 text-gray-800 dark:text-neutral-200">
                     INR
@@ -74,43 +82,43 @@ const PricingSection = () => {
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        5 GB Cloud Storage
+                        Vendor Profile Listing
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        10 API Requests/min
+                        Upload 5 Photos & Videos
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        2 Team Members
+                        Display Reviews & Ratings
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        1 Project Template
+                        Respond to Customer Inquiries (Limited)
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        100 Build Minutes/month
+                        Analytics Dashboard
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        Email Support
+                        No Social Media Promotion
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        Basic Analytics
+                        Email Only Support
                     </span>
                 </li>
             </ul>
@@ -146,7 +154,7 @@ const PricingSection = () => {
                     "min": 90,
                     "max": 180
                 }' className="font-semibold text-3xl md:text-4xl text-gray-800 dark:text-neutral-200">
-                    25000
+                    499
                 </span>
                 <span className="block mt-0.5 text-gray-800 dark:text-neutral-200">
                     INR
@@ -171,43 +179,43 @@ const PricingSection = () => {
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        25 GB Cloud Storage
+                        Vendor Profile Listing
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        50 API Requests/min
+                        Upload 10 Photos & Videos
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        5 Team Members
+                        Display Reviews & Ratings
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        5 Project Templates
+                        Respond to Customer Inquiries
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        500 Build Minutes/month
+                        Analytics Dashboard
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        Priority Email Support
+                        Social Media Promotion
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        Advanced Analytics
+                        Email + WA Support
                     </span>
                 </li>
             </ul>
@@ -243,7 +251,7 @@ const PricingSection = () => {
                     "min": 540,
                     "max": 1080
                 }' className="font-semibold text-3xl md:text-4xl text-gray-800 dark:text-neutral-200">
-                    40000
+                    999
                 </span>
                 <span className="block mt-0.5 text-gray-800 dark:text-neutral-200">
                     INR
@@ -268,43 +276,43 @@ const PricingSection = () => {
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        100 GB Cloud Storage
+                        Vendor Profile Listing
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        200 API Requests/min
+                        Upload 20 Photos & Videos
+                    </span>
+                </li>
+                <li className="flex items-center gap-x-3">
+                    <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span className="text-gray-800 dark:text-neutral-400">
+                        Display Reviews & Ratings
+                    </span>
+                </li>
+                <li className="flex items-center gap-x-3">
+                    <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span className="text-gray-800 dark:text-neutral-400">
+                        Respond to Customer Inquiries
+                    </span>
+                </li>
+                <li className="flex items-center gap-x-3">
+                    <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span className="text-gray-800 dark:text-neutral-400">
+                        Analytics Dashboard
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        15 Team Members
+                        Social Media Promotion
                     </span>
                 </li>
                 <li className="flex items-center gap-x-3">
                     <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span className="text-gray-800 dark:text-neutral-400">
-                        20 Project Templates
-                    </span>
-                </li>
-                <li className="flex items-center gap-x-3">
-                    <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span className="text-gray-800 dark:text-neutral-400">
-                        2000 Build Minutes/month
-                    </span>
-                </li>
-                <li className="flex items-center gap-x-3">
-                    <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span className="text-gray-800 dark:text-neutral-400">
-                        24/7 Phone Support
-                    </span>
-                </li>
-                <li className="flex items-center gap-x-3">
-                    <svg className="shrink-0 size-4 text-gray-800 dark:text-neutral-200" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span className="text-gray-800 dark:text-neutral-400">
-                        Enterprise Analytics
+                        Email + WA + Call Support
                     </span>
                 </li>
             </ul>
@@ -345,6 +353,7 @@ const PricingSection = () => {
         {/* End Card */}
       </div>
     </div>
+    </>
   );
 };
 

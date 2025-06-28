@@ -60,7 +60,7 @@ const Header = () => {
                 // Display the full alert banner
                 <div className="p-2 bg-indigo-800 items-center text-indigo-100 leading-none lg:rounded-full flex lg:inline-flex" role="alert">
                   <span className="flex rounded-full bg-indigo-500 uppercase px-2 py-1 text-xs font-bold mr-3">New</span>
-                  <span className="font-semibold mr-2 text-left flex-auto">Register to feature your service in our app</span>
+                  <span className="mr-2 text-left flex-auto">Register to feature your service in our app</span>
                   {/* This is the toggle button when the alert is visible */}
                   <div
                     className="flex rounded-full bg-indigo-500 p-1 cursor-pointer"
