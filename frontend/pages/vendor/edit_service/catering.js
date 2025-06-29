@@ -237,17 +237,18 @@ export default function AddProduct() {
 
           const foodPackagesSet = new Set();
           if (data.packages?.Vegetarian) {
+            
             foodPackagesSet.add('veg');
-            setPerPlatePriceVeg(data.packages.Vegetarian.starting_price || '');
-            if (data.packages.Vegetarian.images) {
-              setInitialGalleryVeg(data.packages.Vegetarian.images.map(img => img.image_url));
+            setPerPlatePriceVeg(data.packages.Vegetarian[0].starting_price || '');
+            if (data.packages.Vegetarian[0].menu_images) {
+              setInitialGalleryVeg(data.packages.Vegetarian[0].menu_images.map(img => img.image_url));
             }
           }
           if (data.packages?.Non_Vegetarian) {
             foodPackagesSet.add('non-veg');
-            setPerPlatePriceNonVeg(data.packages.Non_Vegetarian.starting_price || '');
-            if (data.packages.Non_Vegetarian.images) {
-              setInitialGalleryNonVeg(data.packages.Non_Vegetarian.images.map(img => img.image_url));
+            setPerPlatePriceNonVeg(data.packages.Non_Vegetarian[0].starting_price || '');
+            if (data.packages.Non_Vegetarian[0].menu_images) {
+              setInitialGalleryNonVeg(data.packages.Non_Vegetarian[0].menu_images.map(img => img.image_url));
             }
           }
           setSelectedFoodPackages(foodPackagesSet);
@@ -331,7 +332,7 @@ export default function AddProduct() {
     }
 
     // Upload all galleries separately
-    const galleryResult = await mediaManagerRef.current.upload();
+    let galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
       setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
       return;
@@ -398,16 +399,16 @@ export default function AddProduct() {
       business_registration_number: businessRegistrationNumber || null,
       gst_number: gstNumber || null,
       years_of_experience: yearsOfExperience ? parseInt(yearsOfExperience) : null,
-      packages: foodPackagesData.map(pkg => {
+      food_packages_data: foodPackagesData.map(pkg => {
         if (pkg.package_type === 1) { // Vegetarian
           return {
             ...pkg,
-            images: finalVegGalleryList
+            menu_images_upload: finalVegGalleryList
           };
         } else if (pkg.package_type === 2) { // Non-Vegetarian
           return {
             ...pkg,
-            images: finalNonVegGalleryList
+            menu_images_upload: finalNonVegGalleryList
           };
         }
         return pkg;
