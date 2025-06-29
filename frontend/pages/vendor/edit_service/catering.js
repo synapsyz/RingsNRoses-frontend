@@ -106,9 +106,25 @@ export default function AddProduct() {
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
-  
+  const [vendorId, setVendorId] = useState(null);
+  const [serviceName, setServiceName] = useState(null);
+  const [serviceId, setServiceId] = useState(null);
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
-  const vendorId = session?.user?.vendor_profile?.id;
+   useEffect(() => {
+    // ... existing useEffect for cateringId
+
+    if (session?.user?.vendor_profile) {
+      setVendorId(session.user.vendor_profile.id);
+      const formattedServiceName = session.user.vendor_profile.subcategory?.category?.name
+        .replace(/ /g, '_')
+        .toLowerCase();
+      setServiceName(formattedServiceName);
+      setServiceId(session.user.vendor_profile.service_id); // Assuming service_id is directly available here
+    }
+  }, [session]);
+console.log(vendorId);
+console.log(serviceName);
+console.log(serviceId);
 
   // Separate handlers for each MediaManager
   const handleGalleryUpdate = (existingMedia, newFiles) => {
@@ -539,7 +555,7 @@ export default function AddProduct() {
                     ref={mediaManagerRef}
                     initialMedia={initialGallery}
                     onUpdate={handleGalleryUpdate}
-                    pathPrefix='vendors/gallery'
+                    pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery`}
                   />
                   
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -561,7 +577,7 @@ export default function AddProduct() {
                             ref={mediaManagerRefVeg}
                             initialMedia={initialGalleryVeg}
                             onUpdate={handleVegGalleryUpdate}
-                            pathPrefix='vendors/gallery/veg'
+                            pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery/menu/veg`}
                           />
                           <div className="mt-2">
                             <Pricing perPlatePrice={perPlatePriceVeg} setPerPlatePrice={setPerPlatePriceVeg} />
@@ -576,7 +592,7 @@ export default function AddProduct() {
                             ref={mediaManagerRefNonVeg}
                             initialMedia={initialGalleryNonVeg}
                             onUpdate={handleNonVegGalleryUpdate}
-                            pathPrefix='vendors/gallery/non-veg'
+                            pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery/menu/non_veg`}
                           />
                           <div className="mt-2">
                             <Pricing perPlatePrice={perPlatePriceNonVeg} setPerPlatePrice={setPerPlatePriceNonVeg} />
