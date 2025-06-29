@@ -68,6 +68,7 @@ export default function Login() {
     } else {
       setError("Invalid email or password. Try again later");
       setIsSubmitting(false)
+
     }
   };
 
