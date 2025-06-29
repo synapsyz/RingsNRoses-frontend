@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle, useId } from 'react'; // 1. Import useId
 import axios from 'axios';
 
 // Re-usable helper function from your ThumbnailUploader
@@ -16,13 +16,14 @@ async function initiateUpload(filename, contentType, size) {
 }
 
 
-const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpdate, pathPrefix}, ref) {
+const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpdate, pathPrefix }, ref) {
   const [existingMedia, setExistingMedia] = useState(initialMedia);
   const [newFiles, setNewFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   
   const fileInputRef = useRef(null);
+  const uniqueId = useId(); // 2. Generate a unique ID for this instance
 
   // Expose the 'upload' function to the parent component via the ref
   useImperativeHandle(ref, () => ({
@@ -34,7 +35,6 @@ const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpd
 
         setIsUploading(true);
         const uploadedKeys = [];
-        // const pathPrefix = 'vendors/gallery'; // A different path for gallery images
 
         // Loop through each new file and upload it
         for (const file of newFiles) {
@@ -54,22 +54,16 @@ const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpd
                     uploadedKeys.push(uploadData.key); // Add the key to our list
                 } 
                 else if (uploadData.upload_type === 'multipart') {
-                    // As per your ThumbnailUploader, multipart is not yet implemented
                     const errorMessage = `Multipart upload for ${file.name} is not implemented.`;
                     console.error(errorMessage);
-                    // Decide if one failure should stop the entire process
-                    // For now, we'll just skip this file and continue
-                    // return { success: false, message: errorMessage, keys: uploadedKeys };
                 }
             } catch (err) {
                 console.error(`Upload failed for file: ${file.name}`, err);
-                // Return failure, but also include keys that were successfully uploaded before the error
                 return { success: false, message: `Upload failed for ${file.name}: ${err.message}`, keys: uploadedKeys };
             }
         }
         
         setIsUploading(false);
-        // All files were processed
         return { success: true, keys: uploadedKeys };
     }
   }));
@@ -116,7 +110,9 @@ const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpd
   };
 
   const renderMediaItem = (url, type, index, isNew = false) => {
-    const isVideo = type.startsWith('video/') || url.endsWith('.mp4') || url.endsWith('.mov');
+  const isVideo = (type || '').startsWith('video/') || 
+                    (url || '').endsWith('.mp4') || 
+                    (url || '').endsWith('.mov');
     return (
       <div key={isNew ? `new-${index}` : `existing-${index}`} className="relative group bg-stone-100 dark:bg-neutral-700 rounded-lg overflow-hidden">
         {isVideo ? (
@@ -166,7 +162,8 @@ const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpd
         )}
 
         {isGalleryEmpty && (
-            <label htmlFor="media-upload" className={`p-12 flex flex-col justify-center items-center text-center bg-white border border-dashed border-stone-300 rounded-xl dark:bg-neutral-800 dark:border-neutral-600 ${isUploading ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+            // 3. Apply the unique ID to the 'htmlFor' attribute
+            <label htmlFor={uniqueId} className={`p-12 flex flex-col justify-center items-center text-center bg-white border border-dashed border-stone-300 rounded-xl dark:bg-neutral-800 dark:border-neutral-600 ${isUploading ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                 <svg className="w-16 text-stone-400 mx-auto dark:text-neutral-400" width="70" height="46" viewBox="0 0 70 46" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M6.05172 9.36853L17.2131 7.5083V41.3608L12.3018 42.3947C9.01306 43.0871 5.79705 40.9434 5.17081 37.6414L1.14319 16.4049C0.515988 13.0978 2.73148 9.92191 6.05172 9.36853Z" fill="currentColor" stroke="currentColor" strokeWidth="2" className="fill-white stroke-stone-400 dark:fill-neutral-800 dark:stroke-neutral-500" />
                   <path d="M63.9483 9.36853L52.7869 7.5083V41.3608L57.6982 42.3947C60.9869 43.0871 64.203 40.9434 64.8292 37.6414L68.8568 16.4049C69.484 13.0978 67.2685 9.92191 63.9483 9.36853Z" fill="currentColor" stroke="currentColor" strokeWidth="2" className="fill-white stroke-stone-400 dark:fill-neutral-800 dark:stroke-neutral-500" />
@@ -186,7 +183,7 @@ const MediaManager = forwardRef(function MediaManager({ initialMedia = [], onUpd
         
         <input
             ref={fileInputRef}
-            id="media-upload"
+            id={uniqueId} // 3. Apply the unique ID to the input's 'id'
             type="file"
             className="sr-only"
             multiple
