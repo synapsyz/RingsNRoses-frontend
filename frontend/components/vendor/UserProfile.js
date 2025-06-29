@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 // 1. Import the useRouter hook from next/navigation
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 
 import { useSession, signOut } from 'next-auth/react';
 
@@ -44,12 +44,29 @@ const UserProfile = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
+  // ✅ Load the saved theme on first render
   useEffect(() => {
-    setIsDarkMode(document.documentElement.classList.contains('dark'));
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      setIsDarkMode(true);
+    } else {
+      document.documentElement.classList.remove('dark');
+      setIsDarkMode(false);
+    }
   }, []);
-
+  // ✅ Update dark mode when user toggles the switch
   const handleToggleChange = (e) => {
     setIsDarkMode(e.target.checked);
+    const enabled = e.target.checked;
+    setIsDarkMode(enabled);
+    if (enabled) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   };
 
   // 3. Create the sign-out handler function
@@ -111,7 +128,7 @@ const handleSignOut = async () => {
           <div className="px-5 py-3.5 border-y border-stone-200 dark:border-neutral-800">
             <div className="flex flex-wrap justify-between items-center">
               <label htmlFor="dark-mode-toggle" className="flex-1 cursor-pointer text-sm text-stone-800 dark:text-neutral-300">Dark mode</label>
-              <label htmlFor="dark-mode-toggle" className="relative inline-block w-11 h-6 cursor-pointer">
+              <label htmlFor="dark-mode-toggle" className="relative inline-block w-14 h-7 cursor-pointer">
                 <input
                   data-hs-theme-switch
                   type="checkbox"
@@ -121,8 +138,9 @@ const handleSignOut = async () => {
                   onChange={handleToggleChange}
                 />
                 <span className="absolute inset-0 bg-stone-200 rounded-full transition-colors peer-checked:bg-green-600 dark:bg-neutral-700 dark:peer-checked:bg-green-500"></span>
-                <span className="absolute top-3/4 start-0.5 -translate-y-1/2 size-5 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-full dark:bg-neutral-400 dark:peer-checked:bg-white"></span>
+                <span className="absolute top-3/4 start-0.5 -translate-y-1/2 size-4 bg-white rounded-full shadow-sm transition-transform peer-checked:translate-x-full dark:bg-neutral-400 dark:peer-checked:bg-white"></span>
               </label>
+              
             </div>
           </div>
 

@@ -15,9 +15,8 @@ import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
 import Pricing from '@/components/Pricing';
-import FAQEditor from '@/components/FAQEditor.js';
-import FoodPackageCheckboxGroup from '@/components/FoodPackageCheckboxGroup.js';
 import AddressInput from '@/components/AddressInput';
+import ServicePackages from '@/components/ServicePackages'; // Changed import from PhotographyPackages to ServicePackages
 
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -39,29 +38,14 @@ export default function AddProduct() {
   const [thumbnailUrl, setThumbnailUrl] = useState(null);
   const [thumbnailKey, setThumbnailKey] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
-  
-  // Media Manager States - One set for each instance
   const [initialGallery, setInitialGallery] = useState([]);
   const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]);
   const [newGalleryFiles, setNewGalleryFiles] = useState([]);
-  
-  const [initialGalleryVeg, setInitialGalleryVeg] = useState([]);
-  const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
-  const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
-  
-  const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
-  const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState([]);
-  const [newGalleryFilesNonVeg, setNewGalleryFilesNonVeg] = useState([]);
-
-  // Refs for each MediaManager
   const mediaManagerRef = useRef(null);
-  const mediaManagerRefVeg = useRef(null);
-  const mediaManagerRefNonVeg = useRef(null);
   const thumbnailUploaderRef = useRef(null);
-
   const [faqs, setFaqs] = useState([]);
   const router = useRouter();
-  const [cateringId, setCateringId] = useState(null);
+  const [photographyId, setPhotographyId] = useState(null);
   const editorRef = useRef(null);
   const editorInstance = useRef(null);
   const cancellationEditorRef = useRef(null);
@@ -72,19 +56,21 @@ export default function AddProduct() {
   const [selectedLocationData, setSelectedLocationData] = useState(null);
   const { data: session, status } = useSession();
   const [eventTypes, setEventTypes] = useState([]);
-  const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
+  const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [selectedServices, setSelectedServices] = useState(new Set());
   const [Name, setName] = useState('');
   const [contactName, setcontactName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [about, setAbout] = useState('');
+  const [startingPrice, setStartingPrice] = useState('');
   const [advancePayment, setAdvancePayment] = useState('');
   const [guestCapacity, setGuestCapacity] = useState('');
   const [eventSpaces, setEventSpaces] = useState('');
   const [totalAreaSqft, setTotalAreaSqft] = useState('');
   const [advanceBookingNotice, setAdvanceBookingNotice] = useState('');
+  const [advancePaymentRequired, setAdvancePaymentRequired] = useState('');
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [restrictions, setRestrictions] = useState('');
   const [location, setLocation] = useState('');
@@ -98,48 +84,90 @@ export default function AddProduct() {
   const [websiteLink, setWebsiteLink] = useState('');
   const [instagramLink, setInstagramLink] = useState('');
   const [facebookLink, setFacebookLink] = useState('');
-  const [selectedFoodPackages, setSelectedFoodPackages] = useState(new Set());
   const [address, setAddress] = useState('');
-  const [perPlatePriceVeg, setPerPlatePriceVeg] = useState('');
-  const [perPlatePriceNonVeg, setPerPlatePriceNonVeg] = useState('');
   const [alternativeNumber, setAlternativeNumber] = useState('');
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
-  const [vendorId, setVendorId] = useState(null);
-  const [serviceName, setServiceName] = useState(null);
-  const [serviceId, setServiceId] = useState(null);
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
-   useEffect(() => {
-    // ... existing useEffect for cateringId
+  const vendorId = session?.user?.vendor_profile?.id;
+  const [photographyPackages, setPhotographyPackages] = useState([]);
 
-    if (session?.user?.vendor_profile) {
-      setVendorId(session.user.vendor_profile.id);
-      const formattedServiceName = session.user.vendor_profile.subcategory?.category?.name
-        .replace(/ /g, '_')
-        .toLowerCase();
-      setServiceName(formattedServiceName);
-      setServiceId(session.user.vendor_profile.service_id); // Assuming service_id is directly available here
+  const togglePackage = (idToToggle) => {
+    setPhotographyPackages(currentPackages =>
+      currentPackages.map(pkg =>
+        pkg.id === idToToggle
+          ? { ...pkg, isOpen: !pkg.isOpen }
+          : { ...pkg, isOpen: false }
+      )
+    );
+  };
+
+  const addPackage = () => {
+    setPhotographyPackages(currentPackages => [
+      ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
+      { id: `pkg-${Date.now()}`, name: '', description: '', pricing: '', equipment: [], isOpen: true, equipmentInput: '' }
+    ]);
+  };
+
+  const handlePackageChange = (id, field, value) => {
+    setPhotographyPackages(currentPackages =>
+      currentPackages.map(pkg =>
+        pkg.id === id ? { ...pkg, [field]: value } : pkg
+      )
+    );
+  };
+
+
+const handleEquipmentBlur = (id, value) => {
+  const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
+
+  setPhotographyPackages(currentPackages =>
+    currentPackages.map(pkg => {
+      if (pkg.id === id) {
+        const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentArray]));
+        return { ...pkg, equipment: updatedEquipment };
+      }
+      return pkg;
+    })
+  );
+};
+
+const handleEquipmentKeyDown = (id, e) => {
+  if (e.key === ',' || e.key === '.') {
+    e.preventDefault();
+    const newTag = e.target.value.trim();
+
+    if (newTag) {
+      setPhotographyPackages(currentPackages =>
+        currentPackages.map(pkg => {
+          if (pkg.id === id) {
+            const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
+            console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
+            return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
+          }
+          return pkg;
+        })
+      );
+    } else {
+      console.log(`[KEY DOWN DEBUG] No new tag to add.`);
     }
-  }, [session]);
-console.log(vendorId);
-console.log(serviceName);
-console.log(serviceId);
+  }
+};
 
-  // Separate handlers for each MediaManager
-  const handleGalleryUpdate = (existingMedia, newFiles) => {
-    setUpdatedExistingMedia(existingMedia);
-    setNewGalleryFiles(newFiles);
+  const removeEquipmentTag = (packageId, tagToRemove) => {
+    setPhotographyPackages(currentPackages =>
+      currentPackages.map(pkg => {
+        if (pkg.id === packageId) {
+          return { ...pkg, equipment: pkg.equipment.filter(tag => tag !== tagToRemove) };
+        }
+        return pkg;
+      })
+    );
   };
 
-  const handleVegGalleryUpdate = (existingMedia, newFiles) => {
-    setUpdatedExistingMediaVeg(existingMedia);
-    setNewGalleryFilesVeg(newFiles);
-  };
-
-  const handleNonVegGalleryUpdate = (existingMedia, newFiles) => {
-    setUpdatedExistingMediaNonVeg(existingMedia);
-    setNewGalleryFilesNonVeg(newFiles);
+  const deletePackage = (id) => {
+    setPhotographyPackages(photographyPackages.filter(pkg => pkg.id !== id));
   };
 
   const handleFileChange = (file) => {
@@ -161,9 +189,73 @@ console.log(serviceId);
   useEffect(() => {
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
-      setCateringId(serviceId);
+      setPhotographyId(serviceId);
     }
   }, [session]);
+
+  useEffect(() => {
+    const fetchPhotographyData = async () => {
+      if (photographyId) {
+        try {
+          const config = {
+            headers: { Authorization: `Bearer ${session?.accessToken}` },
+          };
+          const response = await api.get(`/photography/${photographyId}/`, config);
+          const data = response.data;
+          setName(data.name || '');
+          setcontactName(data.manager_name || '');
+          setContactNumber(data.contact_number || '');
+          setEmailAddress(data.email_address || '');
+          setAboutContent(data.about || '');
+          setStartingPrice(data.starting_price || '');
+          setAdvancePayment(data.advance_payment || '');
+          setEventSpaces(data.event_spaces || '');
+          setAdvanceBookingNotice(data.advance_booking_notice || '');
+          setAdvancePaymentRequired(data.advance_payment_required || '');
+          setCancellationPolicy(data.cancellation_policy || '');
+          setRestrictions(data.restrictions || '');
+          setLocation(data.location || '');
+          setTermsAndConditions(data.terms_and_conditions || '');
+          setReturnDeliveryPolicy(data.return_delivery_policy || '');
+          setWebsiteLink(data.website_link || '');
+          setInstagramLink(data.instagram_link || '');
+          setFacebookLink(data.facebook_link || '');
+          setAddress(data.address || '');
+          setAlternativeNumber(data.alternative_number || '');
+          setBusinessRegistrationNumber(data.business_registration_number || '');
+          setGstNumber(data.gst_number || '');
+          setYearsOfExperience(data.years_of_experience || '');
+
+          if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
+          if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
+          if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
+          if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.setContent(data.return_delivery_policy || '');
+
+          setSelectedServices(new Set(data.services_offered || []));
+          setSelectedEventTypes(new Set(data.events_supported || []));
+
+          if (data.packages && Array.isArray(data.packages)) {
+            const loadedPackages = data.packages.map(pkg => ({
+              id: pkg.id,
+              name: pkg.name || '',
+              description: pkg.description || '',
+              pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
+              equipment: Array.isArray(pkg.equipment) ? pkg.equipment : [],
+              isOpen: false,
+              equipmentInput: ''
+            }));
+            setPhotographyPackages(loadedPackages);
+          } else {
+            setPhotographyPackages([]);
+          }
+        } catch (error) {
+          console.error("Error fetching photography data:", error);
+          setFormMessage({ type: 'error', text: 'Failed to load photography data.' });
+        }
+      }
+    };
+    fetchPhotographyData();
+  }, [photographyId, session]);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -192,97 +284,6 @@ console.log(serviceId);
     fetchEventTypes();
   }, []);
 
-  useEffect(() => {
-    const fetchCateringData = async () => {
-      if (cateringId && services.length > 0 && eventTypes.length > 0) {
-        try {
-          const config = {
-            headers: { Authorization: `Bearer ${session?.accessToken}` },
-          };
-          const response = await api.get(`/catering/${cateringId}/`, config);
-          const data = response.data;
-          console.log(data);
-          
-          setName(data.name || '');
-          setcontactName(data.manager_name || '');
-          setContactNumber(data.contact_number || '');
-          setEmailAddress(data.email || '');
-          setAboutContent(data.about || '');
-          setGuestCapacity(data.guest_capacity || '');
-          setEventSpaces(data.event_spaces || '');
-          setTotalAreaSqft(data.total_area_sqft || '');
-          setAdvanceBookingNotice(data.advance_booking_notice || '');
-          setAdvancePayment(data.advance_payment_required || false);
-          setCancellationPolicy(data.cancellation_policy || '');
-          setRestrictions(data.restrictions || '');
-          setLocation(data.location_details?.name || '');
-          setSelectedLocationData(data.location_details ? { locationId: data.location_details.id, location: data.location_details.name } : null);
-          setTermsAndConditions(data.terms_and_conditions || '');
-          setReturnDeliveryPolicy(data.return_delivery_policy || '');
-          setWebsiteLink(data.website_link || '');
-          setInstagramLink(data.instagram_link || '');
-          setFacebookLink(data.facebook_link || '');
-          setAddress(data.address || '');
-          setAlternativeNumber(data.alternative_number || '');
-          setBusinessRegistrationNumber(data.business_registration_number || '');
-          setGstNumber(data.gst_number || '');
-          setYearsOfExperience(data.years_of_experience || '');
-          setThumbnailUrl(data.thumbnail_url_detail || null);
-          setThumbnailKey(data.thumbnail_url || null);    
-
-          if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
-          if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
-          if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
-          if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.commands.setContent(data.return_delivery_policy || '');
-
-          if (data.services_offered_details) {
-            setSelectedServices(new Set(data.services_offered_details.map(service => service.id)));
-          }
-          if (data.event_types_details) {
-            setSelectedEventTypes(new Set(data.event_types_details.map(eventType => eventType.id)));
-          }
-         
-          if (data.faq_details && Array.isArray(data.faq_details)) {
-            const loadedFaqs = data.faq_details.map((faq, index) => ({
-              id: `faq-${index}-${Date.now()}`,
-              question: faq.question || '',
-              answer: faq.answer || ''
-            }));
-            setFaqs(loadedFaqs);
-          }
-
-          const foodPackagesSet = new Set();
-          if (data.packages?.Vegetarian) {
-            
-            foodPackagesSet.add('veg');
-            setPerPlatePriceVeg(data.packages.Vegetarian[0].starting_price || '');
-            if (data.packages.Vegetarian[0].menu_images) {
-              setInitialGalleryVeg(data.packages.Vegetarian[0].menu_images.map(img => img.image_url));
-            }
-          }
-          if (data.packages?.Non_Vegetarian) {
-            foodPackagesSet.add('non-veg');
-            setPerPlatePriceNonVeg(data.packages.Non_Vegetarian[0].starting_price || '');
-            if (data.packages.Non_Vegetarian[0].menu_images) {
-              setInitialGalleryNonVeg(data.packages.Non_Vegetarian[0].menu_images.map(img => img.image_url));
-            }
-          }
-          setSelectedFoodPackages(foodPackagesSet);
-
-          if (data.images && Array.isArray(data.images)) {
-            const imageUrls = data.images.map(imageObject => imageObject.image_url);
-            setInitialGallery(imageUrls);
-          }
-
-        } catch (error) {
-          console.error("Error fetching catering data:", error);
-          setFormMessage({ type: 'error', text: 'Failed to load catering data.' });
-        }
-      }
-    };
-    fetchCateringData();
-  }, [cateringId, session, services, eventTypes]);
-
   const handleServiceToggle = (serviceId) => {
     setSelectedServices(prevSelectedServices => {
       const newSelected = new Set(prevSelectedServices);
@@ -304,143 +305,45 @@ console.log(serviceId);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const foodPackagesData = [];
-    let vegPrice = null;
-    let nonVegPrice = null;
-
-    if (selectedFoodPackages.has('veg') && perPlatePriceVeg) {
-      vegPrice = parseFloat(perPlatePriceVeg);
-      foodPackagesData.push({
-        id: 1,
-        package_type_display: "Vegetarian",
-        package_type: 1,
-        starting_price: vegPrice
-      });
-    }
-    if (selectedFoodPackages.has('non-veg') && perPlatePriceNonVeg) {
-      nonVegPrice = parseFloat(perPlatePriceNonVeg);
-      foodPackagesData.push({
-        id: 2,
-        package_type_display: "Non-Vegetarian",
-        package_type: 2,
-        starting_price: nonVegPrice
-      });
-    }
-
-    let calculatedStartingPrice = null;
-    if (vegPrice !== null && nonVegPrice !== null) {
-        calculatedStartingPrice = Math.min(vegPrice, nonVegPrice);
-    } else if (vegPrice !== null) {
-        calculatedStartingPrice = vegPrice;
-    } else if (nonVegPrice !== null) {
-        calculatedStartingPrice = nonVegPrice;
-    }
-
-    let finalThumbnailKey = thumbnailKey;
-
-    if (thumbnailFile) {
-      const uploadResult = await thumbnailUploaderRef.current.upload();
-      if (!uploadResult.success) {
-        setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
-        return;
-      }
-      finalThumbnailKey = uploadResult.key;
-    }
-
-    // Upload all galleries separately
-    let galleryResult = await mediaManagerRef.current.upload();
-    if (!galleryResult.success) {
-      setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
-      return;
-    }
-
-    let vegGalleryResult = { success: true, keys: [] };
-    if (selectedFoodPackages.has('veg')) {
-      vegGalleryResult = await mediaManagerRefVeg.current.upload();
-      if (!vegGalleryResult.success) {
-        setFormMessage({ type: 'error', text: `Veg gallery upload failed: ${vegGalleryResult.message}` });
-        return;
-      }
-    }
-
-    let nonVegGalleryResult = { success: true, keys: [] };
-    if (selectedFoodPackages.has('non-veg')) {
-      nonVegGalleryResult = await mediaManagerRefNonVeg.current.upload();
-      if (!nonVegGalleryResult.success) {
-        setFormMessage({ type: 'error', text: `Non-veg gallery upload failed: ${nonVegGalleryResult.message}` });
-        return;
-      }
-    }
-
-    // Combine all gallery results
-    const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
-    const finalVegGalleryList = [...updatedExistingMediaVeg, ...vegGalleryResult.keys];
-    const finalNonVegGalleryList = [...updatedExistingMediaNonVeg, ...nonVegGalleryResult.keys];
-
-    const faqsForApi = faqs
-      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
-      .map((faq, index) => ({
-        question: faq.question,
-        answer: faq.answer,
-        order: index + 1,
-      }));
-
     const formData = {
       name: Name,
       vendor: vendorId,
       subcategory: subcategory,
       services_offered: Array.from(selectedServices),
-      location: selectedLocationData?.locationId || null,
+      location: selectedLocationData?.locationId || location,
       about: aboutContent,
-      starting_price: calculatedStartingPrice,
+      starting_price: parseFloat(startingPrice),
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
-      event_types: Array.from(selectedEventTypes),
+      events_supported: Array.from(selectedEventTypes),
       manager_name: contactName,
-      email: emailAddress || null,
-      advance_payment: advancePayment ? parseFloat(advancePayment) : null,
-      guest_capacity: guestCapacity ? parseInt(guestCapacity) : null,
-      event_spaces: eventSpaces || null,
-      total_area_sqft: totalAreaSqft ? parseFloat(totalAreaSqft) : null,
-      advance_booking_notice: advanceBookingNotice || null,
-      advance_payment_required: advancePayment,
-      restrictions: restrictions || null,
-      terms_and_conditions: termsAndConditions || null,
-      return_delivery_policy: returnDeliveryPolicy || null,
-      website_link: websiteLink || null,
-      instagram_link: instagramLink || null,
-      facebook_link: facebookLink || null,
-      address: address || null,
-      alternative_number: alternativeNumber || null,
-      business_registration_number: businessRegistrationNumber || null,
-      gst_number: gstNumber || null,
-      years_of_experience: yearsOfExperience ? parseInt(yearsOfExperience) : null,
-      food_packages_data: foodPackagesData.map(pkg => {
-        if (pkg.package_type === 1) { // Vegetarian
-          return {
-            ...pkg,
-            menu_images_upload: finalVegGalleryList
-          };
-        } else if (pkg.package_type === 2) { // Non-Vegetarian
-          return {
-            ...pkg,
-            menu_images_upload: finalNonVegGalleryList
-          };
-        }
-        return pkg;
-      }),
-      faqs: faqsForApi,
-      gallery_images: finalGalleryList,
-      thumbnail_url: finalThumbnailKey,
+      email_address: emailAddress,
+      advance_payment: parseFloat(advancePayment),
+      event_spaces: eventSpaces,
+      total_area_sqft: parseFloat(totalAreaSqft),
+      advance_booking_notice: advanceBookingNotice,
+      advance_payment_required: advancePaymentRequired,
+      restrictions: restrictions,
+      terms_and_conditions: termsAndConditions,
+      return_delivery_policy: returnDeliveryPolicy,
+      website_link: websiteLink,
+      instagram_link: instagramLink,
+      facebook_link: facebookLink,
+      address: address,
+      alternative_number: alternativeNumber,
+      business_registration_number: businessRegistrationNumber,
+      gst_number: gstNumber,
+      years_of_experience: yearsOfExperience,
+      packages: photographyPackages.map(pkg => ({
+        id: pkg.id,
+        name: pkg.name,
+        description: pkg.description,
+        price: parseFloat(pkg.pricing),
+        equipment: pkg.equipment
+      })),
     };
 
-    Object.keys(formData).forEach(key => {
-      if (formData[key] === null || formData[key] === '') {
-        delete formData[key];
-      }
-    });
-
-    console.log("Submitting data:", formData);
+    console.log("Submitting data for Photography:", formData);
 
     try {
       const accessToken = session?.accessToken;
@@ -452,24 +355,21 @@ console.log(serviceId);
       };
 
       let response;
-      if (cateringId) {
-        response = await api.put(`/catering/${cateringId}/`, formData, config);
-        setFormMessage({ type: 'success', text: 'Catering updated successfully!' });
+      if (photographyId) {
+        response = await api.put(`/photography/${photographyId}/`, formData, config);
+        setFormMessage({ type: 'success', text: 'Photography service updated successfully!' });
       } else {
-        response = await api.post("/catering/", formData, config);
-        setFormMessage({ type: 'success', text: 'Catering added successfully!' });
-        if (response.data && response.data.id) {
-          setCateringId(response.data.id);
-        }
+        response = await api.post("/photography/", formData, config);
+        setFormMessage({ type: 'success', text: 'Photography service added successfully!' });
       }
       console.log("Operation successful:", response.data);
     } catch (error) {
-      console.error("Error adding/updating Catering:", error);
+      console.error("Error adding/updating Photography service:", error);
       if (error.response) {
         console.error("Error data:", error.response.data);
         console.error("Error status:", error.response.status);
         console.error("Error headers:", error.response.headers);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || JSON.stringify(error.response.data) || 'Failed to process Catering.'}` });
+        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Photography service.'}` });
       } else if (error.request) {
         console.error("Error request:", error.request);
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
@@ -494,17 +394,17 @@ console.log(serviceId);
                 <div className="lg:col-span-4 space-y-4">
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Services info</h2>
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Photography Service Info</h2>
                     </div>
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="CateringName" label="Name" placeholder="ABC Catering" value={Name} onChange={(e) => setName(e.target.value)} required />
-                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="PhotographyName" label="Service Name" placeholder="ABC Photography" value={Name} onChange={(e) => setName(e.target.value)} required />
+                        <FormInput id="contactName" label="Contact Person Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abccaters@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abcphoto@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput
@@ -515,6 +415,7 @@ console.log(serviceId);
                           value={alternativeNumber}
                           onChange={(e) => setAlternativeNumber(e.target.value)}
                         />
+
                         <FormInput
                           id="businessRegistrationNumber"
                           label="Business Registration Number"
@@ -533,6 +434,7 @@ console.log(serviceId);
                           value={gstNumber}
                           onChange={(e) => setGstNumber(e.target.value)}
                         />
+
                         <FormInput
                           id="yearsOfExperience"
                           label="Years of Experience"
@@ -545,66 +447,17 @@ console.log(serviceId);
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Description (About)</label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your catering service..." />
+                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your photography service..." />
                         </div>
                       </div>
                     </div>
                   </div>
-                  
-                  <MediaManager
-                    ref={mediaManagerRef}
-                    initialMedia={initialGallery}
-                    onUpdate={handleGalleryUpdate}
-                    pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery`}
-                  />
-                  
-                  <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                    <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Food Packages</h2>
-                    </div>
-                    <FoodPackageCheckboxGroup
-                      selectedFoodPackages={selectedFoodPackages}
-                      onSelect={setSelectedFoodPackages}
-                    />
-                  </div>
 
-                  {(selectedFoodPackages.has('veg') || selectedFoodPackages.has('non-veg')) && (
-                    <div className={`mt-6 grid gap-6 ${selectedFoodPackages.size === 2 ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
-                      {selectedFoodPackages.has('veg') && (
-                        <div>
-                          <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Veg Menu here</h3>
-                          <MediaManager
-                            ref={mediaManagerRefVeg}
-                            initialMedia={initialGalleryVeg}
-                            onUpdate={handleVegGalleryUpdate}
-                            pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery/menu/veg`}
-                          />
-                          <div className="mt-2">
-                            <Pricing perPlatePrice={perPlatePriceVeg} setPerPlatePrice={setPerPlatePriceVeg} />
-                          </div>
-                        </div>
-                      )}
-
-                      {selectedFoodPackages.has('non-veg') && (
-                        <div>
-                          <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">Upload Non-Veg Menu here</h3>
-                          <MediaManager
-                            ref={mediaManagerRefNonVeg}
-                            initialMedia={initialGalleryNonVeg}
-                            onUpdate={handleNonVegGalleryUpdate}
-                            pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery/menu/non_veg`}
-                          />
-                          <div className="mt-2">
-                            <Pricing perPlatePrice={perPlatePriceNonVeg} setPerPlatePrice={setPerPlatePriceNonVeg} />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery/photography'} />
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cuisine Types Offered</h2>
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Photography Services Offered</h2>
                     </div>
                     <div className="p-4">
                       <CheckboxGroup
@@ -616,53 +469,63 @@ console.log(serviceId);
                     </div>
                   </div>
 
+                  {/* Using the generic ServicePackages component */}
+                  <ServicePackages
+                    packages={photographyPackages} // Renamed prop to 'packages'
+                    togglePackage={togglePackage}
+                    addPackage={addPackage}
+                    handlePackageChange={handlePackageChange}
+                    handleEquipmentBlur={handleEquipmentBlur}
+                    handleEquipmentKeyDown={handleEquipmentKeyDown}
+                    removeEquipmentTag={removeEquipmentTag}
+                    deletePackage={deletePackage}
+                    sectionTitle="Photography Packages" // Specific title for this section
+                    equipmentLabel="Equipment" // Specific label for photography equipment
+                    equipmentPlaceholder="e.g., 2 Cameras, 1 Drone, Lighting Kit" // Specific placeholder
+                  />
+
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Terms and Conditions</h2>
                     </div>
                     <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <TiptapEditor content={termsAndConditions} onUpdate={setTermsAndConditions} placeholder="Outline your terms and conditions..." />
+                        <TiptapEditor content={termsAndConditions} onUpdate={setTermsAndConditions} placeholder="Outline your terms and conditions for photography services..." />
                       </div>
                     </div>
                   </div>
-                  
-                  <FAQEditor faqs={faqs} setFaqs={setFaqs} />
-                  
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cancellation/Refund Policy</h2>
                     </div>
                     <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <TiptapEditor content={cancellationPolicy} onUpdate={setCancellationPolicy} placeholder="Enter your cancellation policy..." />
+                        <TiptapEditor content={cancellationPolicy} onUpdate={setCancellationPolicy} placeholder="Enter your photography cancellation policy..." />
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Social Media Links</h2>
                     </div>
                     <div className="ml-4 mt-2 mr-4 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
                       <FormInput id="websiteLink" label="Website Link" type="url" placeholder="https://example.com" value={websiteLink} onChange={(e) => setWebsiteLink(e.target.value)} />
-                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourvenue" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
-                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourvenue" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
+                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourphotography" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
+                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourphotography" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
                     </div>
                   </div>
                 </div>
-                
                 <div className="lg:col-span-2">
                   <div className="lg:sticky lg:top-5 space-y-4">
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Pricing</h2>
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Deposit Amount</h2>
                       </div>
                       <div className="p-5 space-y-4">
                         <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
                       </div>
                     </div>
-                    
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Service Details</h2>
@@ -685,9 +548,9 @@ console.log(serviceId);
                           </div>
                         </div>
                         <div className="mt-4">
-                          <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Location</label>
+                          <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Service Area Location</label>
                           <div className="relative">
-                            <input id="location" type="text" placeholder="Enter a location" className="py-1.5 sm:py-2 pr-12 pl-4 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1" value={location} onChange={(e) => setLocation(e.target.value)} />
+                            <input id="location" type="text" placeholder="Enter service area location" className="py-1.5 sm:py-2 pr-12 pl-4 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1" value={location} onChange={(e) => setLocation(e.target.value)} />
                             <button type="button" onClick={() => setIsLocationModalOpen(true)} className="absolute inset-y-0 right-2 flex items-center justify-center">
                               <svg className="w-5 h-5" fill="none" stroke="#E91E63" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 11.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
@@ -699,21 +562,19 @@ console.log(serviceId);
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
                     </div>
-                    
                     <AddressInput
-                      heading="Address"
-                      placeholder="Enter the full address of the venue."
+                      heading="Business Address"
+                      placeholder="Enter the full business address."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                     />
-                    
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Customization Options</h2>
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Events Supported</h2>
                       </div>
                       <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                         <div>
-                          <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Type of Events Catered</label>
+                          <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Types of Events Covered</label>
                           <div className="p-2">
                             <CheckboxGroup
                               items={eventTypes}
@@ -727,13 +588,11 @@ console.log(serviceId);
                     </div>
                   </div>
                 </div>
-                
                 {formMessage.text && (
                   <div className={`fixed bottom-24 start-1/2 -translate-x-1/2 p-4 rounded-lg shadow-md text-white ${formMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
                     {formMessage.text}
                   </div>
                 )}
-                
                 <div className="fixed bottom-0 start-1/2 -translate-x-1/2 p-6 z-50 w-full max-w-md mx-auto hs-removing:translate-y-5 hs-removing:opacity-0 transition duration-300">
                   <div className="py-2 ps-5 pe-2 bg-stone-800 rounded-full shadow-md dark:bg-neutral-950">
                     <div className="flex justify-between items-center gap-x-3">
@@ -764,7 +623,6 @@ console.log(serviceId);
           </div>
         </main>
       </div>
-      
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />

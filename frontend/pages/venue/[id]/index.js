@@ -4,12 +4,13 @@ import Script from 'next/script';
 import debounce from 'lodash/debounce';
 // import { ChevronDown, ChevronUp } from 'lucide-react';
 import axios from "axios";
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import FavoriteButton from "@/components/FavoriteButton";
 import CategoryItemCard from "@/components/CategoryItemCard";
 import { useSession } from 'next-auth/react'; // Import useSession
 import { useRouter } from "next/router";
 import LocationSelector from '@/components/LocationSelector'; // Adjust the path as necessary
+
 
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const relatedItems = [
@@ -1576,7 +1577,7 @@ const config = {
                     <li className="flex items-center">
 
                       <a className="py-0.5 px-1.5 flex items-center gap-x-1 text-sm rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="listing.html">
-                        {venueData?.subcategory?.category?.name || session?.user?.vendor_profile.subcategory.category.name}
+                        {venueData?.subcategory?.category?.name || session?.user?.vendor_profile?.subcategory?.category?.name}
                       </a>
                       <svg className="shrink-0 overflow-visible size-4  text-gray-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round"></path>
@@ -1585,7 +1586,7 @@ const config = {
                     <li className="flex items-center truncate">
 
                       <a className="py-0.5 px-1.5 flex items-center truncate gap-x-1 text-sm truncate rounded-md text-gray-600 hover:bg-gray-100 focus:bg-gray-100 focus:outline-hidden dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="listing.html">
-                        <span className="truncate"> {venueData?.subcategory?.name || session?.user?.vendor_profile.subcategory.name}</span>
+                        <span className="truncate"> {venueData?.subcategory?.name || session?.user?.vendor_profile?.subcategory?.name}</span>
                       </a>
                       <svg className="shrink-0 overflow-visible size-4  text-gray-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round"></path>
@@ -2272,15 +2273,38 @@ const config = {
                       <strong>VM Grand Mahal</strong> offers comfortable guest accommodations and expert decor vendors to enhance your wedding experience. With diverse cuisines and heartfelt service, they ensure every ceremony is memorable and flawlessly executed.
                   </p>
                 </div> */}
-                          <div className="mt-6">
-  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">
+
+{/*Event Types Supported*/}
+<div className="mt-7">
+  <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
     Event Types Supported
   </h3>
-  <ul className="list-disc list-inside text-sm text-gray-700 dark:text-neutral-300">
+
+  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
     {venueData?.event_types_details?.map((event) => (
-      <li key={event.id}>{event.name}</li>
+      <div key={event.id} className="flex gap-x-4 items-center">
+        <svg
+          className="shrink-0 w-6 h-6 text-gray-800 dark:text-neutral-200"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="#A9A9A9"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          viewBox="0 0 24 24"
+        >
+          <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+          <path d="m9 12 2 2 4-4" />
+        </svg>
+
+        <div className="grow">
+          <p className="text-md text-gray-800 dark:text-neutral-200">
+            {event.name}
+          </p>
+        </div>
+      </div>
     ))}
-  </ul>
+  </div>
 </div>
 
 {/* FAQ Section */}

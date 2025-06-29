@@ -53,7 +53,7 @@ const FavoriteButton = ({
           object_id: objectId,
         };
         res = await axios.post(
-          "https://6d88-183-82-206-189.ngrok-free.app/api/v1/favorites/",
+          "http://localhost:8000/api/v1/favorites/",
           payload,
           config
         );
@@ -64,7 +64,7 @@ const FavoriteButton = ({
         // === REMOVING a favorite ===
         // The objectId is now in the URL for the DELETE request
         await axios.delete(
-          `https://6d88-183-82-206-189.ngrok-free.app/api/v1/favorites/${favId}/`,
+          `http://localhost:8000/api/v1/favorites/${favId}/`,
           config,
         );
         console.log("Item unfavorited successfully!");
