@@ -195,14 +195,14 @@ const PricingSection = () => {
                 <h1 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-500 text-4xl md:text-5xl">Simple, Transparent Pricing</h1>
                 <p className="mt-5 text-sm md:text-lg text-gray-600 dark:text-gray-300">Whatever your status, our offers evolve according to your needs.</p>
               </div>
-              <div className="flex justify-center items-center gap-4 mb-12">
+              {/* <div className="flex justify-center items-center gap-4 mb-12">
                 <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>Monthly</span>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input type="checkbox" checked={isAnnual} onChange={() => setBillingCycle(isAnnual ? 'monthly' : 'annual')} className="sr-only peer" />
                   <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                 </label>
                 <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>Annual <span className="text-xs text-green-600 dark:text-green-500">(Save 10%)</span></span>
-              </div>
+              </div> */}
             </div>
             <div className="my-8">
               <div className="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
