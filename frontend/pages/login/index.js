@@ -66,7 +66,7 @@ export default function Login() {
     if (res?.ok) {
       router.replace("/");
     } else {
-      alert("Invalid credentials");
+      setError("Invalid email or password. Try again later");
     }
   };
 
@@ -126,12 +126,23 @@ export default function Login() {
                 <input
                   type="email"
                   id="email"
-                  className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600"
+                  className={`mt-1 block w-full rounded-md px-3 py-2 
+            ${
+              error
+                ? "border-2 border-red-500 focus:border-red-500"
+                : "border border-gray-300 focus:border-blue-500"
+            } 
+            focus:outline-none focus:ring-1
+            dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600
+          `}
+
                   placeholder="you@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
+                {error && (
+  <p className="text-sm text-red-600 mt-1">{error}</p> )}
               </div>
               <input type="hidden" name="user_type" value="customer" />
               <div>
@@ -152,12 +163,20 @@ export default function Login() {
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
-                    className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600 pr-10"
+className={`mt-1 block w-full rounded-md px-3 py-2 
+            ${
+              error
+                ? "border-2 border-red-500 focus:border-red-500"
+                : "border border-gray-300 focus:border-blue-500"
+            } 
+            focus:outline-none focus:ring-1
+            dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600
+          `}
                     placeholder="******"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                  />
+                  />                
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -178,8 +197,10 @@ export default function Login() {
                     )}
                   </button>
                 </div>
+                {error && (
+  <p className="text-sm text-red-600 mt-1">{error}</p>
+)}
               </div>
-
               <button
                 type="submit"
                 className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-[#f9a7a4] focus:ring-offset-2"
