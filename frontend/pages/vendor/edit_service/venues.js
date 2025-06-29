@@ -13,17 +13,18 @@ import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Blockquote from '@tiptap/extension-blockquote';
-import FAQEditor from '@/components/FAQEditor'; // Assuming this component exists
+import FAQEditor from '@/components/FAQEditor'; 
 import { Link as TiptapLink } from '@tiptap/extension-link';
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from 'next/router'; // Import useRouter
-import ThumbnailUploader from '@/components/ThumbnailUploader'; // Adjust the path as needed
+import { useRouter } from 'next/router'; 
+import ThumbnailUploader from '@/components/ThumbnailUploader'; 
 import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
-import SecondaryNav from '@/components/vendor/SecondaryNav'; // 1. Import SecondaryNav
-import MediaManager from '@/components/MediaManager'; // Adjust path as needed
-import SuccessPopup from '@/components/SuccessPopup'; // Adjust path as needed
+import SecondaryNav from '@/components/vendor/SecondaryNav'; 
+import MediaManager from '@/components/MediaManager'; 
+import SuccessPopup from '@/components/SuccessPopup'; 
+import ConfirmationModal from '@/components/ConfirmationModal';
 
 let api_url;
 let isNgrok;
@@ -37,13 +38,16 @@ const getApiUrl = () => {
 };
 api_url = getApiUrl();
 
-// Axios instance for backend communication
+
 const api = axios.create({
   baseURL: api_url + "/api/v1",
   headers: {
     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
   }
 });
+
+
+
 
 const EditorToolbar = ({ editor, editorId }) => {
   if (!editor) return null;
@@ -147,18 +151,23 @@ const EditorToolbar = ({ editor, editorId }) => {
 
 export default function EditService() {
 
-  // ... other states
-  const [thumbnailUrl, setThumbnailUrl] = useState(null); // Holds the URL for display
-  const [thumbnailKey, setThumbnailKey] = useState(null); // Holds the permanent key from DB
-  const [thumbnailFile, setThumbnailFile] = useState(null); // Holds the new file for upload
-  const [initialGallery, setInitialGallery] = useState([]); // Holds initial media from API
-  const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]); // Holds the list of existing media after user deletes some
-  const [newGalleryFiles, setNewGalleryFiles] = useState([]); // Holds new File objects to upload
-  const mediaManagerRef = useRef(null); // Ref for the new component
+
+  const [thumbnailUrl, setThumbnailUrl] = useState(null); 
+  const [thumbnailKey, setThumbnailKey] = useState(null); 
+  const [thumbnailFile, setThumbnailFile] = useState(null); 
+  const [initialGallery, setInitialGallery] = useState([]); 
+  const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]); 
+  const [newGalleryFiles, setNewGalleryFiles] = useState([]); 
+  const mediaManagerRef = useRef(null); 
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+ 
+  const [isActionCardVisible, setIsActionCardVisible] = useState(true);
+  const [isActionCardMinimized, setIsActionCardMinimized] = useState(false);
 
 
   const thumbnailUploaderRef = useRef(null);
-  const [faqs, setFaqs] = useState([]); // 1. Add state for FAQs
+  const [faqs, setFaqs] = useState([]);
 
 
 
@@ -167,18 +176,17 @@ export default function EditService() {
     setNewGalleryFiles(newFiles);
   };
 
-  // Placeholder for your actual upload logic
   async function uploadFile(file, accessToken) {
     console.log(`Uploading ${file.name}...`);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate upload
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     return { success: true, key: `media/uploads/${Date.now()}-${file.name}` };
   }
 
 
   const handleFileChange = (file) => {
     if (file) {
-      setThumbnailFile(file); // Store the file object for upload
-      setThumbnailUrl(URL.createObjectURL(file)); // Set the local preview URL
+      setThumbnailFile(file); 
+      setThumbnailUrl(URL.createObjectURL(file)); 
     }
   };
 
@@ -187,7 +195,7 @@ export default function EditService() {
     setThumbnailFile(null);
     setThumbnailKey(null);
     if (thumbnailUploaderRef.current) {
-      thumbnailUploaderRef.current.clearFile(); // Assuming your uploader has such a method
+      thumbnailUploaderRef.current.clearFile(); 
     }
   };
 
@@ -220,12 +228,12 @@ export default function EditService() {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState(new Set());
 
-  // Form state for venue details
+ 
   const [venueName, setVenueName] = useState('');
   const [managerName, setManagerName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
-  const [about, setAbout] = useState(''); // This will come from Tiptap editor
+  const [about, setAbout] = useState(''); 
   const [perPlatePrice, setPerPlatePrice] = useState('');
   const [guestCapacity, setGuestCapacity] = useState('');
   const [eventSpaces, setEventSpaces] = useState('');
@@ -237,12 +245,10 @@ export default function EditService() {
   const [location, setLocation] = useState('');
   const [locationId, setLocationId] = useState('');
   const [venueId, setvenueId] = useState('');
-
   const [gstNumber, setGstNumber] = useState('');
   const [alternativeNumber, setAlternativeNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
-  // --- ADDITION: State for the new address field ---
   const [address, setAddress] = useState('');
 
 
@@ -251,18 +257,15 @@ export default function EditService() {
 
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
 
-  const subcategory = session?.user?.vendor_profile?.subcategory.id; // Assuming Banquet Halls is subcategory 1 for venues
+  const subcategory = session?.user?.vendor_profile?.subcategory.id; 
   useEffect(() => {
 
-    // This code will only run when the `session` object changes, preventing the loop.
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
       setvenueId(serviceId);
     }
-  }, [session]); // The dependency array [session] is crucial.
+  }, [session]);
 
-
-  // Fetch venue details on component mount or venueId change
   useEffect(() => {
     const fetchVenueDetails = async () => {
       if (!venueId || status !== 'authenticated') return;
@@ -272,16 +275,15 @@ export default function EditService() {
         const venueData = response.data;
         console.log(venueData);
 
-        // Populate form fields with fetched data
         setVenueName(venueData.name || '');
         setvenueId(venueData.id || '');
         setManagerName(venueData.manager_name || '');
         setContactNumber(venueData.contact_number || '');
-        setEmailAddress(venueData.email || ''); // Assuming email field exists in API response
+        setEmailAddress(venueData.email || ''); 
         setAbout(venueData.about || '');
         setPerPlatePrice(venueData.per_plate_price || '');
         setGuestCapacity(venueData.guest_capacity || '');
-        setEventSpaces(venueData.event_spaces || ''); // Assuming event_spaces field exists
+        setEventSpaces(venueData.event_spaces || ''); 
         setTotalAreaSqft(venueData.total_area_sqft || '');
         setAdvanceBookingNotice(venueData.advance_booking_notice || '');
         setAdvancePaymentRequired(venueData.advance_payment_required || '');
@@ -292,7 +294,6 @@ export default function EditService() {
         setAlternativeNumber(venueData.alternative_number || '');
         setYearsOfExperience(venueData.years_of_experience || '');
         setBusinessRegistrationNumber(venueData.business_registration_number || '');
-        // --- ADDITION: Populate address field from API ---
         setAddress(venueData.address || '');
 
 
@@ -300,10 +301,10 @@ export default function EditService() {
           .filter(Boolean)
           .join(' , ')
         );
-        setThumbnailUrl(venueData.thumbnail_url_detail || null); // Use presigned URL for display
-        setThumbnailKey(venueData.thumbnail_url || null);       // Store the permanent key
+        setThumbnailUrl(venueData.thumbnail_url_detail || null); 
+        setThumbnailKey(venueData.thumbnail_url || null);       
 
-        // Set selected services and event types
+       
         if (venueData.services_offered_details) {
           setSelectedServices(new Set(venueData.services_offered_details.map(service => service.id)));
         }
@@ -328,10 +329,10 @@ export default function EditService() {
           setFaqs(loadedFaqs);
         }
 
-        setWebsiteLink(venueData.website_link || ''); // Assuming these fields exist
+        setWebsiteLink(venueData.website_link || ''); 
         setInstagramLink(venueData.instagram_link || '');
         setFacebookLink(venueData.facebook_link || '');
-        setTermsAndConditions(venueData.terms_and_conditions || ''); // Assuming this field exists
+        setTermsAndConditions(venueData.terms_and_conditions || ''); 
 
       } catch (error) {
         console.error("Error fetching venue details:", error);
@@ -340,12 +341,12 @@ export default function EditService() {
     };
 
     fetchVenueDetails();
-  }, [venueId, status, accessToken]); // Re-fetch when venueId or session status changes
+  }, [venueId, status, accessToken]); 
 
 
 
   useEffect(() => {
-    // Fetch services from the backend
+ 
     const fetchServices = async () => {
       try {
         const response = await api.get("/services/venue/");
@@ -357,7 +358,7 @@ export default function EditService() {
       }
     };
 
-    // Fetch event types from the backend
+    
     const fetchEventTypes = async () => {
       try {
         const response = await api.get("/event-types/");
@@ -373,7 +374,7 @@ export default function EditService() {
     fetchEventTypes();
   }, []);
 
-  // Initialize and update Tiptap editors
+  
   useEffect(() => {
     if (!editorRef.current) return;
 
@@ -437,7 +438,7 @@ export default function EditService() {
         editorInstance.current.destroy();
       }
     };
-  }, []); // Re-initialize when 'about' content changes
+  }, []); 
   useEffect(() => {
     if (editorInstance.current && about) {
       editorInstance.current.commands.setContent(about);
@@ -680,7 +681,7 @@ export default function EditService() {
   const [popupMessage, setPopupMessage] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setIsActionCardVisible(false); 
 
     setFormMessage({ type: 'info', text: 'Updating venue, please wait...' });
 
@@ -691,6 +692,7 @@ export default function EditService() {
       const uploadResult = await thumbnailUploaderRef.current.upload();
       if (!uploadResult.success) {
         setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        setIsActionCardVisible(true); 
         return;
       }
       finalThumbnailKey = uploadResult.key;
@@ -699,17 +701,18 @@ export default function EditService() {
     const galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
       setFormMessage({ type: 'error', text: `Gallery upload failed: ${galleryResult.message}` });
+      setIsActionCardVisible(true); 
       return;
     }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
 
 
     const faqsForApi = faqs
-      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '') // Ensure FAQ is not empty
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '') 
       .map((faq, index) => ({
         question: faq.question,
         answer: faq.answer,
-        order: index + 1, // Add the order field as expected by the backend
+        order: index + 1, 
       }));
 
 
@@ -789,9 +792,56 @@ export default function EditService() {
       } else if (error.request) {
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
       }
+      setIsActionCardVisible(true); 
     }
 
   };
+
+    const handleDeleteClick = () => {
+        setIsDeleteModalOpen(true);
+    };
+
+   
+    const handleConfirmDelete = async () => {
+        setIsDeleteModalOpen(false); 
+        setIsActionCardVisible(false); 
+
+        if (!venueId) {
+            setFormMessage({ type: 'error', text: 'Cannot delete. Venue ID is missing.' });
+            setIsActionCardVisible(true); 
+            return;
+        }
+
+        setFormMessage({ type: 'info', text: 'Deleting venue, please wait...' });
+
+        try {
+            const accessToken = session?.accessToken;
+            const config = {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                },
+            };
+            await api.delete(`/venues/${venueId}/`, config);
+
+            setFormMessage({ type: 'success', text: 'Venue deleted successfully!' });
+
+            setTimeout(() => {
+                router.push('/vendor/service/preview'); 
+            }, 2000);
+
+        } catch (error) {
+            console.error("Error trying to delete venue:", error);
+            if (error.response) {
+                setFormMessage({
+                    type: 'error',
+                    text: `Error: ${error.response.data.detail || 'Failed to delete venue.'}`
+                });
+            } else {
+                setFormMessage({ type: 'error', text: 'Error: No response from server.' });
+            }
+            setIsActionCardVisible(true); 
+        }
+    };
 
 
   return (
@@ -807,7 +857,7 @@ export default function EditService() {
 
         {/* MAIN CONTENT */}
 
-        <main id="content" className="pb-14 sm:pb-20">
+        <main id="content" className="pb-24 sm:pb-20">
           <div className="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
             {/* Breadcrumb */}
             <ol className="lg:hidden pt-5 flex items-center whitespace-nowrap">
@@ -1001,7 +1051,7 @@ export default function EditService() {
                   {/* End Products Card */}
 
                   <MediaManager
-                    ref={mediaManagerRef} // Attach the ref here
+                    ref={mediaManagerRef} 
                     initialMedia={initialGallery}
                     onUpdate={handleGalleryUpdate}
                     pathPrefix = 'vendors/gallery'
@@ -1360,13 +1410,13 @@ export default function EditService() {
                           onClose={() => setIsLocationModalOpen(false)}
                           onChange={(locData) => {
                             if (locData?.location) {
-                              setLocation(locData.location); // for display
-                              setSelectedLocationData(locData); // save full object for submission if needed
+                              setLocation(locData.location); 
+                              setSelectedLocationData(locData); 
                             }
                           }}
                           onSave={(locData) => {
-                            setLocation(locData.location); // display selected location
-                            setSelectedLocationData(locData); // optional: use locationId later
+                            setLocation(locData.location); 
+                            setSelectedLocationData(locData); 
                             setIsLocationModalOpen(false);
                           }}
                         />
@@ -1573,57 +1623,99 @@ export default function EditService() {
                   </div>
                 )}
 
-                {/* Save/Discard/Delete Floating Card */}
-                <div className="fixed bottom-0 start-1/2 -translate-x-1/2 p-6 z-50 w-full max-w-md mx-auto hs-removing:translate-y-5 hs-removing:opacity-0 transition duration-300">
-                  <div className="py-2 ps-5 pe-2 bg-stone-800 rounded-full shadow-md dark:bg-neutral-950">
-                    <div className="flex justify-between items-center gap-x-3">
-                      <button type="button" className="text-red-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-red-500">
-                        Delete
-                      </button>
 
-                      <div className="inline-flex items-center gap-x-2">
-                        <button type="button" className="text-stone-300 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-neutral-400">
-                          Cancel
-                        </button>
-                        <div className="w-px h-4 bg-stone-700 dark:bg-neutral-700"></div>
+                {/* --- FINAL ACTION BAR FIX --- */}
+                {isActionCardVisible && (
+                  <>
+                    {!isActionCardMinimized ? (
+                       <div className="fixed bottom-0 start-0 end-0 z-40 p-2 transition-transform duration-300">
+                         <div className="mx-auto w-fit bg-stone-800 dark:bg-neutral-950 shadow-lg rounded-xl sm:rounded-full p-2">
+                           <div className="flex items-center justify-center flex-wrap gap-x-3">
+                              <button
+                                type="button"
+                                onClick={handleDeleteClick}
+                                className="text-red-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
+                              >
+                                Delete
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsActionCardVisible(false);
+                                  router.back();
+                                }}
+                                className="text-stone-300 decoration-2 font-medium text-sm hover:underline px-3 py-1"
+                              >
+                                Cancel
+                              </button>
+                              
+                              <div className="w-px h-4 bg-stone-700 dark:bg-neutral-700"></div>
+                              
+                              <button
+                                type="submit"
+                                onClick={handleSubmit}
+                                className="text-green-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
+                              >
+                                Save changes
+                              </button>
+                              
+                              <button
+                                type="button"
+                                onClick={() => setIsActionCardMinimized(true)}
+                                className="size-8 inline-flex justify-center items-center rounded-full text-stone-400 hover:bg-stone-700"
+                                aria-label="Minimize"
+                              >
+                                <span className="sr-only">Minimize</span>
+                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M18 6 6 18" />
+                                  <path d="m6 6 12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                         </div>
+                       </div>
+                    ) : (
+                      /* Minimized Button */
+                      <div className="fixed bottom-6 right-6 z-40">
                         <button
-                          type="submit"
-                          onClick={handleSubmit}
-                          className="text-green-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-green-500"
+                          type="button"
+                          onClick={() => setIsActionCardMinimized(false)}
+                          className="flex items-center justify-center size-14 bg-stone-800 text-white rounded-full shadow-lg hover:bg-stone-700 transition-all duration-300 hover:scale-105 dark:bg-neutral-950"
+                          aria-label="Restore actions"
                         >
-                          Save changes
+                  <span
+                                className="text-green-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
+                              >
+                                Save
+                              </span>
                         </button>
-
-                        {/* Close Button */}
-                        <button type="button" className="size-8 inline-flex justify-center items-center gap-x-2 rounded-full text-stone-400 hover:bg-stone-700 focus:outline-hidden focus:bg-stone-700 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-label="Close">
-                          <span className="sr-only">Close</span>
-                          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
-                          </svg>
-                        </button>
-                        {/* End Close Button */}
                       </div>
-                    </div>
-                  </div>
-                </div>
-                {/* End Save/Discard/Detel Floating Card */}
+                    )}
+                  </>
+                )}
+
+
               </div>
               {/* End Products Grid */}
             </div>
           </div>
         </main>
-
       </div>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Service"
+      >
+        Are you sure you want to delete this service? This action is irreversible.
+      </ConfirmationModal>
 
       {/* Scripts */}
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
 
-      {/* REMOVED the old, problematic script tag that was causing the error.
-        The initialization is now handled correctly by the useEffect hook inside the component.
-      */}
     </>
   );
 }
