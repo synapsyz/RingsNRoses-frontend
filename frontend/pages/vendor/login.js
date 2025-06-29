@@ -12,6 +12,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [user_type, setUserType] = useState("vendor");
   const [theme, setTheme] = useState("light");
   const [errors, setErrors] = useState([]);
@@ -56,6 +57,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setEmailError("");
+    setPasswordError("");
+    setIsSubmitting(true);
+
     const res = await signIn("credentials", {
       redirect: false,
       email,
@@ -64,23 +71,32 @@ export default function Login() {
     });
 
     if (res.ok) {
-      router.push("/vendor/dashboard");
-    } else {
-      try {
-        const err = JSON.parse(res.error);
+  router.push("/vendor/dashboard");
+} else {
+  const errorText = res.error;
 
-        if (Array.isArray(err.detail)) {
-          setEmailError(err.detail[0]); // show first error under email
-          setPasswordError(err.detail[1])
-        } else {
-          setEmailError(err.detail || "Invalid email");
-          setPasswordError(err.detail || "Invalid Password");
-        }
-      } catch {
-        setEmailError(res.error || "Login failed");
-        setPasswordError(res.error || "Login failed");
-      }
+  let emailMsg = "Login failed";
+  let passwordMsg = "Login failed";
+
+  // Check if it's JSON-like (starts with `{`)
+  if (errorText && errorText.startsWith("{")) {
+    const err = JSON.parse(errorText);
+
+    if (Array.isArray(err.detail)) {
+      emailMsg = err.detail[0] || emailMsg;
+      passwordMsg = err.detail[1] || passwordMsg;
+    } else if (typeof err.detail === "string") {
+      emailMsg = passwordMsg = err.detail;
     }
+  } else {
+    // fallback if it's just plain string
+    emailMsg = passwordMsg = errorText || "Invalid credentials";
+  }
+
+  setEmailError(emailMsg);
+  setPasswordError(passwordMsg);
+  setIsSubmitting(false);
+}
 
   };
 
@@ -217,11 +233,36 @@ export default function Login() {
                       // Tailwind for focus ring if you want to use it
                       // focus:ring-[#f9a7a4] focus:ring-offset-2
                     >
-                      Sign in
+            {isSubmitting ? (
+            <div className="flex justify-center items-center">
+              <svg
+                className="animate-spin h-5 w-5 mr-2 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+                </div>
+                ) : (
+            "Sign in"
+          )} 
                     </button>
                   </div>
                 </form>
-              </div>
+                </div>
 
               <div className="mt-10">
                 <div className="relative">
