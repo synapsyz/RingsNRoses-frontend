@@ -12,9 +12,12 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [user_type, setUserType] = useState("vendor");
   const [theme, setTheme] = useState("light");
   const [errors, setErrors] = useState([]);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const router = useRouter();
 
   
@@ -54,6 +57,12 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
+    setEmailError("");
+    setPasswordError("");
+    setIsSubmitting(true);
+
     const res = await signIn("credentials", {
       redirect: false,
       email,
@@ -62,18 +71,33 @@ export default function Login() {
     });
 
     if (res.ok) {
-      router.push("/vendor/dashboard");
-    } else {
-      try {
-        const err = JSON.parse(res.error);
-        const messages = Array.isArray(err.detail)
-          ? err.detail
-          : [err.detail || "Login failed"];
-        setErrors(messages);
-      } catch {
-        setErrors([res.error]);
-      }
+  router.push("/vendor/dashboard");
+} else {
+  const errorText = res.error;
+
+  let emailMsg = "Login failed";
+  let passwordMsg = "Login failed";
+
+  // Check if it's JSON-like (starts with `{`)
+  if (errorText && errorText.startsWith("{")) {
+    const err = JSON.parse(errorText);
+
+    if (Array.isArray(err.detail)) {
+      emailMsg = err.detail[0] || emailMsg;
+      passwordMsg = err.detail[1] || passwordMsg;
+    } else if (typeof err.detail === "string") {
+      emailMsg = passwordMsg = err.detail;
     }
+  } else {
+    // fallback if it's just plain string
+    emailMsg = passwordMsg = errorText || "Invalid credentials";
+  }
+
+  setEmailError(emailMsg);
+  setPasswordError(passwordMsg);
+  setIsSubmitting(false);
+}
+
   };
 
   const toggleTheme = () => {
@@ -118,16 +142,28 @@ export default function Login() {
                       Email address
                     </label>
                     <div className="mt-2">
-                      <input
-                        type="email"
-                        id="email"
-                        className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600"
-                        placeholder="you@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                      />
-                    </div>
+  <input
+    type="email"
+    id="email"
+    className={`mt-1 block w-full rounded-md px-3 py-2 
+            ${
+              emailError
+                ? "border-2 border-red-500 focus:border-red-500"
+                : "border border-gray-300 focus:border-blue-500"
+            } 
+            focus:outline-none focus:ring-1
+            dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600
+          `}
+    placeholder="you@email.com"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    required
+  />
+  {emailError && (
+    <p className="mt-1 text-sm text-red-600 dark:text-red-500">{emailError}</p>
+  )}
+</div>
+
                   </div>
 
                   <input type="hidden" name="user_type" value="vendor" />
@@ -144,14 +180,22 @@ export default function Login() {
                     </div>
                     <div className="relative mt-2">
                       <input
-                        type={showPassword ? "text" : "password"}
-                        id="password"
-                        className="py-2 sm:py-2.5 px-3 block w-full border border-gray-300 rounded-lg sm:text-sm placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600 pr-10"
-                        placeholder="******"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                      />
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className={`mt-1 block w-full rounded-md px-3 py-2 
+            ${
+              passwordError
+                ? "border-2 border-red-500 focus:border-red-500"
+                : "border border-gray-300 focus:border-blue-500"
+            } 
+            focus:outline-none focus:ring-1
+            dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600
+          `}
+          placeholder="******"
+          required
+        />
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
@@ -170,6 +214,12 @@ export default function Login() {
                         )}
                       </button>
                     </div>
+                            {passwordError && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-500">
+            {passwordError}
+          </p>
+        )}
+
                   </div>
 
                   <div>
@@ -183,11 +233,36 @@ export default function Login() {
                       // Tailwind for focus ring if you want to use it
                       // focus:ring-[#f9a7a4] focus:ring-offset-2
                     >
-                      Sign in
+            {isSubmitting ? (
+            <div className="flex justify-center items-center">
+              <svg
+                className="animate-spin h-5 w-5 mr-2 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+                </div>
+                ) : (
+            "Sign in"
+          )} 
                     </button>
                   </div>
                 </form>
-              </div>
+                </div>
 
               <div className="mt-10">
                 <div className="relative">
