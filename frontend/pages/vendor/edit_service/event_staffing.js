@@ -14,6 +14,7 @@ import FormInput from '@/components/FormInput';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
+import FAQEditor from '@/components/FAQEditor.js';
 import Pricing from '@/components/Pricing';
 import AddressInput from '@/components/AddressInput';
 import ServicePackages from '@/components/ServicePackages';
@@ -576,6 +577,7 @@ console.log(serviceName);
                       </div>
                     </div>
                   </div>
+                  <FAQEditor faqs={faqs} setFaqs={setFaqs} />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cancellation/Refund Policy</h2>
