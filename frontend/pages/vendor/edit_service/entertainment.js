@@ -15,6 +15,7 @@ import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
 import AddressInput from '@/components/AddressInput'; // Adjust the path if necessary
+import FAQEditor from '@/components/FAQEditor.js';
 
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -29,6 +30,7 @@ const api = axios.create({
 });
 
 export default function AddEntertainment() {
+  const [faqs, setFaqs] = useState([]);
   const [aboutContent, setAboutContent] = useState('');
   const [cancellationPolicyContent, setCancellationPolicyContent] = useState('');
   const [restrictionsContent, setRestrictionsContent] = useState('');
@@ -77,9 +79,27 @@ export default function AddEntertainment() {
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
+   const [vendorId, setVendorId] = useState(null);
+  const [serviceName, setServiceName] = useState(null);
+  
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
-  const vendorId = session?.user?.vendor_profile?.id;
+   useEffect(() => {
+    // ... existing useEffect for cateringId
 
+    if (session?.user?.vendor_profile) {
+      setVendorId(session.user.vendor_profile.id);
+      const formattedServiceName = session.user.vendor_profile.subcategory?.category?.name
+        .replace(/ /g, '_')
+        .toLowerCase();
+      setServiceName(formattedServiceName); // Assuming service_id is directly available here
+    }
+  }, [session]);
+console.log(vendorId);
+console.log(serviceName);
+const handleGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMedia(existingMedia);
+    setNewGalleryFiles(newFiles);
+  };
   const handleFileChange = (file) => {
     if (file) {
       setThumbnailFile(file);
@@ -115,13 +135,14 @@ export default function AddEntertainment() {
           setName(data.name || '');
           setcontactName(data.manager_name || '');
           setContactNumber(data.contact_number || '');
-          setEmailAddress(data.email_address || '');
+          setEmailAddress(data.email || '');
           setAboutContent(data.about || '');
-          setPrice(data.price || ''); // Set price
+          setPrice(data.starting_price || ''); // Set price
           setAdvancePaymentRequired(data.advance_payment_required || ''); // Set advance payment
           setCancellationPolicy(data.cancellation_policy || '');
           setRestrictions(data.restrictions || '');
-          setLocation(data.location || '');
+          setLocation(data.location_details?.name || '');
+          setSelectedLocationData(data.location_details ? { locationId: data.location_details.id, location: data.location_details.name } : null);
           setTermsAndConditions(data.terms_and_conditions || '');
           setWebsiteLink(data.website_link || '');
           setInstagramLink(data.instagram_link || '');
@@ -131,6 +152,8 @@ export default function AddEntertainment() {
           setBusinessRegistrationNumber(data.business_registration_number || '');
           setGstNumber(data.gst_number || '');
           setYearsOfExperience(data.years_of_experience || '');
+          setThumbnailUrl(data.thumbnail_url_detail || null);
+          setThumbnailKey(data.thumbnail_url || null); 
 
 
           if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
@@ -138,10 +161,24 @@ export default function AddEntertainment() {
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
           if (restrictionsEditorInstance.current) restrictionsEditorInstance.current.commands.setContent(data.restrictions || '');
 
-
-          setSelectedEntertainmentTypes(new Set(data.entertainment_types || [])); // Renamed
-          setSelectedEventTypes(new Set(data.events_supported || []));
-
+          if (data.services_offered_details) {
+          setSelectedEntertainmentTypes(new Set(data.services_offered_details.map(service => service.id))); // Renamed
+          }
+          if (data.event_types_details) {
+            setSelectedEventTypes(new Set(data.event_types_details.map(eventType => eventType.id)));
+          }
+          if (data.faq_details && Array.isArray(data.faq_details)) {
+            const loadedFaqs = data.faq_details.map((faq, index) => ({
+              id: `faq-${index}-${Date.now()}`,
+              question: faq.question || '',
+              answer: faq.answer || ''
+            }));
+            setFaqs(loadedFaqs);
+          }
+          if (data.images && Array.isArray(data.images)) {
+            const imageUrls = data.images.map(imageObject => imageObject.image_url);
+            setInitialGallery(imageUrls);
+          }
         } catch (error) {
           console.error("Error fetching entertainment data:", error);
           setFormMessage({ type: 'error', text: 'Failed to load entertainment data.' });
@@ -198,22 +235,47 @@ export default function AddEntertainment() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let finalThumbnailKey = thumbnailKey;
+
+    if (thumbnailFile) {
+      const uploadResult = await thumbnailUploaderRef.current.upload();
+      if (!uploadResult.success) {
+        setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        return;
+      }
+      finalThumbnailKey = uploadResult.key;
+    }
+
+    // Upload all galleries separately
+    let galleryResult = await mediaManagerRef.current.upload();
+    if (!galleryResult.success) {
+      setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
+      return;
+    }
+    const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
+    const faqsForApi = faqs
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
+      .map((faq, index) => ({
+        question: faq.question,
+        answer: faq.answer,
+        order: index + 1,
+      }));
 
     const formData = {
       name: Name,
       vendor: vendorId,
       subcategory: subcategory,
-      entertainment_types: Array.from(selectedEntertainmentTypes), // Renamed
-      location: selectedLocationData?.locationId || location,
+      services_offered: Array.from(selectedEntertainmentTypes), // Renamed
+      location: selectedLocationData?.locationId || null,
       about: aboutContent,
-      price: parseFloat(price), // New field
+      starting_price: parseFloat(price), // New field
       advance_payment_required: parseFloat(advancePaymentRequired), // New field
       contact_number: contactNumber,
       manager_name: contactName,
-      email_address: emailAddress,
+      email: emailAddress,
       cancellation_policy: cancellationPolicy,
       restrictions: restrictions,
-      events_supported: Array.from(selectedEventTypes),
+      event_types: Array.from(selectedEventTypes),
       terms_and_conditions: termsAndConditions,
       website_link: websiteLink,
       instagram_link: instagramLink,
@@ -223,8 +285,15 @@ export default function AddEntertainment() {
       business_registration_number: businessRegistrationNumber,
       gst_number: gstNumber,
       years_of_experience: parseInt(yearsOfExperience),
+      faqs: faqsForApi,
+      gallery_images: finalGalleryList,
+      thumbnail_url: finalThumbnailKey,
     };
-
+      Object.keys(formData).forEach(key => {
+      if (formData[key] === null || formData[key] === '') {
+        delete formData[key];
+      }
+    });
     console.log("Submitting data:", formData);
 
     try {
@@ -335,8 +404,12 @@ export default function AddEntertainment() {
                     </div>
                   </div>
 
-                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery/entertainment'} />
-
+                  <MediaManager
+                    ref={mediaManagerRef}
+                    initialMedia={initialGallery}
+                    onUpdate={handleGalleryUpdate}
+                    pathPrefix={`vendors/${vendorId}/${serviceName}/gallery`}
+                  />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
   <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
     <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Entertainment Types/Genres Offered</h2>
@@ -361,6 +434,7 @@ export default function AddEntertainment() {
                       </div>
                     </div>
                   </div>
+                  <FAQEditor faqs={faqs} setFaqs={setFaqs} />
                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cancellation/Refund Policy</h2>
