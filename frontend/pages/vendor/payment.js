@@ -21,24 +21,28 @@ return "hidden";
 
 };
 
-return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12"> <div className="mb-8 text-center max-w-2xl"> <h1 className="text-3xl font-bold text-gray-800 mb-3"> Choose the Plan That Fits You </h1> <p className="text-gray-600 text-sm"> Whatever your status, our offers evolve according to your needs. </p> </div>
-
-<div className="relative w-full max-w-7xl flex items-center justify-center">
-    {/* Left Arrow */}
+return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12"> 
+<div className="mb-8 text-center max-w-2xl"> 
+  <h1 className="text-3xl font-bold text-gray-800 mb-3"> Choose the Plan That Fits You </h1> 
+  <p className="text-gray-600 text-sm"> Whatever your status, our offers evolve according to your needs. </p> 
+  </div>
+{/* Left Arrow */}
     <button
       onClick={handlePrev}
-      className="absolute left-0 z-40 p-3 bg-white rounded-full shadow hover:bg-gray-200 transition"
+      className="absolute left-40 z-40 p-3 bg-white rounded-full shadow hover:bg-gray-200 transition"
     >
       <FaChevronLeft />
     </button>
 
+<div className="relative w-full max-w-7xl flex items-center justify-center">
+    
     {/* Cards */}
-    <div className="flex items-center justify-center w-full h-[600px] relative overflow-hidden">
+    <div className="flex items-center justify-center w-full h-[700px] relative overflow-hidden">
       {pricingData.map((plan, index) => {
         const position = getCardPosition(index);
 
         const baseClasses =
-          "absolute transition-all duration-500 ease-in-out w-[460px] min-h-[540px] p-8 rounded-2xl shadow-2xl bg-white flex flex-col transform";
+          "absolute transition-all duration-500 ease-in-out w-[450px] min-h-[540px] p-8 rounded-2xl shadow-2xl bg-white flex flex-col transform";
         let style = "";
 
         switch (position) {
@@ -59,30 +63,28 @@ return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center just
 
         return (
           <div key={plan.id} className={`${baseClasses} ${style}`}>
-            <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold">{plan.name}</h2>
-              <p className="text-sm text-gray-500 mt-1">{plan.description}</p>
-              {plan.isPopular && (
-                <div className="inline-block mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full font-semibold">
-                  MOST POPULAR
-                </div>
-              )}
-              <p className="text-4xl font-bold text-blue-600 mt-4">
+<div className="bg-white dark:bg-neutral-900 rounded-xl h-full flex flex-col p-3">
+  <header className={plan.isPopular ? 'flex justify-between items-center' : ''}>
+    <h4 className="font-semibold text-lg text-gray-800 dark:text-neutral-200">{plan.name}</h4>
+                                                    {plan.isPopular && (
+                                                        <span className="inline-block px-3 py-1 text-xs font-semibold text-blue-800 uppercase bg-blue-100 rounded-full dark:bg-blue-500/20 dark:text-blue-400 animate-pulse">
+                                                            Most popular
+                                                        </span>
+                                                    )}
+                                                </header>
+              <p className="mt-2 text-sm text-gray-500 dark:text-neutral-500">{plan.description}</p>
+
+              <p className="text-4xl font-bold text-black-600 mt-4">
                 ₹{plan.price[billingCycle]}
               </p>
               <p className="text-sm text-gray-400">{plan.pricePeriod}</p>
               <div className="mt-5 pb-7 border-b border-gray-200 dark:border-neutral-700">
-              <Link href="/vendor/payment_success" passHref>
               <button
-                className={`mt-5 w-full py-2 rounded-lg text-sm font-medium ${
-                  plan.isPopular
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
-                    : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                } transition`}
-              >
-                Get started
-              </button>
-              </Link>
+  className="py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent transition-shadow bg-blue-600 text-white hover:bg-blue-700 transition"
+>
+  Get started
+</button>
+
             </div>
             </div>
 
@@ -108,14 +110,15 @@ return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center just
       })}
     </div>
 
-    {/* Right Arrow */}
+    
+  </div>
+  {/* Right Arrow */}
     <button
       onClick={handleNext}
-      className="absolute right-0 z-40 p-3 bg-white rounded-full shadow hover:bg-gray-200 transition"
+      className="absolute right-40 z-40 p-3 bg-white rounded-full shadow hover:bg-gray-200 transition"
     >
       <FaChevronRight />
     </button>
-  </div>
 </div>
 
 ); }
