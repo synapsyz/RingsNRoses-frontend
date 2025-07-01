@@ -99,7 +99,7 @@ return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center just
                   {feature.included ? (
                     <BsCheckCircleFill className="text-green-500" />
                   ) : (
-                    <BsXCircleFill className="text-gray-300" />
+                    <BsXCircleFill className="text-red-300" />
                   )}
                   {feature.text}
                 </li>
