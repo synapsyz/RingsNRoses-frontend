@@ -1,4 +1,8 @@
-import { useState } from "react"; import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; import { BsCheckCircleFill, BsXCircleFill } from "react-icons/bs";
+import { useState } from "react"; 
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa"; 
+import { BsCheckCircleFill, BsXCircleFill } from "react-icons/bs";
+import Link from "next/link";
+
 
 const pricingData = [ { id: 1, name: "Monthly Plan", description: "Pay month-to-month", price: { monthly: 99, annual: 89 }, pricePeriod: "/month", isPopular: false, features: [ { text: "Vendor Profile Listing", included: true }, { text: "100 MB Storage", included: true }, { text: "Display Reviews & Ratings", included: true }, { text: "Analytics Dashboard", included: true }, { text: "Social Media Promotion", included: false }, { text: "Email Support", included: true }, { text: "WhatsApp Support", included: false }, { text: "Call Support", included: false }, ], }, { id: 2, name: "6 Months Plan", description: "Commit for half a year", price: { monthly: 499, annual: 449 }, pricePeriod: "/6 months", isPopular: true, features: [ { text: "Vendor Profile Listing", included: true }, { text: "500 MB Storage", included: true }, { text: "Display Reviews & Ratings", included: true }, { text: "Analytics Dashboard", included: true }, { text: "Social Media Promotion", included: true }, { text: "Email Support", included: true }, { text: "WhatsApp Support", included: true }, { text: "Call Support", included: false }, ], }, { id: 3, name: "Annual Plan", description: "Save with an annual commitment", price: { monthly: 999, annual: 899 }, pricePeriod: "/year", isPopular: false, features: [ { text: "Vendor Profile Listing", included: true }, { text: "2 GB Storage", included: true }, { text: "Display Reviews & Ratings", included: true }, { text: "Analytics Dashboard", included: true }, { text: "Social Media Promotion", included: true }, { text: "Email Support", included: true }, { text: "WhatsApp Support", included: true }, { text: "Call Support", included: true }, ], }, ];
 
@@ -67,6 +71,8 @@ return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center just
                 ₹{plan.price[billingCycle]}
               </p>
               <p className="text-sm text-gray-400">{plan.pricePeriod}</p>
+              <div className="mt-5 pb-7 border-b border-gray-200 dark:border-neutral-700">
+              <Link href="/vendor/payment_success" passHref>
               <button
                 className={`mt-5 w-full py-2 rounded-lg text-sm font-medium ${
                   plan.isPopular
@@ -76,6 +82,8 @@ return ( <div className="min-h-screen bg-gray-50 flex flex-col items-center just
               >
                 Get started
               </button>
+              </Link>
+            </div>
             </div>
 
             <ul className="space-y-3 text-sm mt-4">
