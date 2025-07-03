@@ -438,6 +438,7 @@ const handleGalleryUpdate = (existingMedia, newFiles) => {
         setFormMessage({ type: 'success', text: 'Photography service updated successfully!' });
       } else {
         response = await api.post("/photography/", formData, config);
+        setPhotographyId(response.data.id);
         setFormMessage({ type: 'success', text: 'Photography service added successfully!' });
       }
       console.log("Operation successful:", response.data);
