@@ -96,6 +96,8 @@ export default function AddAccommodationTravel() {
   const [accommodationTravelPackages, setAccommodationTravelPackages] = useState([]);
   const [accommodationTypes, setAccommodationTypes] = useState([]);
   const [selectedAccommodationTypes, setSelectedAccommodationTypes] = useState(new Set());
+  // State for validation errors
+  const [errors, setErrors] = useState({});
 
 
   useEffect(() => {
@@ -341,6 +343,57 @@ const handleEquipmentBlur = (id, value) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: '', text: '' }); // Clear previous messages
+    setErrors({}); // Clear previous errors
+
+    const newErrors = {};
+
+    // Validate required fields
+    if (!Name.trim()) {
+      newErrors.Name = 'Service Name is required.';
+    }
+    if (!contactName.trim()) {
+      newErrors.contactName = 'Contact Person Name is required.';
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = 'Contact Number is required.';
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = 'Email Address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = 'Email Address is invalid.';
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = 'Years of Experience is required.';
+    }
+    if (!aboutContent.trim()) {
+      newErrors.aboutContent = 'Description (About) is required.';
+    }
+    if (!location.trim() || !selectedLocationData) {
+      newErrors.location = 'Service Area Location is required. Please select from the map.';
+    }
+    if (!address.trim()) {
+      newErrors.address = 'Business Address is required.';
+    }
+    accommodationTravelPackages.forEach((pkg) => {
+      if (!pkg.pricing || isNaN(parseFloat(pkg.pricing)) || parseFloat(pkg.pricing) <= 0) {
+        newErrors[`packagePricing-${pkg.id}`] = 'Pricing is required and must be a positive number.';
+      }
+    });
+
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      // Scroll to the first error or top of the form
+      const firstErrorField = document.getElementById(Object.keys(newErrors)[0]);
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return; // Stop the submission
+    }
+
+
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
@@ -472,12 +525,12 @@ const handleEquipmentBlur = (id, value) => {
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="AccommodationTravelName" label="Service Name" placeholder="Grand Hotel & Resorts" value={Name} onChange={(e) => setName(e.target.value)} required />
-                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="AccommodationTravelName" label="Service Name" placeholder="Grand Hotel & Resorts" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name} />
+                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value) } required error={errors.contactName} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999999" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="grandhotel@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999999" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactNumber} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="grandhotel@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                           <FormInput
@@ -513,6 +566,8 @@ const handleEquipmentBlur = (id, value) => {
                             placeholder="Enter Years of Experience"
                             value={yearsOfExperience}
                             onChange={(e) => setYearsOfExperience(e.target.value)}
+                            required
+                            error={errors.yearsOfExperience}
                           />
                       </div>
                       <div>
@@ -520,6 +575,7 @@ const handleEquipmentBlur = (id, value) => {
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your accommodation & travel service..." />
                         </div>
+                         {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
                       </div>
                     </div>
                   </div>
@@ -556,6 +612,7 @@ const handleEquipmentBlur = (id, value) => {
                     sectionTitle="Accommodation & Travel Packages"
                     equipmentLabel="Amenities Included"
                     equipmentPlaceholder="e.g., Wi-Fi, Breakfast, Swimming Pool"
+                    errors={errors}
                   />
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -633,8 +690,8 @@ const handleEquipmentBlur = (id, value) => {
                               </svg>
                             </button>
                           </div>
+                          {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
-                        <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
                     </div>
                     <AddressInput
@@ -642,7 +699,9 @@ const handleEquipmentBlur = (id, value) => {
                       placeholder="Enter the full business address."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
+                      error={errors.address}
                     />
+                    
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Accommodation Types Supported</h2>
