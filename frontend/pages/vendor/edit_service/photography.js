@@ -17,6 +17,7 @@ import CheckboxGroup from '@/components/CheckboxGroup';
 import Pricing from '@/components/Pricing';
 import AddressInput from '@/components/AddressInput';
 import ServicePackages from '@/components/ServicePackages'; // Changed import from PhotographyPackages to ServicePackages
+import FAQEditor from '@/components/FAQEditor.js';
 
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -89,8 +90,25 @@ export default function AddProduct() {
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
+  const [vendorId, setVendorId] = useState(null);
+  const [serviceName, setServiceName] = useState(null);
+  const [serviceId, setServiceId] = useState(null);
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
-  const vendorId = session?.user?.vendor_profile?.id;
+  useEffect(() => {
+    // ... existing useEffect for cateringId
+
+    if (session?.user?.vendor_profile) {
+      setVendorId(session.user.vendor_profile.id);
+      const formattedServiceName = session.user.vendor_profile.subcategory?.category?.name
+        .replace(/ /g, '_')
+        .toLowerCase();
+      setServiceName(formattedServiceName);
+      setServiceId(session.user.vendor_profile.service_id); // Assuming service_id is directly available here
+    }
+  }, [session]);
+  console.log(vendorId);
+  console.log(serviceName);
+  console.log(serviceId);
   const [photographyPackages, setPhotographyPackages] = useState([]);
 
   const togglePackage = (idToToggle) => {
@@ -106,7 +124,7 @@ export default function AddProduct() {
   const addPackage = () => {
     setPhotographyPackages(currentPackages => [
       ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
-      { id: `pkg-${Date.now()}`, name: '', description: '', pricing: '', equipment: [], isOpen: true, equipmentInput: '' }
+      { id: `${Date.now()}`, name: '', description: '', pricing: '', included_items: [], isOpen: true, equipmentInput: '' }
     ]);
   };
 
@@ -119,47 +137,47 @@ export default function AddProduct() {
   };
 
 
-const handleEquipmentBlur = (id, value) => {
-  const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
+  const handleEquipmentBlur = (id, value) => {
+    const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
 
-  setPhotographyPackages(currentPackages =>
-    currentPackages.map(pkg => {
-      if (pkg.id === id) {
-        const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentArray]));
-        return { ...pkg, equipment: updatedEquipment };
+    setPhotographyPackages(currentPackages =>
+      currentPackages.map(pkg => {
+        if (pkg.id === id) {
+          const updatedEquipment = Array.from(new Set([...pkg.included_items, ...equipmentArray]));
+          return { ...pkg, included_items: updatedEquipment };
+        }
+        return pkg;
+      })
+    );
+  };
+
+  const handleEquipmentKeyDown = (id, e) => {
+    if (e.key === ',' || e.key === '.') {
+      e.preventDefault();
+      const newTag = e.target.value.trim();
+
+      if (newTag) {
+        setPhotographyPackages(currentPackages =>
+          currentPackages.map(pkg => {
+            if (pkg.id === id) {
+              const updatedEquipment = Array.from(new Set([...pkg.included_items, newTag]));
+              console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
+              return { ...pkg, included_items: updatedEquipment, equipmentInput: '' };
+            }
+            return pkg;
+          })
+        );
+      } else {
+        console.log(`[KEY DOWN DEBUG] No new tag to add.`);
       }
-      return pkg;
-    })
-  );
-};
-
-const handleEquipmentKeyDown = (id, e) => {
-  if (e.key === ',' || e.key === '.') {
-    e.preventDefault();
-    const newTag = e.target.value.trim();
-
-    if (newTag) {
-      setPhotographyPackages(currentPackages =>
-        currentPackages.map(pkg => {
-          if (pkg.id === id) {
-            const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
-            console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
-            return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
-          }
-          return pkg;
-        })
-      );
-    } else {
-      console.log(`[KEY DOWN DEBUG] No new tag to add.`);
     }
-  }
-};
+  };
 
   const removeEquipmentTag = (packageId, tagToRemove) => {
     setPhotographyPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === packageId) {
-          return { ...pkg, equipment: pkg.equipment.filter(tag => tag !== tagToRemove) };
+          return { ...pkg, included_items: pkg.included_items.filter(tag => tag !== tagToRemove) };
         }
         return pkg;
       })
@@ -188,11 +206,15 @@ const handleEquipmentKeyDown = (id, e) => {
 
   useEffect(() => {
     const serviceId = session?.user?.vendor_profile?.service_id;
+    console.log(serviceId);
     if (serviceId) {
       setPhotographyId(serviceId);
     }
   }, [session]);
-
+  const handleGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMedia(existingMedia);
+    setNewGalleryFiles(newFiles);
+  };
   useEffect(() => {
     const fetchPhotographyData = async () => {
       if (photographyId) {
@@ -202,19 +224,20 @@ const handleEquipmentKeyDown = (id, e) => {
           };
           const response = await api.get(`/photography/${photographyId}/`, config);
           const data = response.data;
+          console.log(data);
           setName(data.name || '');
           setcontactName(data.manager_name || '');
           setContactNumber(data.contact_number || '');
-          setEmailAddress(data.email_address || '');
+          setEmailAddress(data.email || '');
           setAboutContent(data.about || '');
           setStartingPrice(data.starting_price || '');
-          setAdvancePayment(data.advance_payment || '');
+          setAdvancePayment(data.advance_payment_required || '');
           setEventSpaces(data.event_spaces || '');
           setAdvanceBookingNotice(data.advance_booking_notice || '');
-          setAdvancePaymentRequired(data.advance_payment_required || '');
           setCancellationPolicy(data.cancellation_policy || '');
           setRestrictions(data.restrictions || '');
-          setLocation(data.location || '');
+          setLocation(data.location_details?.name || '');
+          setSelectedLocationData(data.location_details ? { locationId: data.location_details.id, location: data.location_details.name } : null);
           setTermsAndConditions(data.terms_and_conditions || '');
           setReturnDeliveryPolicy(data.return_delivery_policy || '');
           setWebsiteLink(data.website_link || '');
@@ -225,22 +248,38 @@ const handleEquipmentKeyDown = (id, e) => {
           setBusinessRegistrationNumber(data.business_registration_number || '');
           setGstNumber(data.gst_number || '');
           setYearsOfExperience(data.years_of_experience || '');
+          setThumbnailUrl(data.thumbnail_url_detail || null);
+          setThumbnailKey(data.thumbnail_url || null);
 
           if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
           if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
           if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.setContent(data.return_delivery_policy || '');
-
-          setSelectedServices(new Set(data.services_offered || []));
-          setSelectedEventTypes(new Set(data.events_supported || []));
-
+          if (data.faq_details && Array.isArray(data.faq_details)) {
+            const loadedFaqs = data.faq_details.map((faq, index) => ({
+              id: `faq-${index}-${Date.now()}`,
+              question: faq.question || '',
+              answer: faq.answer || ''
+            }));
+            setFaqs(loadedFaqs);
+          }
+          if (data.services_offered_details) {
+            setSelectedServices(new Set(data.services_offered_details.map(service => service.id)));
+          }
+          if (data.event_types_details) {
+            setSelectedEventTypes(new Set(data.event_types_details.map(eventType => eventType.id)));
+          }
+          if (data.images && Array.isArray(data.images)) {
+            const imageUrls = data.images.map(imageObject => imageObject.image_url);
+            setInitialGallery(imageUrls);
+          }
           if (data.packages && Array.isArray(data.packages)) {
             const loadedPackages = data.packages.map(pkg => ({
-              id: pkg.id,
+              id: pkg.id, // This will be a number from the backend
               name: pkg.name || '',
               description: pkg.description || '',
               pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
-              equipment: Array.isArray(pkg.equipment) ? pkg.equipment : [],
+              included_items: Array.isArray(pkg.included_items) ? pkg.included_items : [],
               isOpen: false,
               equipmentInput: ''
             }));
@@ -304,25 +343,78 @@ const handleEquipmentKeyDown = (id, e) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let finalThumbnailKey = thumbnailKey;
+
+    if (thumbnailFile) {
+      const uploadResult = await thumbnailUploaderRef.current.upload();
+      if (!uploadResult.success) {
+        setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        return;
+      }
+      finalThumbnailKey = uploadResult.key;
+    }
+    let galleryResult = await mediaManagerRef.current.upload();
+    if (!galleryResult.success) {
+      setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
+      return;
+    }
+    const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
+    let lowestPackagePrice = null;
+  if (photographyPackages.length > 0) {
+    // Filter out packages with empty or invalid pricing, then parse to float
+    const validPrices = photographyPackages
+      .map(pkg => parseFloat(pkg.pricing))
+      .filter(price => !isNaN(price)); // Ensure it's a valid number
+
+    if (validPrices.length > 0) {
+      lowestPackagePrice = Math.min(...validPrices);
+    }
+  }
+    const faqsForApi = faqs
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
+      .map((faq, index) => ({
+        question: faq.question,
+        answer: faq.answer,
+        order: index + 1,
+      }));
+
+    // ================== ✅ THE FIX IS HERE ==================
+    const packagesData = photographyPackages.map(pkg => {
+        const packagePayload = {
+            name: pkg.name,
+            description: pkg.description,
+            price: parseFloat(pkg.pricing),
+            included_items: pkg.included_items
+        };
+
+        // Only include the 'id' if it's a number (i.e., it came from the backend).
+        // New packages have a string timestamp ID, which will be ignored.
+        if (typeof pkg.id === 'number') {
+            packagePayload.id = pkg.id;
+        }
+
+        return packagePayload;
+    });
+    // =======================================================
 
     const formData = {
       name: Name,
       vendor: vendorId,
       subcategory: subcategory,
       services_offered: Array.from(selectedServices),
-      location: selectedLocationData?.locationId || location,
+      location: selectedLocationData?.locationId || null,
       about: aboutContent,
-      starting_price: parseFloat(startingPrice),
+      starting_price: lowestPackagePrice,
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
-      events_supported: Array.from(selectedEventTypes),
+      event_types: Array.from(selectedEventTypes),
       manager_name: contactName,
-      email_address: emailAddress,
-      advance_payment: parseFloat(advancePayment),
+      email: emailAddress,
+      advance_payment_required: parseFloat(advancePayment),
       event_spaces: eventSpaces,
       total_area_sqft: parseFloat(totalAreaSqft),
       advance_booking_notice: advanceBookingNotice,
-      advance_payment_required: advancePaymentRequired,
+      // advance_payment_required: advancePaymentRequired,
       restrictions: restrictions,
       terms_and_conditions: termsAndConditions,
       return_delivery_policy: returnDeliveryPolicy,
@@ -334,15 +426,16 @@ const handleEquipmentKeyDown = (id, e) => {
       business_registration_number: businessRegistrationNumber,
       gst_number: gstNumber,
       years_of_experience: yearsOfExperience,
-      packages: photographyPackages.map(pkg => ({
-        id: pkg.id,
-        name: pkg.name,
-        description: pkg.description,
-        price: parseFloat(pkg.pricing),
-        equipment: pkg.equipment
-      })),
+      faqs: faqsForApi,
+      gallery_images: finalGalleryList,
+      thumbnail_url: finalThumbnailKey,
+      packages_data: packagesData, // Use the corrected packages data
     };
-
+    Object.keys(formData).forEach(key => {
+      if (formData[key] === null || formData[key] === '' || (Array.isArray(formData[key]) && formData[key].length === 0)) {
+        delete formData[key];
+      }
+    });
     console.log("Submitting data for Photography:", formData);
 
     try {
@@ -360,6 +453,7 @@ const handleEquipmentKeyDown = (id, e) => {
         setFormMessage({ type: 'success', text: 'Photography service updated successfully!' });
       } else {
         response = await api.post("/photography/", formData, config);
+        setPhotographyId(response.data.id);
         setFormMessage({ type: 'success', text: 'Photography service added successfully!' });
       }
       console.log("Operation successful:", response.data);
@@ -369,7 +463,8 @@ const handleEquipmentKeyDown = (id, e) => {
         console.error("Error data:", error.response.data);
         console.error("Error status:", error.response.status);
         console.error("Error headers:", error.response.headers);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Photography service.'}` });
+        const errorText = typeof error.response.data === 'string' ? error.response.data : (error.response.data.detail || 'Failed to process Photography service.');
+        setFormMessage({ type: 'error', text: `Error: ${errorText}` });
       } else if (error.request) {
         console.error("Error request:", error.request);
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
@@ -453,8 +548,12 @@ const handleEquipmentKeyDown = (id, e) => {
                     </div>
                   </div>
 
-                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery/photography'} />
-
+                  <MediaManager
+                    ref={mediaManagerRef}
+                    initialMedia={initialGallery}
+                    onUpdate={handleGalleryUpdate}
+                    pathPrefix={`vendors/${vendorId}/${serviceName}/gallery`}
+                  />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Photography Services Offered</h2>
@@ -480,7 +579,7 @@ const handleEquipmentKeyDown = (id, e) => {
                     removeEquipmentTag={removeEquipmentTag}
                     deletePackage={deletePackage}
                     sectionTitle="Photography Packages" // Specific title for this section
-                    equipmentLabel="Equipment" // Specific label for photography equipment
+                    equipmentLabel="Equipment" // Specific label for photography included_items
                     equipmentPlaceholder="e.g., 2 Cameras, 1 Drone, Lighting Kit" // Specific placeholder
                   />
 
@@ -494,6 +593,7 @@ const handleEquipmentKeyDown = (id, e) => {
                       </div>
                     </div>
                   </div>
+                  <FAQEditor faqs={faqs} setFaqs={setFaqs} />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cancellation/Refund Policy</h2>
