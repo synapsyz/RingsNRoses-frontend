@@ -10,8 +10,8 @@ const ServicePackages = ({
   removeEquipmentTag,
   deletePackage,
   sectionTitle, // New prop for the title (e.g., "Photography Packages", "Beauty & Grooming Packages")
-  equipmentLabel = "Equipment", // New prop for customizable equipment label, with a default
-  equipmentPlaceholder = "e.g., 2 Cameras, 1 Drone, Lighting Kit", // New prop for customizable equipment placeholder
+  equipmentLabel = "Equipment", // New prop for customizable included_items label, with a default
+  equipmentPlaceholder = "e.g., 2 Cameras, 1 Drone, Lighting Kit", // New prop for customizable included_items placeholder
 }) => {
   return (
     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -73,7 +73,7 @@ const ServicePackages = ({
                     {equipmentLabel} {/* Use equipmentLabel prop */}
                   </label>
                   <div className="flex flex-wrap items-center gap-2 p-1.5 sm:p-2 w-full border border-stone-200 rounded-lg focus-within:z-10 focus-within:border-green-600 focus-within:ring-1 focus-within:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:focus-within:ring-neutral-600">
-                    {Array.isArray(pkg.equipment) && pkg.equipment.map((tag, tagIndex) => (
+                    {Array.isArray(pkg.included_items) && pkg.included_items.map((tag, tagIndex) => (
                       <div key={tagIndex} className="flex items-center gap-x-1 py-1 px-2 bg-green-100 text-green-800 border border-green-200 rounded-md text-sm dark:bg-green-800/30 dark:text-green-500 dark:border-green-700">
                         <span>{tag}</span>
                         <button
@@ -92,7 +92,7 @@ const ServicePackages = ({
                       id={`packageEquipment-${pkg.id}`}
                       type="text"
                       className="flex-grow bg-transparent outline-none sm:text-sm text-stone-800 placeholder:text-stone-500 dark:text-neutral-200 dark:placeholder:text-neutral-500"
-                      placeholder={pkg.equipment.length === 0 ? equipmentPlaceholder : ""} 
+                      placeholder={pkg.included_items.length === 0 ? equipmentPlaceholder : ""} 
                       value={pkg.equipmentInput || ''}
                       onChange={(e) => handlePackageChange(pkg.id, 'equipmentInput', e.target.value)}
                       onKeyDown={(e) => handleEquipmentKeyDown(pkg.id, e)}
