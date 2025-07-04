@@ -359,7 +359,17 @@ export default function AddProduct() {
       return;
     }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
+    let lowestPackagePrice = null;
+  if (photographyPackages.length > 0) {
+    // Filter out packages with empty or invalid pricing, then parse to float
+    const validPrices = photographyPackages
+      .map(pkg => parseFloat(pkg.pricing))
+      .filter(price => !isNaN(price)); // Ensure it's a valid number
 
+    if (validPrices.length > 0) {
+      lowestPackagePrice = Math.min(...validPrices);
+    }
+  }
     const faqsForApi = faqs
       .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
       .map((faq, index) => ({
@@ -394,7 +404,7 @@ export default function AddProduct() {
       services_offered: Array.from(selectedServices),
       location: selectedLocationData?.locationId || null,
       about: aboutContent,
-      starting_price: parseFloat(startingPrice),
+      starting_price: lowestPackagePrice,
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
       event_types: Array.from(selectedEventTypes),
@@ -443,6 +453,7 @@ export default function AddProduct() {
         setFormMessage({ type: 'success', text: 'Photography service updated successfully!' });
       } else {
         response = await api.post("/photography/", formData, config);
+        setPhotographyId(response.data.id);
         setFormMessage({ type: 'success', text: 'Photography service added successfully!' });
       }
       console.log("Operation successful:", response.data);
@@ -541,7 +552,7 @@ export default function AddProduct() {
                     ref={mediaManagerRef}
                     initialMedia={initialGallery}
                     onUpdate={handleGalleryUpdate}
-                    pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery`}
+                    pathPrefix={`vendors/${vendorId}/${serviceName}/gallery`}
                   />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
