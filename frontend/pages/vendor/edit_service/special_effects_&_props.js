@@ -91,6 +91,7 @@ export default function AddProduct() {
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
+    const [errors, setErrors] = useState({});
   const [vendorId, setVendorId] = useState(null);
   const [serviceName, setServiceName] = useState(null);
   const [serviceId, setServiceId] = useState(null);
@@ -123,7 +124,7 @@ export default function AddProduct() {
   const addPackage = () => {
     setSpecialEffectsAndPropsPackages(currentPackages => [
       ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
-      { id: `${Date.now()}`, name: '', description: '', pricing: '', equipment: [], isOpen: true, equipmentInput: '' }
+      { id: `${Date.now()}`, name: '', description: '', pricing: '', included_items: [], isOpen: true, equipmentInput: '' }
     ]);
   };
 
@@ -141,8 +142,8 @@ export default function AddProduct() {
     setSpecialEffectsAndPropsPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === id) {
-          const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentArray]));
-          return { ...pkg, equipment: updatedEquipment };
+          const updatedEquipment = Array.from(new Set([...pkg.included_items, ...equipmentArray]));
+          return { ...pkg, included_items: updatedEquipment };
         }
         return pkg;
       })
@@ -158,12 +159,15 @@ export default function AddProduct() {
         setSpecialEffectsAndPropsPackages(currentPackages =>
           currentPackages.map(pkg => {
             if (pkg.id === id) {
-              const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
-              return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
+              const updatedEquipment = Array.from(new Set([...pkg.included_items, newTag]));
+              console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
+              return { ...pkg, included_items: updatedEquipment, equipmentInput: '' };
             }
             return pkg;
           })
         );
+      } else {
+        console.log(`[KEY DOWN DEBUG] No new tag to add.`);
       }
     }
   };
@@ -172,7 +176,7 @@ export default function AddProduct() {
     setSpecialEffectsAndPropsPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === packageId) {
-          return { ...pkg, equipment: pkg.equipment.filter(tag => tag !== tagToRemove) };
+          return { ...pkg, included_items: pkg.included_items.filter(tag => tag !== tagToRemove) };
         }
         return pkg;
       })
@@ -275,11 +279,11 @@ export default function AddProduct() {
           // Changed from data.packages to data.special_effects_and_props_packages (adjust based on your actual API response)
           if (data.packages && Array.isArray(data.packages)) {
             const loadedPackages = data.packages.map(pkg => ({
-              id: pkg.id,
+              id: pkg.id, // This will be a number from the backend
               name: pkg.name || '',
               description: pkg.description || '',
               pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
-              equipment: Array.isArray(pkg.equipment) ? pkg.equipment : [],
+              included_items: Array.isArray(pkg.included_items) ? pkg.included_items : [],
               isOpen: false,
               equipmentInput: ''
             }));
@@ -343,6 +347,55 @@ export default function AddProduct() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: '', text: '' }); // Clear previous messages
+    setErrors({}); // Clear previous errors
+
+    const newErrors = {};
+
+    // Validate required fields
+    if (!Name.trim()) {
+      newErrors.Name = 'Service Name is required.';
+    }
+    if (!contactName.trim()) {
+      newErrors.contactName = 'Contact Person Name is required.';
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = 'Contact Number is required.';
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = 'Email Address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = 'Email Address is invalid.';
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = 'Years of Experience is required.';
+    }
+    if (!aboutContent.trim()) {
+      newErrors.aboutContent = 'Description (About) is required.';
+    }
+    if (!location.trim() || !selectedLocationData) {
+      newErrors.location = 'Service Area Location is required.';
+    }
+    if (!address.trim()) {
+      newErrors.address = 'Business Address is required.';
+    }
+    specialEffectsAndPropsPackages.forEach((pkg) => {
+      if (!pkg.pricing || isNaN(parseFloat(pkg.pricing)) || parseFloat(pkg.pricing) <= 0) {
+        newErrors[`packagePricing-${pkg.id}`] = 'Pricing is required and must be a positive number.';
+      }
+    });
+
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      // Scroll to the first error or top of the form
+      const firstErrorField = document.getElementById(Object.keys(newErrors)[0]);
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return; // Stop the submission
+    }
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
@@ -367,6 +420,22 @@ export default function AddProduct() {
         answer: faq.answer,
         order: index + 1,
       }));
+      const packagesData = specialEffectsAndPropsPackages.map(pkg => {
+        const packagePayload = {
+            name: pkg.name,
+            description: pkg.description,
+            price: parseFloat(pkg.pricing),
+            included_items: pkg.included_items
+        };
+
+        // Only include the 'id' if it's a number (i.e., it came from the backend).
+        // New packages have a string timestamp ID, which will be ignored.
+        if (typeof pkg.id === 'number') {
+            packagePayload.id = pkg.id;
+        }
+
+        return packagePayload;
+    });
       let calculatedStartingPrice = '';
     if (specialEffectsAndPropsPackages.length > 0) {
       const prices = specialEffectsAndPropsPackages
@@ -410,13 +479,7 @@ export default function AddProduct() {
       gallery_images: finalGalleryList,
       thumbnail_url: finalThumbnailKey,
       // Changed packages_data to special_effects_and_props_packages (adjust based on your actual API field)
-      packages_data: specialEffectsAndPropsPackages.map(pkg => ({
-        id: pkg.id,
-        name: pkg.name,
-        description: pkg.description,
-        price: parseFloat(pkg.pricing),
-        equipment: pkg.equipment
-      })),
+      packages_data: packagesData,
     };
 
     Object.keys(formData).forEach(key => {
@@ -485,12 +548,12 @@ export default function AddProduct() {
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         {/* Changed label and placeholder */}
-                        <FormInput id="serviceName" label="Service Name" placeholder="ABC Special Effects" value={Name} onChange={(e) => setName(e.target.value)} required />
-                        <FormInput id="contactName" label="Contact Person Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="serviceName" label="Service Name" placeholder="ABC Special Effects" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name} />
+                        <FormInput id="contactName" label="Contact Person Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} required error={errors.contactName}/>
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abcspecialeffects@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactName}/>
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abcspecialeffects@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput
@@ -526,6 +589,8 @@ export default function AddProduct() {
                           placeholder="Enter Years of Experience"
                           value={yearsOfExperience}
                           onChange={(e) => setYearsOfExperience(e.target.value)}
+                          required
+                          error={errors.yearsOfExperience}
                         />
                       </div>
                       <div>
@@ -534,6 +599,8 @@ export default function AddProduct() {
                           {/* Changed placeholder */}
                           <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your special effects and props service..." />
                         </div>
+                                                 {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
+
                       </div>
                     </div>
                   </div>
@@ -572,6 +639,7 @@ export default function AddProduct() {
                     sectionTitle="Special Effects & Props Packages"
                     equipmentLabel="Effects/Props Included"
                     equipmentPlaceholder="e.g., Smoke Machine, Confetti Cannon, Themed Backdrops"
+                    errors={errors}
                   />
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -652,6 +720,8 @@ export default function AddProduct() {
                               </svg>
                             </button>
                           </div>
+                          {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+
                         </div>
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
@@ -661,6 +731,7 @@ export default function AddProduct() {
                       placeholder="Enter the full business address."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
+                      error={errors.address}
                     />
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
