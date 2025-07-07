@@ -452,6 +452,7 @@ export default function AddGiftOrFavor() {
                           value={alternativeNumber}
                           onChange={(e) => setAlternativeNumber(e.target.value)}
                         />
+                        
                         <FormInput
                           id="businessRegistrationNumber"
                           label="Business Registration Number"
