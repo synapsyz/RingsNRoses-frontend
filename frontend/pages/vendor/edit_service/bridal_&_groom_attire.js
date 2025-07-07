@@ -87,6 +87,7 @@ export default function AddBridalGroomAttire() {
   const [yearsOfExperience, setYearsOfExperience] = useState('');
   const [sizeRanges, setSizeRanges] = useState([]); // Declare sizeRanges state
   const [selectedSizeRanges, setSelectedSizeRanges] = useState(new Set()); // Declare selectedSizeRanges state
+  const [errors, setErrors] = useState({});
  const [vendorId, setVendorId] = useState(null);
    const [serviceName, setServiceName] = useState(null);
    const [serviceId, setServiceId] = useState(null);
@@ -111,14 +112,7 @@ export default function AddBridalGroomAttire() {
     setUpdatedExistingMedia(existingMedia);
     setNewGalleryFiles(newFiles);
   };
-const handleSizeRangeToggle = (sizeRangeId) => {
-    setSelectedSizeRanges(prevSelectedSizeRanges => {
-      const newSelected = new Set(prevSelectedSizeRanges);
-      if (newSelected.has(sizeRangeId)) newSelected.delete(sizeRangeId);
-      else newSelected.add(sizeRangeId);
-      return newSelected;
-    });
-  };
+
   const handleFileChange = (file) => {
     if (file) {
       setThumbnailFile(file);
@@ -157,9 +151,9 @@ const handleSizeRangeToggle = (sizeRangeId) => {
           setEmailAddress(data.email || '');
           setAboutContent(data.about || '');
           setStartingPrice(data.starting_price || ''); // Changed
-          // setAdvancePayment(data.advance_payment_required || '');
+          setAdvancePayment(data.advance_payment_required || '');
           setBookingNotice(data.booking_notice || ''); // Changed
-          setAdvancePaymentRequired(data.advance_payment_required || '');
+          // setAdvancePaymentRequired(data.advance_payment_required || '');
           setCancellationPolicy(data.cancellation_policy || '');
           setRestrictions(data.restrictions || '');
           setLocation(data.location_details?.name || '');
@@ -193,7 +187,9 @@ const handleSizeRangeToggle = (sizeRangeId) => {
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
           if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.commands.setContent(data.return_delivery_policy || '');
 
-          setSelectedStyles(new Set(data.styles_offered || [])); // Changed
+          if(data.event_types_details){
+            setSelectedSizeRanges(new Set(data.event_types_details.map(eventType => eventType.id)));
+          }
            if (data.services_offered_details) {
           setSelectedAttireTypes(new Set(data.services_offered_details.map(service => service.id))); // Changed
            }
@@ -245,7 +241,14 @@ const handleSizeRangeToggle = (sizeRangeId) => {
       return newSelected;
     });
   };
-
+const handleSizeRangeToggle = (sizeRangeId) => {
+    setSelectedSizeRanges(prevSelectedSizeRanges => {
+      const newSelected = new Set(prevSelectedSizeRanges);
+      if (newSelected.has(sizeRangeId)) newSelected.delete(sizeRangeId);
+      else newSelected.add(sizeRangeId);
+      return newSelected;
+    });
+  };
   const handleAttireTypeToggle = (attireTypeId) => { // Changed function name
     setSelectedAttireTypes(prevSelectedAttireTypes => { // Changed
       const newSelected = new Set(prevSelectedAttireTypes);
@@ -257,6 +260,53 @@ const handleSizeRangeToggle = (sizeRangeId) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: '', text: '' }); // Clear previous messages
+    setErrors({}); // Clear previous errors
+
+    const newErrors = {};
+
+    // Validate required fields
+    if (!Name.trim()) {
+      newErrors.Name = 'Service Name is required.';
+    }
+    if (!contactName.trim()) {
+      newErrors.contactName = 'Contact Person Name is required.';
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = 'Contact Number is required.';
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = 'Email Address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = 'Email Address is invalid.';
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = 'Years of Experience is required.';
+    }
+    if (!aboutContent.trim()) {
+      newErrors.aboutContent = 'Description (About) is required.';
+    }
+    if (!location.trim() || !selectedLocationData) {
+      newErrors.location = 'Service Area Location is required.';
+    }
+    if (!address.trim()) {
+      newErrors.address = 'Business Address is required.';
+    }
+    if (!startingPrice.trim()) {
+      newErrors.startingPrice = 'Starting Price is required.';
+    }
+
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      // Scroll to the first error or top of the form
+      const firstErrorField = document.getElementById(Object.keys(newErrors)[0]);
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return; // Stop the submission
+    }
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
@@ -284,7 +334,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
       name: Name,
       vendor: vendorId,
       subcategory: subcategory,
-      // event_types: Array.from(sizeRanges), 
+      event_types: Array.from(selectedSizeRanges), 
       location: selectedLocationData?.locationId || null,
       about: aboutContent,
       starting_price: parseFloat(startingPrice), // Changed
@@ -293,9 +343,9 @@ const handleSizeRangeToggle = (sizeRangeId) => {
       services_offered: Array.from(selectedAttireTypes), // Changed
       manager_name: contactName,
       email: emailAddress,
-      // advance_payment: parseFloat(advancePayment),
+      advance_payment_required: parseFloat(advancePayment),
       booking_notice: bookingNotice, // Changed
-      advance_payment_required: parseFloat(advancePaymentRequired),
+      // advance_payment_required: parseFloat(advancePaymentRequired),
       restrictions: restrictions,
       terms_and_conditions: termsAndConditions,
       return_delivery_policy: returnDeliveryPolicy,
@@ -374,12 +424,12 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="AttireName" label="Attire Service Name" placeholder="Your Attire Shop" value={Name} onChange={(e) => setName(e.target.value)} required /> {/* Changed */}
-                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="AttireName" label="Attire Service Name" placeholder="Your Attire Shop" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name}/> {/* Changed */}
+                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} required error={errors.contactName} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="attires@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} /> {/* Changed */}
+                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactNumber} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="attires@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress} /> {/* Changed */}
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                       <FormInput
@@ -415,7 +465,8 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                         placeholder="Enter Years of Experience"
                         value={yearsOfExperience}
                         onChange={(e) => setYearsOfExperience(e.target.value)}
-                        
+                        required
+                        error={errors.yearsOfExperience}
                       />
                       </div>
                       <div>
@@ -423,6 +474,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your bridal and groom attire service..." /> {/* Changed */}
                         </div>
+                        {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
                       </div>
                     </div>
                   </div>
@@ -485,7 +537,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Pricing</h2>
                       </div>
                       <div className="p-5 space-y-4">
-                        <FormInput id="startingPrice" label="Starting Price" type="number" placeholder="Enter starting price" value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} /> {/* Changed */}
+                        <FormInput id="startingPrice" label="Starting Price" type="number" placeholder="Enter starting price" value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} required error={errors.startingPrice}/> {/* Changed */}
                         <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
                       </div>
                     </div>
@@ -521,6 +573,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                               </svg>
                             </button>
                           </div>
+                          {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
@@ -530,6 +583,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                        placeholder="Enter the full address of your store." // Changed placeholder
                        value={address}
                        onChange={(e) => setAddress(e.target.value)}
+                       error={errors.address}
                      />
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
