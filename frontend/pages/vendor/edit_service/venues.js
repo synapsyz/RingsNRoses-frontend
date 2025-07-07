@@ -13,18 +13,19 @@ import BulletList from '@tiptap/extension-bullet-list';
 import OrderedList from '@tiptap/extension-ordered-list';
 import ListItem from '@tiptap/extension-list-item';
 import Blockquote from '@tiptap/extension-blockquote';
-import FAQEditor from '@/components/FAQEditor'; 
+import FAQEditor from '@/components/FAQEditor';
 import { Link as TiptapLink } from '@tiptap/extension-link';
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from 'next/router'; 
-import ThumbnailUploader from '@/components/ThumbnailUploader'; 
+import { useRouter } from 'next/router';
+import ThumbnailUploader from '@/components/ThumbnailUploader';
 import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
-import SecondaryNav from '@/components/vendor/SecondaryNav'; 
-import MediaManager from '@/components/MediaManager'; 
-import SuccessPopup from '@/components/SuccessPopup'; 
+import SecondaryNav from '@/components/vendor/SecondaryNav';
+import MediaManager from '@/components/MediaManager';
+import SuccessPopup from '@/components/SuccessPopup';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import ActionButtons from '@/components/ActionButtons'; 
 
 let api_url;
 let isNgrok;
@@ -45,9 +46,6 @@ const api = axios.create({
     ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
   }
 });
-
-
-
 
 const EditorToolbar = ({ editor, editorId }) => {
   if (!editor) return null;
@@ -151,25 +149,20 @@ const EditorToolbar = ({ editor, editorId }) => {
 
 export default function EditService() {
 
-
-  const [thumbnailUrl, setThumbnailUrl] = useState(null); 
-  const [thumbnailKey, setThumbnailKey] = useState(null); 
-  const [thumbnailFile, setThumbnailFile] = useState(null); 
-  const [initialGallery, setInitialGallery] = useState([]); 
-  const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]); 
-  const [newGalleryFiles, setNewGalleryFiles] = useState([]); 
-  const mediaManagerRef = useRef(null); 
+  const [thumbnailUrl, setThumbnailUrl] = useState(null);
+  const [thumbnailKey, setThumbnailKey] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [initialGallery, setInitialGallery] = useState([]);
+  const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]);
+  const [newGalleryFiles, setNewGalleryFiles] = useState([]);
+  const mediaManagerRef = useRef(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
- 
   const [isActionCardVisible, setIsActionCardVisible] = useState(true);
   const [isActionCardMinimized, setIsActionCardMinimized] = useState(false);
 
-
   const thumbnailUploaderRef = useRef(null);
   const [faqs, setFaqs] = useState([]);
-
-
 
   const handleGalleryUpdate = (existingMedia, newFiles) => {
     setUpdatedExistingMedia(existingMedia);
@@ -178,15 +171,14 @@ export default function EditService() {
 
   async function uploadFile(file, accessToken) {
     console.log(`Uploading ${file.name}...`);
-    await new Promise(resolve => setTimeout(resolve, 500)); 
+    await new Promise(resolve => setTimeout(resolve, 500));
     return { success: true, key: `media/uploads/${Date.now()}-${file.name}` };
   }
 
-
   const handleFileChange = (file) => {
     if (file) {
-      setThumbnailFile(file); 
-      setThumbnailUrl(URL.createObjectURL(file)); 
+      setThumbnailFile(file);
+      setThumbnailUrl(URL.createObjectURL(file));
     }
   };
 
@@ -195,10 +187,9 @@ export default function EditService() {
     setThumbnailFile(null);
     setThumbnailKey(null);
     if (thumbnailUploaderRef.current) {
-      thumbnailUploaderRef.current.clearFile(); 
+      thumbnailUploaderRef.current.clearFile();
     }
   };
-
 
   const router = useRouter();
   const editorRef = useRef(null);
@@ -222,18 +213,16 @@ export default function EditService() {
     headers: { Authorization: `Bearer ${accessToken}` },
   };
 
-
   const [eventTypes, setEventTypes] = useState([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState(new Set());
 
- 
   const [venueName, setVenueName] = useState('');
   const [managerName, setManagerName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
-  const [about, setAbout] = useState(''); 
+  const [about, setAbout] = useState('');
   const [perPlatePrice, setPerPlatePrice] = useState('');
   const [guestCapacity, setGuestCapacity] = useState('');
   const [eventSpaces, setEventSpaces] = useState('');
@@ -251,15 +240,10 @@ export default function EditService() {
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [address, setAddress] = useState('');
 
-
-
-
-
   const [formMessage, setFormMessage] = useState({ type: '', text: '' });
 
-  const subcategory = session?.user?.vendor_profile?.subcategory.id; 
+  const subcategory = session?.user?.vendor_profile?.subcategory.id;
   useEffect(() => {
-
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
       setvenueId(serviceId);
@@ -279,11 +263,11 @@ export default function EditService() {
         setvenueId(venueData.id || '');
         setManagerName(venueData.manager_name || '');
         setContactNumber(venueData.contact_number || '');
-        setEmailAddress(venueData.email || ''); 
+        setEmailAddress(venueData.email || '');
         setAbout(venueData.about || '');
         setPerPlatePrice(venueData.per_plate_price || '');
         setGuestCapacity(venueData.guest_capacity || '');
-        setEventSpaces(venueData.event_spaces || ''); 
+        setEventSpaces(venueData.event_spaces || '');
         setTotalAreaSqft(venueData.total_area_sqft || '');
         setAdvanceBookingNotice(venueData.advance_booking_notice || '');
         setAdvancePaymentRequired(venueData.advance_payment_required || '');
@@ -296,15 +280,13 @@ export default function EditService() {
         setBusinessRegistrationNumber(venueData.business_registration_number || '');
         setAddress(venueData.address || '');
 
-
         setLocation([venueData.location_details.name, venueData.location_details.district_name]
           .filter(Boolean)
           .join(' , ')
         );
-        setThumbnailUrl(venueData.thumbnail_url_detail || null); 
-        setThumbnailKey(venueData.thumbnail_url || null);       
+        setThumbnailUrl(venueData.thumbnail_url_detail || null);
+        setThumbnailKey(venueData.thumbnail_url || null);
 
-       
         if (venueData.services_offered_details) {
           setSelectedServices(new Set(venueData.services_offered_details.map(service => service.id)));
         }
@@ -317,9 +299,6 @@ export default function EditService() {
           setInitialGallery(imageUrls);
         }
 
-
-
-
         if (venueData.faq_details && Array.isArray(venueData.faq_details)) {
           const loadedFaqs = venueData.faq_details.map((faq, index) => ({
             id: `faq-${index}-${Date.now()}`,
@@ -329,10 +308,10 @@ export default function EditService() {
           setFaqs(loadedFaqs);
         }
 
-        setWebsiteLink(venueData.website_link || ''); 
+        setWebsiteLink(venueData.website_link || '');
         setInstagramLink(venueData.instagram_link || '');
         setFacebookLink(venueData.facebook_link || '');
-        setTermsAndConditions(venueData.terms_and_conditions || ''); 
+        setTermsAndConditions(venueData.terms_and_conditions || '');
 
       } catch (error) {
         console.error("Error fetching venue details:", error);
@@ -341,12 +320,9 @@ export default function EditService() {
     };
 
     fetchVenueDetails();
-  }, [venueId, status, accessToken]); 
-
-
+  }, [venueId, status, accessToken]);
 
   useEffect(() => {
- 
     const fetchServices = async () => {
       try {
         const response = await api.get("/services/venue/");
@@ -358,7 +334,6 @@ export default function EditService() {
       }
     };
 
-    
     const fetchEventTypes = async () => {
       try {
         const response = await api.get("/event-types/");
@@ -374,7 +349,6 @@ export default function EditService() {
     fetchEventTypes();
   }, []);
 
-  
   useEffect(() => {
     if (!editorRef.current) return;
 
@@ -438,7 +412,7 @@ export default function EditService() {
         editorInstance.current.destroy();
       }
     };
-  }, []); 
+  }, []);
   useEffect(() => {
     if (editorInstance.current && about) {
       editorInstance.current.commands.setContent(about);
@@ -677,14 +651,12 @@ export default function EditService() {
   };
 
   const [showSuccess, setShowSuccess] = useState(false);
-
   const [popupMessage, setPopupMessage] = useState('');
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsActionCardVisible(false); 
+    setIsActionCardVisible(false);
 
     setFormMessage({ type: 'info', text: 'Updating venue, please wait...' });
-
 
     let finalThumbnailKey = thumbnailKey;
 
@@ -692,7 +664,7 @@ export default function EditService() {
       const uploadResult = await thumbnailUploaderRef.current.upload();
       if (!uploadResult.success) {
         setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
-        setIsActionCardVisible(true); 
+        setIsActionCardVisible(true);
         return;
       }
       finalThumbnailKey = uploadResult.key;
@@ -701,20 +673,18 @@ export default function EditService() {
     const galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
       setFormMessage({ type: 'error', text: `Gallery upload failed: ${galleryResult.message}` });
-      setIsActionCardVisible(true); 
+      setIsActionCardVisible(true);
       return;
     }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
 
-
     const faqsForApi = faqs
-      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '') 
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
       .map((faq, index) => ({
         question: faq.question,
         answer: faq.answer,
-        order: index + 1, 
+        order: index + 1,
       }));
-
 
     const formData = {
       name: venueName,
@@ -749,11 +719,7 @@ export default function EditService() {
       address: address,
     };
 
-
-
-
     console.log("Submitting updated data:", formData);
-
 
     try {
       const accessToken = session?.accessToken;
@@ -775,12 +741,10 @@ export default function EditService() {
         const response = await api.post('/venues/', formData, config);
         console.log("Venue created successfully:", response.data);
         setFormMessage({ type: 'success', text: 'Venue created successfully!' });
-
       }
 
     } catch (error) {
       const action = venueId ? 'update' : 'create';
-
       console.error(`Error trying to ${action} venue:`, error);
 
       if (error.response) {
@@ -792,74 +756,63 @@ export default function EditService() {
       } else if (error.request) {
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
       }
-      setIsActionCardVisible(true); 
+      setIsActionCardVisible(true);
     }
-
   };
 
-    const handleDeleteClick = () => {
-        setIsDeleteModalOpen(true);
-    };
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true);
+  };
 
-   
-    const handleConfirmDelete = async () => {
-        setIsDeleteModalOpen(false); 
-        setIsActionCardVisible(false); 
+  const handleConfirmDelete = async () => {
+    setIsDeleteModalOpen(false);
+    setIsActionCardVisible(false);
 
-        if (!venueId) {
-            setFormMessage({ type: 'error', text: 'Cannot delete. Venue ID is missing.' });
-            setIsActionCardVisible(true); 
-            return;
-        }
+    if (!venueId) {
+      setFormMessage({ type: 'error', text: 'Cannot delete. Venue ID is missing.' });
+      setIsActionCardVisible(true);
+      return;
+    }
 
-        setFormMessage({ type: 'info', text: 'Deleting venue, please wait...' });
+    setFormMessage({ type: 'info', text: 'Deleting venue, please wait...' });
 
-        try {
-            const accessToken = session?.accessToken;
-            const config = {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                },
-            };
-            await api.delete(`/venues/${venueId}/`, config);
+    try {
+      const accessToken = session?.accessToken;
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+      };
+      await api.delete(`/venues/${venueId}/`, config);
+      setFormMessage({ type: 'success', text: 'Venue deleted successfully!' });
+0
+      setTimeout(() => {
+        router.push('/vendor/service/preview');
+      }, 2000);
 
-            setFormMessage({ type: 'success', text: 'Venue deleted successfully!' });
-
-            setTimeout(() => {
-                router.push('/vendor/service/preview'); 
-            }, 2000);
-
-        } catch (error) {
-            console.error("Error trying to delete venue:", error);
-            if (error.response) {
-                setFormMessage({
-                    type: 'error',
-                    text: `Error: ${error.response.data.detail || 'Failed to delete venue.'}`
-                });
-            } else {
-                setFormMessage({ type: 'error', text: 'Error: No response from server.' });
-            }
-            setIsActionCardVisible(true); 
-        }
-    };
-
+    } catch (error) {
+      console.error("Error trying to delete venue:", error);
+      if (error.response) {
+        setFormMessage({
+          type: 'error',
+          text: `Error: ${error.response.data.detail || 'Failed to delete venue.'}`
+        });
+      } else {
+        setFormMessage({ type: 'error', text: 'Error: No response from server.' });
+      }
+      setIsActionCardVisible(true);
+    }
+  };
 
   return (
     <>
-
       <CustomHead />
       <Header />
       <SecondaryNav />
 
       <div className="bg-stone-50 dark:bg-neutral-900">
-        {/* HEADER */}
-
-
-        {/* MAIN CONTENT */}
-
         <main id="content" className="pb-24 sm:pb-20">
           <div className="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
-            {/* Breadcrumb */}
             <ol className="lg:hidden pt-5 flex items-center whitespace-nowrap">
               <li className="flex items-center text-sm text-stone-600 dark:text-neutral-500">
                 Products
@@ -871,10 +824,7 @@ export default function EditService() {
                 Add Product
               </li>
             </ol>
-            {/* End Breadcrumb */}
-
             <div className="py-2 sm:pb-0 sm:pt-5 space-y-5">
-              {/* Products Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-6 gap-5">
                 <div className="lg:col-span-4 space-y-4">
                   {/* Products Card */}
@@ -896,9 +846,8 @@ export default function EditService() {
                         onDelete={handleDeleteThumbnail}
                       />
 
-                      {/* --- REORDERED INPUTS --- */}
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        {/* Row 1: Name */}
+                        {/* Name */}
                         <div>
                           <label htmlFor="venueName" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Name
@@ -923,7 +872,7 @@ export default function EditService() {
                           />
                         </div>
 
-                        {/* Row 1: Contact Person */}
+                        {/* Contact Person */}
                         <div>
                           <label htmlFor="managerName" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Contact Person
@@ -938,7 +887,7 @@ export default function EditService() {
                           />
                         </div>
 
-                        {/* Row 2: Contact Number */}
+                        {/* Contact Number */}
                         <div>
                           <label htmlFor="contactNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Contact Number
@@ -953,7 +902,7 @@ export default function EditService() {
                           />
                         </div>
 
-                        {/* Row 2: Email Address */}
+                        {/* Email Address */}
                         <div>
                           <label htmlFor="emailAddress" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Email Address
@@ -970,7 +919,7 @@ export default function EditService() {
                           </div>
                         </div>
 
-                        {/* Row 3: Alternative Number */}
+                        {/* Alternative Number */}
                         <div>
                           <label htmlFor="alternativeNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Alternative Number
@@ -985,7 +934,7 @@ export default function EditService() {
                           />
                         </div>
 
-                        {/* Row 3: Business Registration Number */}
+                        {/* Business Registration Number */}
                         <div>
                           <label htmlFor="businessRegistrationNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Business Registration Number
@@ -1000,7 +949,7 @@ export default function EditService() {
                           />
                         </div>
 
-                        {/* Row 4: GST Number */}
+                        {/* GST Number */}
                         <div>
                           <label htmlFor="gstNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             GST Number
@@ -1015,7 +964,7 @@ export default function EditService() {
                           />
                         </div>
 
-                        {/* Row 4: Years of Experience */}
+                        {/* Years of Experience */}
                         <div>
                           <label htmlFor="yearsOfExperience" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Years of Experience
@@ -1031,34 +980,27 @@ export default function EditService() {
                         </div>
                       </div>
 
-                      {/* Textarea Input */}
+                      {/* Description (About) */}
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                           Description (About)
                         </label>
-
-                        {/* Tiptap */}
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <EditorToolbar editor={editorInstance.current} editorId="main-editor" />
                           <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={editorRef} contentEditable></div>
                         </div>
-                        {/* End Tiptap */}
                       </div>
-                      {/* End Textarea Input */}
                     </div>
-                    {/* End Body */}
                   </div>
-                  {/* End Products Card */}
 
                   <MediaManager
-                    ref={mediaManagerRef} 
+                    ref={mediaManagerRef}
                     initialMedia={initialGallery}
                     onUpdate={handleGalleryUpdate}
-                    pathPrefix = 'vendors/gallery'
+                    pathPrefix='vendors/gallery'
                   />
 
-
-                  {/* Variants Card */}
+                  {/* Facilities Card */}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
@@ -1076,7 +1018,7 @@ export default function EditService() {
                               bg-white border border-gray-200 ring-1 ring-transparent text-gray-800
                               cursor-pointer rounded-xl hover:border-green-600 hover:ring-green-600
                               dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700
-                              dark:hover:ring-neutral-600 dark:hover:ring-neutral-600
+                              dark:hover:ring-neutral-600
                               peer-checked:bg-green-100 peer-checked:border-green-200 peer-checked:ring-green-200 peer-checked:text-green-800
                               dark:peer-checked:bg-green-800/30 dark:peer-checked:border-green-800/50
                               dark:peer-checked:ring-green-800/50 dark:peer-checked:text-green-500
@@ -1102,188 +1044,118 @@ export default function EditService() {
                           </label>
                         ))}
                       </div>
-
-
                     </div>
                   </div>
+
+                  {/* Terms and Conditions Card */}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                    {/* Header */}
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                         Terms and Conditions
                       </h2>
                     </div>
-                    {/* End Header */}
-
-                    {/* Body */}
-                    <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
-                      {/* Input */}
+                    <div className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                         <EditorToolbar editor={termsEditorInstance.current} editorId="terms-editor" />
                         <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={termsEditorRef} contentEditable></div>
                       </div>
-                      {/* End Input */}
                     </div>
-                    {/* End Body */}
                   </div>
 
-                  {/* End Variants Card */}
                   <FAQEditor faqs={faqs} setFaqs={setFaqs} />
+
+                  {/* Cancellation Policy Card */}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                    {/* Header */}
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                         Cancellation Policy
                       </h2>
                     </div>
-                    {/* End Header */}
-
-                    {/* Body */}
-                    <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
-                      {/* Input */}
-
-
+                    <div className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                         <EditorToolbar editor={cancellationEditorInstance.current} editorId="cancellation-editor" />
                         <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={cancellationEditorRef} contentEditable></div>
                       </div>
-
-
-                      {/* End Input */}
                     </div>
-                    {/* End Body */}
                   </div>
-                  {/* Social Media Links Section */}
+
+                  {/* Social Media Links Card */}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                    {/* Header */}
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                         Social Media Links
                       </h2>
                     </div>
-                    {/* End Header */}
-
-                    {/* Body */}
                     <div className="ml-2 mt-2 mr-2 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
                       {/* Website Link */}
                       <div>
-                        {/*<label htmlFor="websiteLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                          Website Link
-                        </label>*/}
-                                                <div className="flex items-center gap-2"> 
-                        <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="#A9A9A9"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-globe-lock"
-  >
-    <path d="M15.686 15A14.5 14.5 0 0 1 12 22a14.5 14.5 0 0 1 0-20 10 10 0 1 0 9.542 13" />
-    <path d="M2 12h8.5" />
-    <path d="M20 6V4a2 2 0 1 0-4 0v2" />
-    <rect width="8" height="5" x="14" y="6" rx="1" />
-  </svg>
-  
-                        <input
-                          id="websiteLink"
-                          type="url"
-                          className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                          placeholder="https://example.com"
-                          value={websiteLink}
-                          onChange={(e) => setWebsiteLink(e.target.value)}
-                        />
-                      </div>
+                        <div className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A9A9A9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-globe-lock">
+                            <path d="M15.686 15A14.5 14.5 0 0 1 12 22a14.5 14.5 0 0 1 0-20 10 10 0 1 0 9.542 13" />
+                            <path d="M2 12h8.5" />
+                            <path d="M20 6V4a2 2 0 1 0-4 0v2" />
+                            <rect width="8" height="5" x="14" y="6" rx="1" />
+                          </svg>
+                          <input
+                            id="websiteLink"
+                            type="url"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="https://example.com"
+                            value={websiteLink}
+                            onChange={(e) => setWebsiteLink(e.target.value)}
+                          />
+                        </div>
                       </div>
 
                       {/* Instagram Link */}
                       <div>
-                       {/* <label htmlFor="instagramLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                          Instagram Link
-                        </label>*/}
-                                              <div className="flex items-center gap-2">
-      <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="#A9A9A9"
-  strokeWidth="2"
-  strokeLinecap="round"
-  strokeLinejoin="round"
-  className="lucide lucide-instagram-icon"
->
-  <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-</svg>
-                        <input
-                          id="instagramLink"
-                          type="url"
-                          className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                          placeholder="https://instagram.com/yourvenue"
-                          value={instagramLink}
-                          onChange={(e) => setInstagramLink(e.target.value)}
-                        />
-                      </div>
+                        <div className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A9A9A9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-instagram-icon">
+                            <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                          </svg>
+                          <input
+                            id="instagramLink"
+                            type="url"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="https://instagram.com/yourvenue"
+                            value={instagramLink}
+                            onChange={(e) => setInstagramLink(e.target.value)}
+                          />
+                        </div>
                       </div>
 
                       {/* Facebook Link */}
                       <div>
-                        {/*<label htmlFor="facebookLink" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                          Facebook Link
-                        </label>*/}
                         <div className="flex items-center gap-2">
-                        <svg
-  xmlns="http://www.w3.org/2000/svg"
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="#A9A9A9"
-  strokeWidth="2"
-  strokeLinecap="round"
-  strokeLinejoin="round"
-  className="lucide lucide-facebook-icon"
->
-  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-</svg>
-                        <input
-                          id="facebookLink"
-                          type="url"
-                          className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                          placeholder="https://facebook.com/yourvenue"
-                          value={facebookLink}
-                          onChange={(e) => setFacebookLink(e.target.value)}
-                        />
-                      </div>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A9A9A9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-facebook-icon">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                          </svg>
+                          <input
+                            id="facebookLink"
+                            type="url"
+                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
+                            placeholder="https://facebook.com/yourvenue"
+                            value={facebookLink}
+                            onChange={(e) => setFacebookLink(e.target.value)}
+                          />
+                        </div>
                       </div>
                     </div>
-                    {/* End Body */}
                   </div>
                 </div>
-                {/* End Col */}
 
                 <div className="lg:col-span-2">
                   <div className="lg:sticky lg:top-5 space-y-4">
-                    {/* Product Pricing Card */}
+                    {/* Pricing Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                      {/* Header */}
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                           Pricing
                         </h2>
                       </div>
-                      {/* End Header */}
-
-                      {/* Body */}
-                      <div id="hs-product-details-pricing-card-body" className="p-5 space-y-4">
-                        {/* Input */}
+                      <div className="p-5 space-y-4">
                         <div>
                           <label htmlFor="perPlatePrice" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Per Plate Price
@@ -1302,29 +1174,17 @@ export default function EditService() {
                             </div>
                           </div>
                         </div>
-                        {/* End Input */}
-
-                        {/* Switch/Toggle */}
-
-                        {/* End Switch/Toggle */}
                       </div>
-                      {/* End Body */}
                     </div>
-                    {/* End Product Pricing Card */}
 
-                    {/* Organization Card */}
+                    {/* Service Details Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                      {/* Header */}
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                           Service Details
                         </h2>
                       </div>
-                      {/* End Header */}
-
-                      {/* Body */}
-                      <div id="hs-add-product-organization-card-body" className="p-5 space-y-4">
-                        {/* Input */}
+                      <div className="p-5 space-y-4">
                         <div>
                           <label htmlFor="guestCapacity" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Guest Capacity
@@ -1338,49 +1198,30 @@ export default function EditService() {
                             onChange={(e) => setGuestCapacity(e.target.value)}
                           />
                         </div>
-                        {/* End Input */}
-
-                        {/* Input */}
                         <div>
                           <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Category
                           </label>
-
-                          {/* Select */}
                           <div className="relative">
-                            {/* Fixed Category Display with Same Styling */}
                             <div className="hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-1.5 sm:py-2 px-4 pe-9 flex text-nowrap w-full cursor-default bg-white border border-stone-200 rounded-lg text-start sm:text-sm text-stone-800 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200">
                               <span className="truncate">{session?.user?.vendor_profile?.subcategory?.category?.name}</span>
                             </div>
                           </div>
-                          {/* End Select */}
                         </div>
-                        {/* End Input */}
-
-                        {/* Input */}
                         <div>
                           <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Subcategories
                           </label>
-
-                          {/* Select */}
                           <div className="relative">
-                            {/* Fixed Category Display with Same Styling */}
                             <div className="hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-1.5 sm:py-2 px-4 pe-9 flex text-nowrap w-full cursor-default bg-white border border-stone-200 rounded-lg text-start sm:text-sm text-stone-800 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200">
                               <span className="truncate">{session?.user?.vendor_profile?.subcategory?.name}</span>
                             </div>
                           </div>
-                          {/* End Select */}
                         </div>
-                        {/* End Input */}
-
-                        {/* Input */}
-                        {/* Location Section */}
                         <div className="mt-4">
                           <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Location
                           </label>
-
                           <div className="relative">
                             <input
                               id="location"
@@ -1390,8 +1231,6 @@ export default function EditService() {
                               value={location}
                               onChange={(e) => setLocation(e.target.value)}
                             />
-
-                            {/* Clickable Location Button with custom color */}
                             <button
                               type="button"
                               onClick={() => setIsLocationModalOpen(true)}
@@ -1402,7 +1241,6 @@ export default function EditService() {
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.25-7.5 11.25-7.5 11.25S4.5 17.75 4.5 10.5a7.5 7.5 0 1115 0z" />
                               </svg>
                             </button>
-
                           </div>
                         </div>
                         <LocationSelector
@@ -1410,23 +1248,20 @@ export default function EditService() {
                           onClose={() => setIsLocationModalOpen(false)}
                           onChange={(locData) => {
                             if (locData?.location) {
-                              setLocation(locData.location); 
-                              setSelectedLocationData(locData); 
+                              setLocation(locData.location);
+                              setSelectedLocationData(locData);
                             }
                           }}
                           onSave={(locData) => {
-                            setLocation(locData.location); 
-                            setSelectedLocationData(locData); 
+                            setLocation(locData.location);
+                            setSelectedLocationData(locData);
                             setIsLocationModalOpen(false);
                           }}
                         />
-
-                        {/* End Input */}
                       </div>
-                      {/* End Body */}
                     </div>
 
-                    {/* --- ADDITION: New, separate card for Address --- */}
+                    {/* Address Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
@@ -1445,18 +1280,14 @@ export default function EditService() {
                       </div>
                     </div>
 
+                    {/* Service Details Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                      {/* Header */}
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                           Service Details
                         </h2>
                       </div>
-                      {/* End Header */}
-
-                      {/* Body */}
-                      <div id="hs-add-product-Event-spaces-card-body" className="p-5 space-y-4">
-                        {/* Input */}
+                      <div className="p-5 space-y-4">
                         <div>
                           <label htmlFor="eventSpaces" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Event Spaces
@@ -1470,7 +1301,6 @@ export default function EditService() {
                             onChange={(e) => setEventSpaces(e.target.value)}
                           />
                         </div>
-                        {/* End Input */}
                         <div>
                           <label htmlFor="totalAreaSqft" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Total Area
@@ -1484,23 +1314,17 @@ export default function EditService() {
                             onChange={(e) => setTotalAreaSqft(e.target.value)}
                           />
                         </div>
-
                       </div>
-                      {/* End Body */}
                     </div>
-                    {/* End Organization Card */}
+                    
+                    {/* Booking Details Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                      {/* Header */}
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                           Booking Details
                         </h2>
                       </div>
-                      {/* End Header */}
-
-                      {/* Body */}
-                      <div id="hs-add-product-Event-spaces-card-body" className="p-5 space-y-4">
-                        {/* Input */}
+                      <div className="p-5 space-y-4">
                         <div>
                           <label htmlFor="advanceBookingNotice" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Advance Booking Notice
@@ -1514,7 +1338,6 @@ export default function EditService() {
                             onChange={(e) => setAdvanceBookingNotice(e.target.value)}
                           />
                         </div>
-                        {/* End Input */}
                         <div>
                           <label htmlFor="advancePaymentRequired" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Advance Payment Required
@@ -1528,68 +1351,60 @@ export default function EditService() {
                             onChange={(e) => setAdvancePaymentRequired(e.target.value)}
                           />
                         </div>
-
                       </div>
-                      {/* End Body */}
                     </div>
+
+                    {/* Events Supported Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                      {/* Header */}
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                           Events Supported
                         </h2>
                       </div>
-                      {/* End Header */}
-
-                      {/* Body */}
-                      <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
-                        {/* Input */}
+                      <div className="p-5 space-y-4">
                         <div>
                           <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Event Types
                           </label>
-                          <div>
-                            <div className="p-2">
-                              <div className="flex flex-wrap gap-2">
-                                {eventTypes.map(eventType => (
-                                  <label
-                                    key={eventType.id}
-                                    htmlFor={`eventType-checkbox-${eventType.id}`}
-                                    className={`
-                                      py-2 px-2.5 relative flex justify-center items-center text-center text-[11px]
-                                      bg-white border border-gray-200 ring-1 ring-transparent text-gray-800
-                                      cursor-pointer rounded-xl hover:border-green-600 hover:ring-green-600
-                                      dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700
-                                      dark:hover:ring-neutral-600 dark:hover:ring-neutral-600
-                                      peer-checked:bg-green-100 peer-checked:border-green-200 peer-checked:ring-green-200 peer-checked:text-green-800
-                                      dark:peer-checked:bg-green-800/30 dark:peer-checked:border-green-800/50
-                                      dark:peer-checked:ring-green-800/50 dark:peer-checked:text-green-500
-                                      has-disabled:pointer-events-none has-disabled:text-gray-200 dark:has-disabled:text-neutral-700
-                                    `}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      id={`eventType-checkbox-${eventType.id}`}
-                                      className="hidden peer"
-                                      name="eventTypes"
-                                      checked={selectedEventTypes.has(eventType.id)}
-                                      onChange={() => handleEventTypeToggle(eventType.id)}
-                                    />
-                                    <span className="flex shrink-0 justify-center items-center size-0 bg-green-500 text-transparent rounded-full transition-all duration-200 peer-checked:size-4 peer-checked:me-1.5 peer-checked:text-white">
-                                      <svg className="shrink-0 size-2.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M20 6 9 17l-5-5" />
-                                      </svg>
-                                    </span>
-                                    <span className="block">
-                                      {eventType.name}
-                                    </span>
-                                  </label>
-                                ))}
-                              </div>
+                          <div className="p-2">
+                            <div className="flex flex-wrap gap-2">
+                              {eventTypes.map(eventType => (
+                                <label
+                                  key={eventType.id}
+                                  htmlFor={`eventType-checkbox-${eventType.id}`}
+                                  className={`
+                                    py-2 px-2.5 relative flex justify-center items-center text-center text-[11px]
+                                    bg-white border border-gray-200 ring-1 ring-transparent text-gray-800
+                                    cursor-pointer rounded-xl hover:border-green-600 hover:ring-green-600
+                                    dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700
+                                    dark:hover:ring-neutral-600
+                                    peer-checked:bg-green-100 peer-checked:border-green-200 peer-checked:ring-green-200 peer-checked:text-green-800
+                                    dark:peer-checked:bg-green-800/30 dark:peer-checked:border-green-800/50
+                                    dark:peer-checked:ring-green-800/50 dark:peer-checked:text-green-500
+                                    has-disabled:pointer-events-none has-disabled:text-gray-200 dark:has-disabled:text-neutral-700
+                                  `}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    id={`eventType-checkbox-${eventType.id}`}
+                                    className="hidden peer"
+                                    name="eventTypes"
+                                    checked={selectedEventTypes.has(eventType.id)}
+                                    onChange={() => handleEventTypeToggle(eventType.id)}
+                                  />
+                                  <span className="flex shrink-0 justify-center items-center size-0 bg-green-500 text-transparent rounded-full transition-all duration-200 peer-checked:size-4 peer-checked:me-1.5 peer-checked:text-white">
+                                    <svg className="shrink-0 size-2.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                      <path d="M20 6 9 17l-5-5" />
+                                    </svg>
+                                  </span>
+                                  <span className="block">
+                                    {eventType.name}
+                                  </span>
+                                </label>
+                              ))}
                             </div>
                           </div>
                         </div>
-                        {/* End Input */}
                         <div>
                           <label htmlFor="restrictions" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Restrictions
@@ -1598,105 +1413,40 @@ export default function EditService() {
                             <EditorToolbar editor={restrictionsEditorInstance.current} editorId="restrictions-editor" />
                             <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={restrictionsEditorRef} contentEditable></div>
                           </div>
-
                         </div>
-
                       </div>
-                      {/* End Body */}
                     </div>
-
                   </div>
                 </div>
-                {/* End Col */}
-
-                {showSuccess && (
-
-                  <SuccessPopup
-                    message={popupMessage}
-                    onClose={() => setShowSuccess(false)}
-                  />
-                )}
-                {/* Form message display */}
-                {formMessage.text && (
-                  <div className={`fixed bottom-24 start-1/2 -translate-x-1/2 p-4 rounded-lg shadow-md text-white ${formMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
-                    {formMessage.text}
-                  </div>
-                )}
-
-
-                {/* --- FINAL ACTION BAR FIX --- */}
-                {isActionCardVisible && (
-                  <>
-                    {!isActionCardMinimized ? (
-                       <div className="fixed bottom-0 start-0 end-0 z-40 p-2 transition-transform duration-300">
-                         <div className="mx-auto w-fit bg-stone-800 dark:bg-neutral-950 shadow-lg rounded-xl sm:rounded-full p-2">
-                           <div className="flex items-center justify-center flex-wrap gap-x-3">
-                              <button
-                                type="button"
-                                onClick={handleDeleteClick}
-                                className="text-red-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
-                              >
-                                Delete
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setIsActionCardVisible(false);
-                                  router.back();
-                                }}
-                                className="text-stone-300 decoration-2 font-medium text-sm hover:underline px-3 py-1"
-                              >
-                                Cancel
-                              </button>
-                              
-                              <div className="w-px h-4 bg-stone-700 dark:bg-neutral-700"></div>
-                              
-                              <button
-                                type="submit"
-                                onClick={handleSubmit}
-                                className="text-green-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
-                              >
-                                Save changes
-                              </button>
-                              
-                              <button
-                                type="button"
-                                onClick={() => setIsActionCardMinimized(true)}
-                                className="size-8 inline-flex justify-center items-center rounded-full text-stone-400 hover:bg-stone-700"
-                                aria-label="Minimize"
-                              >
-                                <span className="sr-only">Minimize</span>
-                                <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M18 6 6 18" />
-                                  <path d="m6 6 12 12" />
-                                </svg>
-                              </button>
-                            </div>
-                         </div>
-                       </div>
-                    ) : (
-                      /* Minimized Button */
-                      <div className="fixed bottom-6 right-6 z-40">
-                        <button
-                          type="button"
-                          onClick={() => setIsActionCardMinimized(false)}
-                          className="flex items-center justify-center size-14 bg-stone-800 text-white rounded-full shadow-lg hover:bg-stone-700 transition-all duration-300 hover:scale-105 dark:bg-neutral-950"
-                          aria-label="Restore actions"
-                        >
-                  <span
-                                className="text-green-400 decoration-2 font-medium text-sm hover:underline px-3 py-1"
-                              >
-                                Save
-                              </span>
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-
-
               </div>
-              {/* End Products Grid */}
+              
+              {showSuccess && (
+                <SuccessPopup
+                  message={popupMessage}
+                  onClose={() => setShowSuccess(false)}
+                />
+              )}
+
+              {formMessage.text && (
+                <div className={`fixed bottom-24 start-1/2 -translate-x-1/2 p-4 rounded-lg shadow-md text-white ${formMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+                  {formMessage.text}
+                </div>
+              )}
+
+        
+              {isActionCardVisible && (
+                <ActionButtons
+                  isMinimized={isActionCardMinimized}
+                  onDeleteClick={handleDeleteClick}
+                  onSaveClick={handleSubmit}
+                  onMinimizeClick={() => setIsActionCardMinimized(true)}
+                  onRestoreClick={() => setIsActionCardMinimized(false)}
+                  onCancelClick={() => {
+                    setIsActionCardVisible(false);
+                    router.back();
+                  }}
+                />
+              )}
             </div>
           </div>
         </main>
@@ -1711,11 +1461,9 @@ export default function EditService() {
         Are you sure you want to delete this service? This action is irreversible.
       </ConfirmationModal>
 
-      {/* Scripts */}
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
-
     </>
   );
 }
