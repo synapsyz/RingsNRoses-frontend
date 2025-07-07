@@ -94,6 +94,8 @@ export default function AddGiftOrFavor() {
   const [yearsOfExperience, setYearsOfExperience] = useState('');
   const [vendorId, setVendorId] = useState(null);
   const [serviceName, setServiceName] = useState(null);
+    const [errors, setErrors] = useState({});
+  
   const [serviceId, setServiceId] = useState(null);
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
 
@@ -261,7 +263,53 @@ export default function AddGiftOrFavor() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: '', text: '' }); // Clear previous messages
+    setErrors({}); // Clear previous errors
 
+    const newErrors = {};
+
+    // Validate required fields
+    if (!Name.trim()) {
+      newErrors.Name = 'Service Name is required.';
+    }
+    if (!contactName.trim()) {
+      newErrors.contactName = 'Contact Person Name is required.';
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = 'Contact Number is required.';
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = 'Email Address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = 'Email Address is invalid.';
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = 'Years of Experience is required.';
+    }
+    if (!aboutContent.trim()) {
+      newErrors.aboutContent = 'Description (About) is required.';
+    }
+    if (!location.trim() || !selectedLocationData) {
+      newErrors.location = 'Service Area Location is required.';
+    }
+    if (!address.trim()) {
+      newErrors.address = 'Business Address is required.';
+    }
+    if (!startingPrice.trim()) {
+      newErrors.startingPrice = 'Starting Price is required.';
+    }
+
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      // Scroll to the first error or top of the form
+      const firstErrorField = document.getElementById(Object.keys(newErrors)[0]);
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return; // Stop the submission
+    }
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
@@ -388,12 +436,12 @@ export default function AddGiftOrFavor() {
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="GiftName" label="Product Name" placeholder="Custom Engraved Gifts" value={Name} onChange={(e) => setName(e.target.value)} required /> {/* Changed label/placeholder */}
-                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="GiftName" label="Product Name" placeholder="Custom Engraved Gifts" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name}/> {/* Changed label/placeholder */}
+                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} required error={errors.contactName}/>
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="giftsandfavors@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactNumber}/>
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="giftsandfavors@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress}/>
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput
@@ -429,6 +477,8 @@ export default function AddGiftOrFavor() {
                           placeholder="Enter Years of Experience"
                           value={yearsOfExperience}
                           onChange={(e) => setYearsOfExperience(e.target.value)}
+                          required
+                          error={errors.yearsOfExperience}
                         />
                       </div>
                       <div>
@@ -436,6 +486,8 @@ export default function AddGiftOrFavor() {
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your gifts & favors..." />
                         </div>
+                        {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
+
                       </div>
                     </div>
                   </div>
@@ -514,6 +566,8 @@ export default function AddGiftOrFavor() {
                           placeholder="e.g., 500"
                           value={startingPrice}
                           onChange={(e) => setStartingPrice(e.target.value)}
+                          required
+                          error={errors.startingPrice}
                         />
                         <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
                         {/* You might add a general pricing input here if applicable, or remove this section if pricing is handled differently */}
@@ -553,6 +607,7 @@ export default function AddGiftOrFavor() {
                               </svg>
                             </button>
                           </div>
+                        {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
@@ -563,6 +618,7 @@ export default function AddGiftOrFavor() {
                       placeholder="Enter the full address of your business."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
+                      error={errors.address}
                     />
 
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
