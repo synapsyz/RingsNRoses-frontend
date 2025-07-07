@@ -182,7 +182,7 @@ export default function AddAccommodationTravel() {
               pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
               included_items: Array.isArray(pkg.included_items) ? pkg.included_items : [],
               isOpen: false,
-              amenityInput: ''
+              equipmentInput: ''
             }));
             setAccommodationTravelPackages(loadedPackages);
           } else {
@@ -370,7 +370,7 @@ const handleEquipmentBlur = (id, value) => {
       newErrors.aboutContent = 'Description (About) is required.';
     }
     if (!location.trim() || !selectedLocationData) {
-      newErrors.location = 'Service Area Location is required. Please select from the map.';
+      newErrors.location = 'Service Area Location is required.';
     }
     if (!address.trim()) {
       newErrors.address = 'Business Address is required.';
