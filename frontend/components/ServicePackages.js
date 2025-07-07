@@ -11,7 +11,7 @@ const ServicePackages = ({
   deletePackage,
   sectionTitle, // New prop for the title (e.g., "Photography Packages", "Beauty & Grooming Packages")
   equipmentLabel = "Equipment", // New prop for customizable equipment label, with a default
-  equipmentPlaceholder = "e.g., 2 Cameras, 1 Drone, Lighting Kit", // New prop for customizable equipment placeholder
+  equipmentPlaceholder = "e.g., 2 Cameras, 1 Drone, Lighting Kit", // New prop for customizable include_itwms placeholder
   errors,
 }) => {
   return (
