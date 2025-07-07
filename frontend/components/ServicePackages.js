@@ -10,8 +10,9 @@ const ServicePackages = ({
   removeEquipmentTag,
   deletePackage,
   sectionTitle, // New prop for the title (e.g., "Photography Packages", "Beauty & Grooming Packages")
-  equipmentLabel = "Equipment", // New prop for customizable included_items label, with a default
-  equipmentPlaceholder = "e.g., 2 Cameras, 1 Drone, Lighting Kit", // New prop for customizable included_items placeholder
+  equipmentLabel = "Equipment", // New prop for customizable equipment label, with a default
+  equipmentPlaceholder = "e.g., 2 Cameras, 1 Drone, Lighting Kit", // New prop for customizable include_itwms placeholder
+  errors,
 }) => {
   return (
     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -67,6 +68,8 @@ const ServicePackages = ({
                   value={pkg.pricing}
                   onChange={(e) => handlePackageChange(pkg.id, 'pricing', e.target.value)}
                   onClick={(e) => e.stopPropagation()}
+                  required
+                  error={errors[`packagePricing-${pkg.id}`]} 
                 />
                 <div>
                   <label htmlFor={`packageEquipment-${pkg.id}`} className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
