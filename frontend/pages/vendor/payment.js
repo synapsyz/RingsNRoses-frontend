@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { BsCheckCircleFill, BsXCircleFill } from "react-icons/bs";
-import Link from "next/link";
 import axios from "axios";
 
-// Setup API based on environment variables
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
 
 const getApiUrl = () => {
@@ -23,10 +22,18 @@ const api = axios.create({
 });
 
 export default function Payment() {
+  const { data: session } = useSession();
   const [pricingData, setPricingData] = useState([]);
   const [current, setCurrent] = useState(1);
   const [billingCycle, setBillingCycle] = useState("monthly");
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   useEffect(() => {
     async function fetchPlans() {
@@ -53,8 +60,6 @@ export default function Payment() {
   };
 
   const getCardPosition = (index) => {
-    if (!pricingData.length) return "hidden";
-
     const prevIndex = (current - 1 + pricingData.length) % pricingData.length;
     const nextIndex = (current + 1) % pricingData.length;
 
@@ -62,6 +67,79 @@ export default function Payment() {
     if (index === prevIndex) return "left";
     if (index === nextIndex) return "right";
     return "hidden";
+  };
+
+  const handlePayment = async (plan) => {
+    const amount =
+      billingCycle === "monthly" ? plan.monthly_price : plan.annual_price;
+    const accessToken = session?.accessToken;
+
+    try {
+      const res = await api.post(
+        "/payment/create-order/",
+        {
+          plan_id: plan.id,
+          amount,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const data = res.data;
+
+      const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: data.currency,
+        name: "Rings N Roses",
+        description: `Payment for ${plan.name}`,
+        order_id: data.order_id,
+        handler: async function (response) {
+          try {
+            await api.post(
+              "/payment/verify/",
+              {
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                plan_id: plan.id,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${accessToken}`,
+                },
+              }
+            );
+            alert("✅ Payment successful!");
+          } catch (err) {
+            alert("❌ Payment verification failed");
+          }
+        },
+        prefill: {
+          name: session?.user?.name || "Guest User",
+          email: session?.user?.email || "guest@example.com",
+          contact: "9999999999",
+        },
+        theme: {
+          color: "#6366f1",
+        },
+          method: {
+    upi: true,
+    card: true,
+    netbanking: true,
+    wallet: false, // Optional: set to true if you want wallets like Paytm
+  },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      console.error("Payment error", error);
+      alert("Something went wrong while processing payment.");
+    }
   };
 
   if (loading) {
@@ -91,7 +169,6 @@ export default function Payment() {
         </p>
       </div>
 
-      {/* Left Arrow */}
       <button
         onClick={handlePrev}
         className="absolute left-40 z-40 p-3 bg-white rounded-full shadow hover:bg-gray-200 transition"
@@ -100,11 +177,9 @@ export default function Payment() {
       </button>
 
       <div className="relative w-full max-w-7xl flex items-center justify-center">
-        {/* Cards */}
         <div className="flex items-center justify-center w-full h-[700px] relative overflow-hidden">
           {pricingData.map((plan, index) => {
             const position = getCardPosition(index);
-
             const baseClasses =
               "absolute transition-all duration-500 ease-in-out w-[450px] min-h-[540px] p-8 rounded-2xl shadow-2xl bg-white flex flex-col transform";
             let style = "";
@@ -123,8 +198,6 @@ export default function Payment() {
                 style = "opacity-0 scale-75 pointer-events-none";
             }
 
-            // Map API billing cycles to your billingCycle state keys (monthly/annual)
-            // API keys: monthly_price, annual_price
             const price =
               billingCycle === "monthly"
                 ? plan.monthly_price
@@ -132,23 +205,33 @@ export default function Payment() {
 
             return (
               <div key={plan.id} className={`${baseClasses} ${style}`}>
-                <div className="bg-white dark:bg-neutral-900 rounded-xl h-full flex flex-col p-3">
-                  <header className={plan.is_popular ? "flex justify-between items-center" : ""}>
-                    <h4 className="font-semibold text-lg text-gray-800 dark:text-neutral-200">{plan.name}</h4>
+                <div className="bg-white rounded-xl h-full flex flex-col p-3">
+                  <header
+                    className={
+                      plan.is_popular ? "flex justify-between items-center" : ""
+                    }
+                  >
+                    <h4 className="font-semibold text-lg text-gray-800">
+                      {plan.name}
+                    </h4>
                     {plan.is_popular && (
-                      <span className="inline-block px-3 py-1 text-xs font-semibold text-blue-800 uppercase bg-blue-100 rounded-full dark:bg-blue-500/20 dark:text-blue-400 animate-pulse">
+                      <span className="inline-block px-3 py-1 text-xs font-semibold text-blue-800 uppercase bg-blue-100 rounded-full animate-pulse">
                         Most popular
                       </span>
                     )}
                   </header>
 
-                  <p className="mt-2 text-sm text-gray-500 dark:text-neutral-500">{plan.description}</p>
-
-                  <p className="text-4xl font-bold text-black-600 mt-4">₹{price}</p>
+                  <p className="mt-2 text-sm text-gray-500">{plan.description}</p>
+                  <p className="text-4xl font-bold text-black-600 mt-4">
+                    ₹{price}
+                  </p>
                   <p className="text-sm text-gray-400">{plan.price_period}</p>
 
-                  <div className="mt-5 pb-7 border-b border-gray-200 dark:border-neutral-700">
-                    <button className="py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent transition-shadow bg-blue-600 text-white hover:bg-blue-700 transition">
+                  <div className="mt-5 pb-7 border-b border-gray-200">
+                    <button
+                      onClick={() => handlePayment(plan)}
+                      className="py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 transition"
+                    >
                       Get started
                     </button>
                   </div>
@@ -177,7 +260,6 @@ export default function Payment() {
         </div>
       </div>
 
-      {/* Right Arrow */}
       <button
         onClick={handleNext}
         className="absolute right-40 z-40 p-3 bg-white rounded-full shadow hover:bg-gray-200 transition"
