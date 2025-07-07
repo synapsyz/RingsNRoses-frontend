@@ -16,7 +16,7 @@ import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
 import Pricing from '@/components/Pricing'; // Keep Pricing if applicable, adjust props
 import AddressInput from '@/components/AddressInput'; // Adjust the path if necessary
-
+import FAQEditor from '@/components/FAQEditor.js';
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => process.env.NEXT_PUBLIC_APP_ENV === 'development' ? process.env.NEXT_PUBLIC_API_LOCALHOST : process.env.NEXT_PUBLIC_HOST;
@@ -87,16 +87,32 @@ export default function AddBridalGroomAttire() {
   const [yearsOfExperience, setYearsOfExperience] = useState('');
   const [sizeRanges, setSizeRanges] = useState([]); // Declare sizeRanges state
   const [selectedSizeRanges, setSelectedSizeRanges] = useState(new Set()); // Declare selectedSizeRanges state
-  const subcategory = session?.user?.vendor_profile?.subcategory?.id; // You might need to change this ID to the actual subcategory ID for Bridal & Groom Attire
-  const vendorId = session?.user?.vendor_profile?.id;
-const handleSizeRangeToggle = (sizeRangeId) => {
-    setSelectedSizeRanges(prevSelectedSizeRanges => {
-      const newSelected = new Set(prevSelectedSizeRanges);
-      if (newSelected.has(sizeRangeId)) newSelected.delete(sizeRangeId);
-      else newSelected.add(sizeRangeId);
-      return newSelected;
-    });
+  const [errors, setErrors] = useState({});
+ const [vendorId, setVendorId] = useState(null);
+   const [serviceName, setServiceName] = useState(null);
+   const [serviceId, setServiceId] = useState(null);
+   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
+
+    useEffect(() => {
+     // ... existing useEffect for cateringId
+ 
+     if (session?.user?.vendor_profile) {
+       setVendorId(session.user.vendor_profile.id);
+       const formattedServiceName = session.user.vendor_profile.subcategory?.category?.name
+         .replace(/ /g, '_')
+         .toLowerCase();
+       setServiceName(formattedServiceName);
+       setServiceId(session.user.vendor_profile.service_id); // Assuming service_id is directly available here
+     }
+   }, [session]);
+ console.log(vendorId);
+ console.log(serviceName);
+ console.log(serviceId);
+  const handleGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMedia(existingMedia);
+    setNewGalleryFiles(newFiles);
   };
+
   const handleFileChange = (file) => {
     if (file) {
       setThumbnailFile(file);
@@ -132,30 +148,55 @@ const handleSizeRangeToggle = (sizeRangeId) => {
           setName(data.name || '');
           setcontactName(data.manager_name || '');
           setContactNumber(data.contact_number || '');
-          setEmailAddress(data.email_address || '');
+          setEmailAddress(data.email || '');
           setAboutContent(data.about || '');
           setStartingPrice(data.starting_price || ''); // Changed
-          setAdvancePayment(data.advance_payment || '');
+          setAdvancePayment(data.advance_payment_required || '');
           setBookingNotice(data.booking_notice || ''); // Changed
-          setAdvancePaymentRequired(data.advance_payment_required || '');
+          // setAdvancePaymentRequired(data.advance_payment_required || '');
           setCancellationPolicy(data.cancellation_policy || '');
           setRestrictions(data.restrictions || '');
-          setLocation(data.location || '');
+          setLocation(data.location_details?.name || '');
+          setSelectedLocationData(data.location_details ? { locationId: data.location_details.id, location: data.location_details.name } : null);
           setTermsAndConditions(data.terms_and_conditions || '');
           setReturnDeliveryPolicy(data.return_delivery_policy || '');
           setWebsiteLink(data.website_link || '');
           setInstagramLink(data.instagram_link || '');
           setFacebookLink(data.facebook_link || '');
           setAddress(data.address || '');
+          setYearsOfExperience(data.years_of_experience || '');
+          setAlternativeNumber(data.alternative_number || '');
+          setBusinessRegistrationNumber(data.business_registration_number || '');
+          setGstNumber(data.gst_number || '');
+          setThumbnailUrl(data.thumbnail_url_detail || null);
+          setThumbnailKey(data.thumbnail_url || null);  
+          if (data.faq_details && Array.isArray(data.faq_details)) {
+            const loadedFaqs = data.faq_details.map((faq, index) => ({
+              id: `faq-${index}-${Date.now()}`,
+              question: faq.question || '',
+              answer: faq.answer || ''
+            }));
+            setFaqs(loadedFaqs);
+          }
+
+          
+          
 
           if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
           if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
           if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.commands.setContent(data.return_delivery_policy || '');
 
-          setSelectedStyles(new Set(data.styles_offered || [])); // Changed
-          setSelectedAttireTypes(new Set(data.attire_types_supported || [])); // Changed
-
+          if(data.event_types_details){
+            setSelectedSizeRanges(new Set(data.event_types_details.map(eventType => eventType.id)));
+          }
+           if (data.services_offered_details) {
+          setSelectedAttireTypes(new Set(data.services_offered_details.map(service => service.id))); // Changed
+           }
+           if (data.images && Array.isArray(data.images)) {
+            const imageUrls = data.images.map(imageObject => imageObject.image_url);
+            setInitialGallery(imageUrls);
+          }
         } catch (error) {
           console.error("Error fetching bridal/groom attire data:", error); // Changed message
           setFormMessage({ type: 'error', text: 'Failed to load bridal/groom attire data.' }); // Changed message
@@ -200,7 +241,14 @@ const handleSizeRangeToggle = (sizeRangeId) => {
       return newSelected;
     });
   };
-
+const handleSizeRangeToggle = (sizeRangeId) => {
+    setSelectedSizeRanges(prevSelectedSizeRanges => {
+      const newSelected = new Set(prevSelectedSizeRanges);
+      if (newSelected.has(sizeRangeId)) newSelected.delete(sizeRangeId);
+      else newSelected.add(sizeRangeId);
+      return newSelected;
+    });
+  };
   const handleAttireTypeToggle = (attireTypeId) => { // Changed function name
     setSelectedAttireTypes(prevSelectedAttireTypes => { // Changed
       const newSelected = new Set(prevSelectedAttireTypes);
@@ -212,23 +260,92 @@ const handleSizeRangeToggle = (sizeRangeId) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: '', text: '' }); // Clear previous messages
+    setErrors({}); // Clear previous errors
 
+    const newErrors = {};
+
+    // Validate required fields
+    if (!Name.trim()) {
+      newErrors.Name = 'Service Name is required.';
+    }
+    if (!contactName.trim()) {
+      newErrors.contactName = 'Contact Person Name is required.';
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = 'Contact Number is required.';
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = 'Email Address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = 'Email Address is invalid.';
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = 'Years of Experience is required.';
+    }
+    if (!aboutContent.trim()) {
+      newErrors.aboutContent = 'Description (About) is required.';
+    }
+    if (!location.trim() || !selectedLocationData) {
+      newErrors.location = 'Service Area Location is required.';
+    }
+    if (!address.trim()) {
+      newErrors.address = 'Business Address is required.';
+    }
+    if (!startingPrice.trim()) {
+      newErrors.startingPrice = 'Starting Price is required.';
+    }
+
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      // Scroll to the first error or top of the form
+      const firstErrorField = document.getElementById(Object.keys(newErrors)[0]);
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return; // Stop the submission
+    }
+    let finalThumbnailKey = thumbnailKey;
+
+    if (thumbnailFile) {
+      const uploadResult = await thumbnailUploaderRef.current.upload();
+      if (!uploadResult.success) {
+        setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        return;
+      }
+      finalThumbnailKey = uploadResult.key;
+    }
+    let galleryResult = await mediaManagerRef.current.upload();
+    if (!galleryResult.success) {
+      setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
+      return;
+    }
+    const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
+    const faqsForApi = faqs
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
+      .map((faq, index) => ({
+        question: faq.question,
+        answer: faq.answer,
+        order: index + 1,
+      }));
     const formData = {
       name: Name,
       vendor: vendorId,
       subcategory: subcategory,
-      styles_offered: Array.from(selectedStyles), // Changed
-      location: selectedLocationData?.locationId || location,
+      event_types: Array.from(selectedSizeRanges), 
+      location: selectedLocationData?.locationId || null,
       about: aboutContent,
       starting_price: parseFloat(startingPrice), // Changed
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
-      attire_types_supported: Array.from(selectedAttireTypes), // Changed
+      services_offered: Array.from(selectedAttireTypes), // Changed
       manager_name: contactName,
-      email_address: emailAddress,
-      advance_payment: parseFloat(advancePayment),
+      email: emailAddress,
+      advance_payment_required: parseFloat(advancePayment),
       booking_notice: bookingNotice, // Changed
-      advance_payment_required: advancePaymentRequired,
+      // advance_payment_required: parseFloat(advancePaymentRequired),
       restrictions: restrictions,
       terms_and_conditions: termsAndConditions,
       return_delivery_policy: returnDeliveryPolicy,
@@ -240,7 +357,16 @@ const handleSizeRangeToggle = (sizeRangeId) => {
       business_registration_number: businessRegistrationNumber,
       gst_number: gstNumber,
       years_of_experience: yearsOfExperience,
+      thumbnail_url: finalThumbnailKey,
+      gallery_images: finalGalleryList,
+      faqs: faqsForApi
     };
+    Object.keys(formData).forEach(key => {
+      if (formData[key] === null || formData[key] === '') {
+        delete formData[key];
+      }
+    });
+   
 
     console.log("Submitting data:", formData);
 
@@ -298,12 +424,12 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="AttireName" label="Attire Service Name" placeholder="Your Attire Shop" value={Name} onChange={(e) => setName(e.target.value)} required /> {/* Changed */}
-                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="AttireName" label="Attire Service Name" placeholder="Your Attire Shop" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name}/> {/* Changed */}
+                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} required error={errors.contactName} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="attires@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} /> {/* Changed */}
+                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactNumber} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="attires@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress} /> {/* Changed */}
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                       <FormInput
@@ -339,6 +465,8 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                         placeholder="Enter Years of Experience"
                         value={yearsOfExperience}
                         onChange={(e) => setYearsOfExperience(e.target.value)}
+                        required
+                        error={errors.yearsOfExperience}
                       />
                       </div>
                       <div>
@@ -346,33 +474,17 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your bridal and groom attire service..." /> {/* Changed */}
                         </div>
+                        {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
                       </div>
                     </div>
                   </div>
 
-                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/attire-gallery'} /> {/* Changed pathPrefix */}
-
-                  {/* Removed Food Packages - Add Attire specific gallery sections if needed */}
-                  {/* Example: You might want separate galleries for Bridal and Groom attire */}
-                  {/* <div className="mt-6">
-                    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200 mb-4">Upload Bridal Attire Gallery</h2>
                     <MediaManager
-                      ref={mediaManagerRefVeg} // Reusing ref for simplicity or create new ones
-                      initialMedia={initialGalleryVeg}
-                      onUpdate={(existing, newFiles) => { setUpdatedExistingMediaVeg(existing); setNewGalleryFilesVeg(newFiles); }}
-                      pathPrefix={'vendors/attire-gallery/bridal'}
+                      ref={mediaManagerRef}
+                      initialMedia={initialGallery}
+                      onUpdate={handleGalleryUpdate}
+                      pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery`}
                     />
-                  </div>
-                  <div className="mt-6">
-                    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200 mb-4">Upload Groom Attire Gallery</h2>
-                    <MediaManager
-                      ref={mediaManagerRefNonVeg} // Reusing ref for simplicity or create new ones
-                      initialMedia={initialGalleryNonVeg}
-                      onUpdate={(existing, newFiles) => { setUpdatedExistingMediaNonVeg(existing); setNewGalleryFilesNonVeg(newFiles); }}
-                      pathPrefix={'vendors/attire-gallery/groom'}
-                    />
-                  </div> */}
-
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Attire Types Offered</h2> {/* Changed */}
@@ -386,7 +498,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                       />
                     </div>
                   </div>
-
+                  <FAQEditor faqs={faqs} setFaqs={setFaqs} />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Terms and Conditions</h2>
@@ -425,7 +537,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Pricing</h2>
                       </div>
                       <div className="p-5 space-y-4">
-                        <FormInput id="startingPrice" label="Starting Price" type="number" placeholder="Enter starting price" value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} /> {/* Changed */}
+                        <FormInput id="startingPrice" label="Starting Price" type="number" placeholder="Enter starting price" value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} required error={errors.startingPrice}/> {/* Changed */}
                         <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
                       </div>
                     </div>
@@ -461,6 +573,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                               </svg>
                             </button>
                           </div>
+                          {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
@@ -470,6 +583,7 @@ const handleSizeRangeToggle = (sizeRangeId) => {
                        placeholder="Enter the full address of your store." // Changed placeholder
                        value={address}
                        onChange={(e) => setAddress(e.target.value)}
+                       error={errors.address}
                      />
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
