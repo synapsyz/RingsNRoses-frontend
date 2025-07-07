@@ -180,7 +180,7 @@ export default function AddAccommodationTravel() {
               name: pkg.name || '',
               description: pkg.description || '',
               pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
-              amenities: Array.isArray(pkg.amenities) ? pkg.amenities : [],
+              included_items: Array.isArray(pkg.included_items) ? pkg.included_items : [],
               isOpen: false,
               amenityInput: ''
             }));
@@ -256,7 +256,7 @@ export default function AddAccommodationTravel() {
      const addPackage = () => {
     setAccommodationTravelPackages(currentPackages => [
       ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
-      { id: `${Date.now()}`, name: '', description: '', pricing: '', equipment: [], isOpen: true, equipmentInput: '' }
+      { id: `${Date.now()}`, name: '', description: '', pricing: '', included_items: [], isOpen: true, equipmentInput: '' }
     ]);
   };
 
@@ -274,8 +274,8 @@ const handleEquipmentBlur = (id, value) => {
   setAccommodationTravelPackages(currentPackages =>
     currentPackages.map(pkg => {
       if (pkg.id === id) {
-        const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentArray]));
-        return { ...pkg, equipment: updatedEquipment };
+        const updatedEquipment = Array.from(new Set([...pkg.included_items, ...equipmentArray]));
+        return { ...pkg, included_items: updatedEquipment };
       }
       return pkg;
     })
@@ -291,9 +291,9 @@ const handleEquipmentBlur = (id, value) => {
       setAccommodationTravelPackages(currentPackages =>
         currentPackages.map(pkg => {
           if (pkg.id === id) {
-            const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
+            const updatedEquipment = Array.from(new Set([...pkg.included_items, newTag]));
             console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
-            return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
+            return { ...pkg, included_items: updatedEquipment, equipmentInput: '' };
           }
           return pkg;
         })
@@ -308,7 +308,7 @@ const handleEquipmentBlur = (id, value) => {
     setAccommodationTravelPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === packageId) {
-          return { ...pkg, equipment: pkg.equipment.filter(tag => tag !== tagToRemove) };
+          return { ...pkg, included_items: pkg.included_items.filter(tag => tag !== tagToRemove) };
         }
         return pkg;
       })
@@ -427,6 +427,22 @@ const handleEquipmentBlur = (id, value) => {
         answer: faq.answer,
         order: index + 1,
       }));
+    const packagesData = accommodationTravelPackages.map(pkg => {
+        const packagePayload = {
+            name: pkg.name,
+            description: pkg.description,
+            price: parseFloat(pkg.pricing),
+            included_items: pkg.included_items
+        };
+
+        // Only include the 'id' if it's a number (i.e., it came from the backend).
+        // New packages have a string timestamp ID, which will be ignored.
+        if (typeof pkg.id === 'number') {
+            packagePayload.id = pkg.id;
+        }
+
+        return packagePayload;
+    });
 
     const formData = {
       name: Name,
@@ -456,13 +472,7 @@ const handleEquipmentBlur = (id, value) => {
       faqs: faqsForApi,
       gallery_images: finalGalleryList,
       thumbnail_url: finalThumbnailKey,
-      packages_data: accommodationTravelPackages.map(pkg => ({
-        id: pkg.id,
-        name: pkg.name,
-        description: pkg.description,
-        price: parseFloat(pkg.pricing),
-        amenities: pkg.amenities
-      })),
+      packages_data: packagesData,
     };
     Object.keys(formData).forEach(key => {
       if (formData[key] === null || formData[key] === '' || (typeof formData[key] === 'number' && isNaN(formData[key]))) {
@@ -691,7 +701,10 @@ const handleEquipmentBlur = (id, value) => {
                             </button>
                           </div>
                           {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+
                         </div>
+                                                <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
+
                       </div>
                     </div>
                     <AddressInput
