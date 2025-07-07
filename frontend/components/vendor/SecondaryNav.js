@@ -1,42 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // Hook to detect the active page
-
-// --- Navigation Data ---
-// We define the structure of our navigation here.
-// This makes it easy to add, remove, or change links and dropdowns.
-const navLinks = [
-  { type: 'link', label: 'Dashboard', href: '/vendor/dashboard' },
-  {
-    type: 'dropdown',
-    label: 'Service',
-    sublinks: [
-      { label: 'Add/Edit Service', href: '/vendor/edit_service/venues' },
-      { label: 'Preview', href: '/service/preview' },
-    ],
-  },
-//   {
-//     type: 'dropdown',
-//     label: 'Orders',
-//     badge: '+1',
-//     sublinks: [
-//       { label: 'Orders Overview', href: '/orders' },
-//       { label: 'Purchase Orders', href: '/orders/purchase', badge: 'New' },
-//       { label: 'Order Details', href: '/orders/details' },
-//     ],
-//   },
-//   { type: 'link', label: 'Referrals', href: '/referrals' },
-  { type: 'link', label: 'Reviews', href: '/reviews' },
-  { type: 'link', label: 'Discounts', href: '/discounts' },
-//   {
-//     type: 'dropdown',
-//     label: 'Store',
-//     sublinks: [
-//       { label: 'Store Overview', href: '/store' },
-//       { label: 'Payouts', href: '/store/payouts' },
-//     ],
-//   },
-];
+import { useSession } from "next-auth/react"; // Only import useSession, signIn is not used here
 
 // --- Sub-Components to keep the main component clean ---
 
@@ -87,6 +52,27 @@ const NavDropdown = ({ label, badge, sublinks, pathname }) => (
 
 const SecondaryNav = () => {
   const pathname = usePathname();
+  // Move useSession inside the component
+  const { data: session, status } = useSession();
+
+  // Derive category_name inside the component
+ let category_name = session?.user?.vendor_profile?.subcategory?.category?.name?.replace(/ /g, '_')?.toLowerCase();
+
+  // Define navLinks inside the component so category_name is available
+  const navLinks = [
+    { type: 'link', label: 'Dashboard', href: '/vendor/dashboard' },
+    {
+      type: 'dropdown',
+      label: 'Service',
+      sublinks: [
+        { label: 'Add/Edit Service', href: `/vendor/edit_service/${category_name}` },
+        { label: 'Preview', href: '/service/preview' },
+      ],
+    },
+    { type: 'link', label: 'Reviews', href: '/reviews' },
+    { type: 'link', label: 'Discounts', href: '/discounts' },
+    { type: 'link', label: 'Subscribe', href: '/vendor/payment' },
+  ];
 
   return (
     <nav className="relative bg-white border-b border-stone-200 dark:bg-neutral-800 dark:border-neutral-700">

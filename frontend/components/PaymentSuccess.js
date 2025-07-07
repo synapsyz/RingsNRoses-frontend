@@ -4,6 +4,7 @@ import { signIn, useSession } from "next-auth/react";
 import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
 import SecondaryNav from '@/components/vendor/SecondaryNav';
+import Head from 'next/head';
 
 // --- Animation Styles Component ---
 const AnimationStyles = () => (
@@ -53,41 +54,13 @@ const AnimationStyles = () => (
   `}</style>
 );
 
-// --- Reusable Feature List Item Component ---
-const FeatureListItem = ({ text, included }) => (
-  <li className="flex items-start gap-x-3">
-    <div className="flex-shrink-0 flex justify-center items-center size-6 mt-0.5">
-      {included ? (
-        <svg className="size-5 text-blue-600 dark:text-blue-500 animate-pop-in" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-      ) : (
-        <svg className="size-5 text-gray-300 dark:text-neutral-700 animate-pop-in" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clipRule="evenodd" /></svg>
-      )}
-    </div>
-    <span className={included ? "text-gray-800 dark:text-neutral-300" : "text-gray-500 dark:text-neutral-500"}>{text}</span>
-  </li>
-);
-
-// --- Animated Price Component ---
-const AnimatedPrice = ({ amount }) => {
-    const [currentAmount, setCurrentAmount] = useState(amount);
-    const [isAnimating, setIsAnimating] = useState(false);
-    useEffect(() => {
-        if (amount !== currentAmount) {
-            setIsAnimating(true);
-            setTimeout(() => { setCurrentAmount(amount); setIsAnimating(false); }, 150);
-        }
-    }, [amount, currentAmount]);
-    return (<span className={`font-bold text-4xl md:text-5xl text-gray-800 dark:text-neutral-200 transition-all duration-300 ${isAnimating ? 'opacity-0 transform -translate-y-2' : 'opacity-100 transform translate-y-0'}`}>{currentAmount}</span>);
-};
-
-// --- Payment Success Component ---
-const PaymentSuccessPage = ({ onGoBack, planName, amount, currency }) => {
+const PaymentSuccess = () => {
   useEffect(() => {
-    // This effect runs once after the component mounts
     if (typeof window !== 'undefined') {
       // 1. Trigger Confetti
       import('canvas-confetti').then((confettiModule) => {
         const confetti = confettiModule.default;
+        
         const duration = 3 * 1000;
         const animationEnd = Date.now() + duration;
         const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
@@ -178,74 +151,46 @@ const PricingSection = () => {
 
   return (
     <>
-      <CustomHead />
-      <Header />
-      <SecondaryNav />
-      {/* Tone.js library for sound effects. In a real app, this would be in your main layout or _document.js */}
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+      <Head>
+        <title>Payment Successful</title>
+      </Head>
       <AnimationStyles />
-        
-      <div className="relative min-h-[calc(100vh-10rem)] flex items-center justify-center py-10 md:py-14 px-4 overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-slate-50 dark:bg-black animate-aurora-pan"></div>
-        
-        {view === 'pricing' && (
-          <div className="w-full">
-            <div className="max-w-6xl px-4 sm:px-6 lg:px-8 mx-auto">
-              <div className="mb-12 max-w-2xl mx-auto text-center">
-                <h1 className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-500 text-4xl md:text-5xl">Simple, Transparent Pricing</h1>
-                <p className="mt-5 text-sm md:text-lg text-gray-600 dark:text-gray-300">Whatever your status, our offers evolve according to your needs.</p>
-              </div>
-              {/* <div className="flex justify-center items-center gap-4 mb-12">
-                <span className={`text-sm font-medium transition-colors ${!isAnnual ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>Monthly</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" checked={isAnnual} onChange={() => setBillingCycle(isAnnual ? 'monthly' : 'annual')} className="sr-only peer" />
-                  <div className="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                </label>
-                <span className={`text-sm font-medium transition-colors ${isAnnual ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500'}`}>Annual <span className="text-xs text-green-600 dark:text-green-500">(Save 10%)</span></span>
-              </div> */}
-            </div>
-            <div className="my-8">
-              <div className="max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {plans.map((plan, index) => (
-                    <div key={index} className={`pricing-card card-3d opacity-0 animate-fadeIn-down p-1 h-full flex flex-col rounded-2xl transition-all duration-300 ease-in-out group relative ${plan.isPopular ? 'bg-gradient-to-br from-blue-500 to-purple-500 shadow-lg' : 'bg-white/50 dark:bg-neutral-900/50 shadow-sm'}`} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
-                      <div className="bg-white dark:bg-neutral-900 rounded-xl h-full flex flex-col p-6">
-                        <header className={plan.isPopular ? "flex justify-between items-center" : ""}>
-                          <h4 className="font-semibold text-lg text-gray-800 dark:text-neutral-200">{plan.name}</h4>
-                          {plan.isPopular && <span className="inline-block px-3 py-1 text-xs font-semibold text-blue-800 uppercase bg-blue-100 rounded-full dark:bg-blue-500/20 dark:text-blue-400 animate-pulse">Most popular</span>}
-                        </header>
-                        {!plan.isPopular && <p className="mt-2 text-sm text-gray-500 dark:text-neutral-500">{plan.description}</p>}
-                        <div className="flex flex-col mt-auto">
-                          <div className="mt-4 flex items-baseline gap-x-1"><span className="font-semibold text-gray-800 text-2xl dark:text-neutral-200">₹</span><AnimatedPrice amount={plan.price[billingCycle]} /></div>
-                          <p className="text-xs text-gray-500 dark:text-neutral-500">{plan.pricePeriod} for your {session?.user?.vendor_profile?.subcategory?.category?.name}</p>
-                          <div className="mt-5 pb-7 border-b border-gray-200 dark:border-neutral-700">
-                            <button type="button" onClick={() => handleGetStartedClick(plan)} className={`py-3 px-4 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent transition-shadow ${plan.buttonStyle}`}>Get started</button>
-                          </div>
-                          <ul className="mt-7 space-y-3 text-sm">
-                            {plan.features.map((feature, idx) => <FeatureListItem key={idx} text={feature.text} included={feature.included} />)}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+      <div className="min-h-screen flex items-center justify-center animate-background-pan p-4">
+        <div className="w-full max-w-lg mx-auto bg-white/60 dark:bg-black/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-12 border border-white/30 dark:border-black/30">
+          
+          <div className="mb-6 text-center">
+            <div className="inline-block animate-pop-in">
+              <div className="flex justify-center items-center size-20 bg-gradient-to-br from-purple-500 to-indigo-600 text-white rounded-full shadow-lg shadow-purple-500/40">
+                <svg className="shrink-0 size-10" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
               </div>
             </div>
           </div>
-        )}
 
-        {view === 'success' && (
-          <PaymentSuccessPage 
-            onGoBack={() => setView('pricing')}
-            planName={selectedPlan?.name || 'Your Plan'}
-            amount={selectedPlan?.price[billingCycle] || 'XX.XX'}
-            currency="INR"
-          />
-        )}
+          <div className="mb-8 text-center">
+            <h1 className="mb-3 font-bold text-2xl md:text-3xl text-gray-800 dark:text-neutral-100 opacity-0 animate-fadeIn-up delay-200">
+              Your transfer is on the way
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-neutral-400 opacity-0 animate-fadeIn-up delay-400">
+              We've scheduled your transfer. You can now manage your services.
+            </p>
+          </div>
 
+          <div className="flex flex-col sm:flex-row justify-center gap-4 opacity-0 animate-fadeIn-up delay-600">
+            <Link href="/vendor/dashboard" className="py-3 px-5 inline-flex justify-center items-center gap-x-2 font-semibold text-sm rounded-xl border border-transparent bg-purple-600 text-white hover:bg-purple-700 shadow-lg hover:shadow-purple-600/40 transition-all duration-300 hover:scale-105">
+              Go to Dashboard
+            </Link>
+            <Link href="/payment" className="py-3 px-5 inline-flex justify-center items-center gap-x-2 font-semibold text-sm rounded-xl border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 transition-all duration-300 hover:scale-105 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700">
+              View Plans
+              <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </Link>
+          </div>
+
+        </div>
       </div>
     </>
   );
 };
 
-export default PricingSection;
+export default PaymentSuccess;
