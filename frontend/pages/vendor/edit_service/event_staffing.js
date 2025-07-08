@@ -1,5 +1,3 @@
-// components/AccommodationTravel.js (or pages/vendor/add-accommodation-travel.js)
-
 import Head from 'next/head';
 import Script from 'next/script';
 import Link from 'next/link';
@@ -16,10 +14,11 @@ import FormInput from '@/components/FormInput';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
+import FAQEditor from '@/components/FAQEditor.js';
 import Pricing from '@/components/Pricing';
 import AddressInput from '@/components/AddressInput';
 import ServicePackages from '@/components/ServicePackages';
-import FAQEditor from '@/components/FAQEditor.js';
+import { errors } from 'jose';
 
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -33,8 +32,7 @@ const api = axios.create({
   }
 });
 
-export default function AddAccommodationTravel() {
-  // Common state variables (retained from photography.js)
+export default function AddEventStaffing() {
   const [aboutContent, setAboutContent] = useState('');
   const [cancellationPolicyContent, setCancellationPolicyContent] = useState('');
   const [restrictionsContent, setRestrictionsContent] = useState('');
@@ -49,6 +47,7 @@ export default function AddAccommodationTravel() {
   const thumbnailUploaderRef = useRef(null);
   const [faqs, setFaqs] = useState([]);
   const router = useRouter();
+  const [eventStaffingId, setEventStaffingId] = useState(null);
   const editorRef = useRef(null);
   const editorInstance = useRef(null);
   const cancellationEditorRef = useRef(null);
@@ -58,12 +57,22 @@ export default function AddAccommodationTravel() {
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [selectedLocationData, setSelectedLocationData] = useState(null);
   const { data: session, status } = useSession();
+  const [eventTypes, setEventTypes] = useState([]);
+  const [services, setServices] = useState([]);
+  const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
+  const [selectedServices, setSelectedServices] = useState(new Set()); // Changed to useState(new Set()) for proper initialization
   const [Name, setName] = useState('');
   const [contactName, setcontactName] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
+  const [about, setAbout] = useState('');
   const [startingPrice, setStartingPrice] = useState('');
   const [advancePayment, setAdvancePayment] = useState('');
+  const [guestCapacity, setGuestCapacity] = useState('');
+  const [eventSpaces, setEventSpaces] = useState('');
+  const [totalAreaSqft, setTotalAreaSqft] = useState('');
+  const [advanceBookingNotice, setAdvanceBookingNotice] = useState('');
+  const [advancePaymentRequired, setAdvancePaymentRequired] = useState('');
   const [cancellationPolicy, setCancellationPolicy] = useState('');
   const [restrictions, setRestrictions] = useState('');
   const [location, setLocation] = useState('');
@@ -71,6 +80,9 @@ export default function AddAccommodationTravel() {
   const [termsAndConditions, setTermsAndConditions] = useState('');
   const termsEditorRef = useRef(null);
   const termsEditorInstance = useRef(null);
+  const [returnDeliveryPolicy, setReturnDeliveryPolicy] = useState('');
+  const returnDeliveryEditorRef = useRef(null);
+  const returnDeliveryEditorInstance = useRef(null);
   const [websiteLink, setWebsiteLink] = useState('');
   const [instagramLink, setInstagramLink] = useState('');
   const [facebookLink, setFacebookLink] = useState('');
@@ -79,172 +91,32 @@ export default function AddAccommodationTravel() {
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
-  const [vendorId, setVendorId] = useState(null);
+  const [errors, setErrors] =useState({});
+   const [vendorId, setVendorId] = useState(null);
   const [serviceName, setServiceName] = useState(null);
-  const [serviceId, setServiceId] = useState(null);
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
+   useEffect(() => {
+    // ... existing useEffect for cateringId
 
-  // Accommodation & Travel specific state variables
-  const [accommodationTravelId, setAccommodationTravelId] = useState(null);
-  const [checkInTime, setCheckInTime] = useState('');
-  const [checkOutTime, setCheckOutTime] = useState('');
-  const [numberOfRooms, setNumberOfRooms] = useState('');
-  const [maxGuestsPerRoom, setMaxGuestsPerRoom] = useState('');
-  const [totalGuestCapacity, setTotalGuestCapacity] = useState('');
-  const [amenities, setAmenities] = useState([]);
-  const [selectedAmenities, setSelectedAmenities] = useState(new Set());
-  const [accommodationTravelPackages, setAccommodationTravelPackages] = useState([]);
-  const [accommodationTypes, setAccommodationTypes] = useState([]);
-  const [selectedAccommodationTypes, setSelectedAccommodationTypes] = useState(new Set());
-  // State for validation errors
-  const [errors, setErrors] = useState({});
-
-
-  useEffect(() => {
     if (session?.user?.vendor_profile) {
       setVendorId(session.user.vendor_profile.id);
       const formattedServiceName = session.user.vendor_profile.subcategory?.category?.name
         .replace(/ /g, '_')
         .toLowerCase();
       setServiceName(formattedServiceName);
-      setServiceId(session.user.vendor_profile.service_id);
     }
   }, [session]);
+console.log(vendorId);
+console.log(serviceName);
 
-  useEffect(() => {
-    const fetchAccommodationTravelData = async () => {
-      if (serviceId) {
-        try {
-          const config = {
-            headers: { Authorization: `Bearer ${session?.accessToken}` },
-          };
-          const response = await api.get(`/accommodationtravel/${serviceId}/`, config);
-          const data = response.data;
-          console.log(data);
-          setName(data.name || '');
-          setcontactName(data.manager_name || '');
-          setContactNumber(data.contact_number || '');
-          setEmailAddress(data.email || '');
-          setAboutContent(data.about || '');
-          setStartingPrice(data.starting_price || '');
-          setAdvancePayment(data.advance_payment_required || '');
-          setCancellationPolicy(data.cancellation_policy || '');
-          setRestrictions(data.restrictions || '');
-          setLocation(data.location_details?.name || '');
-          setSelectedLocationData(data.location_details ? { locationId: data.location_details.id, location: data.location_details.name } : null);
-          setTermsAndConditions(data.terms_and_conditions || '');
-          setWebsiteLink(data.website_link || '');
-          setInstagramLink(data.instagram_link || '');
-          setFacebookLink(data.facebook_link || '');
-          setAddress(data.address || '');
-          setAlternativeNumber(data.alternative_number || '');
-          setBusinessRegistrationNumber(data.business_registration_number || '');
-          setGstNumber(data.gst_number || '');
-          setYearsOfExperience(data.years_of_experience || '');
-          setThumbnailUrl(data.thumbnail_url_detail || null);
-          setThumbnailKey(data.thumbnail_url || null);
-
-          // Accommodation & Travel specific data
-          setAccommodationTravelId(data.id || null);
-          setCheckInTime(data.check_in_time || '');
-          setCheckOutTime(data.check_out_time || '');
-          setNumberOfRooms(data.number_of_rooms || '');
-          setMaxGuestsPerRoom(data.max_guests_per_room || '');
-          setTotalGuestCapacity(data.total_guest_capacity || '');
-
-          if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
-          if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
-          if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
-
-          if (data.faq_details && Array.isArray(data.faq_details)) {
-            const loadedFaqs = data.faq_details.map((faq, index) => ({
-              id: `faq-${index}-${Date.now()}`,
-              question: faq.question || '',
-              answer: faq.answer || ''
-            }));
-            setFaqs(loadedFaqs);
-          }
-          if (data.services_offered_details) {
-            setSelectedAmenities(new Set(data.services_offered_details.map(amenity => amenity.id)));
-          }
-          if (data.event_types_details) {
-            setSelectedAccommodationTypes(new Set(data.event_types_details.map(type => type.id)));
-          }
-          if (data.images && Array.isArray(data.images)) {
-            const imageUrls = data.images.map(imageObject => imageObject.image_url);
-            setInitialGallery(imageUrls);
-          }
-          if (data.packages && Array.isArray(data.packages)) {
-            const loadedPackages = data.packages.map(pkg => ({
-              id: pkg.id,
-              name: pkg.name || '',
-              description: pkg.description || '',
-              pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
-              included_items: Array.isArray(pkg.included_items) ? pkg.included_items : [],
-              isOpen: false,
-              equipmentInput: ''
-            }));
-            setAccommodationTravelPackages(loadedPackages);
-          } else {
-            setAccommodationTravelPackages([]);
-          }
-        } catch (error) {
-          console.error("Error fetching Accommodation & Travel data:", error);
-          setFormMessage({ type: 'error', text: 'Failed to load Accommodation & Travel data.' });
-        }
-      }
-    };
-    fetchAccommodationTravelData();
-  }, [serviceId, session]);
-
-  useEffect(() => {
-    const fetchAmenities = async () => {
-      try {
-        const response = await api.get("/services/venue/");
-        if (response.data && Array.isArray(response.data.results)) {
-          setAmenities(response.data.results);
-        }
-      } catch (error) {
-        console.error("Error fetching amenities:", error);
-      }
-    };
-
-    const fetchAccommodationTypes = async () => {
-      try {
-        const response = await api.get("/event-types/");
-        if (response.data && Array.isArray(response.data.results)) {
-          setAccommodationTypes(response.data.results);
-        }
-      } catch (error) {
-        console.error("Error fetching accommodation types:", error);
-      }
-    };
-
-    fetchAmenities();
-    fetchAccommodationTypes();
-  }, []);
-
-  const handleAmenityToggle = (amenityId) => {
-    setSelectedAmenities(prevSelectedAmenities => {
-      const newSelected = new Set(prevSelectedAmenities);
-      if (newSelected.has(amenityId)) newSelected.delete(amenityId);
-      else newSelected.add(amenityId);
-      return newSelected;
-    });
+  // Changed staffingPackages structure to use 'equipment' instead of 'staffRoles'
+  const [staffingPackages, setStaffingPackages] = useState([]);
+  const handleGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMedia(existingMedia);
+    setNewGalleryFiles(newFiles);
   };
-
-  const handleAccommodationTypeToggle = (typeId) => {
-    setSelectedAccommodationTypes(prevSelectedTypes => {
-      const newSelected = new Set(prevSelectedTypes);
-      if (newSelected.has(typeId)) newSelected.delete(typeId);
-      else newSelected.add(typeId);
-      return newSelected;
-    });
-  };
-
-
   const togglePackage = (idToToggle) => {
-    setAccommodationTravelPackages(currentPackages =>
+    setStaffingPackages(currentPackages =>
       currentPackages.map(pkg =>
         pkg.id === idToToggle
           ? { ...pkg, isOpen: !pkg.isOpen }
@@ -253,15 +125,15 @@ export default function AddAccommodationTravel() {
     );
   };
 
-     const addPackage = () => {
-    setAccommodationTravelPackages(currentPackages => [
+ const addPackage = () => {
+    setStaffingPackages(currentPackages => [
       ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
       { id: `${Date.now()}`, name: '', description: '', pricing: '', included_items: [], isOpen: true, equipmentInput: '' }
     ]);
   };
 
   const handlePackageChange = (id, field, value) => {
-    setAccommodationTravelPackages(currentPackages =>
+    setStaffingPackages(currentPackages =>
       currentPackages.map(pkg =>
         pkg.id === id ? { ...pkg, [field]: value } : pkg
       )
@@ -271,7 +143,7 @@ export default function AddAccommodationTravel() {
 const handleEquipmentBlur = (id, value) => {
   const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
 
-  setAccommodationTravelPackages(currentPackages =>
+  setStaffingPackages(currentPackages =>
     currentPackages.map(pkg => {
       if (pkg.id === id) {
         const updatedEquipment = Array.from(new Set([...pkg.included_items, ...equipmentArray]));
@@ -288,7 +160,7 @@ const handleEquipmentBlur = (id, value) => {
     const newTag = e.target.value.trim();
 
     if (newTag) {
-      setAccommodationTravelPackages(currentPackages =>
+      setStaffingPackages(currentPackages =>
         currentPackages.map(pkg => {
           if (pkg.id === id) {
             const updatedEquipment = Array.from(new Set([...pkg.included_items, newTag]));
@@ -305,7 +177,7 @@ const handleEquipmentBlur = (id, value) => {
 };
 
   const removeEquipmentTag = (packageId, tagToRemove) => {
-    setAccommodationTravelPackages(currentPackages =>
+    setStaffingPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === packageId) {
           return { ...pkg, included_items: pkg.included_items.filter(tag => tag !== tagToRemove) };
@@ -316,9 +188,8 @@ const handleEquipmentBlur = (id, value) => {
   };
 
   const deletePackage = (id) => {
-    setAccommodationTravelPackages(accommodationTravelPackages.filter(pkg => pkg.id !== id));
+    setStaffingPackages(staffingPackages.filter(pkg => pkg.id !== id));
   };
-
 
   const handleFileChange = (file) => {
     if (file) {
@@ -336,9 +207,139 @@ const handleEquipmentBlur = (id, value) => {
     }
   };
 
-  const handleGalleryUpdate = (existingMedia, newFiles) => {
-    setUpdatedExistingMedia(existingMedia);
-    setNewGalleryFiles(newFiles);
+  useEffect(() => {
+    const serviceId = session?.user?.vendor_profile?.service_id;
+    if (serviceId) {
+      setEventStaffingId(serviceId);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    const fetchEventStaffingData = async () => {
+      if (eventStaffingId) {
+        try {
+          const config = {
+            headers: { Authorization: `Bearer ${session?.accessToken}` },
+          };
+          const response = await api.get(`/eventstaffing/${eventStaffingId}/`, config);
+          const data = response.data;
+          setName(data.name || '');
+          setcontactName(data.manager_name || '');
+          setContactNumber(data.contact_number || '');
+          setEmailAddress(data.email || '');
+          setAboutContent(data.about || '');
+          setStartingPrice(data.starting_price || '');
+          setAdvancePayment(data.advance_payment_required || '');
+          // setEventSpaces(data.event_spaces || '');
+          // setAdvanceBookingNotice(data.advance_booking_notice || '');
+          // setAdvancePaymentRequired(data.advance_payment_required || '');
+          setCancellationPolicy(data.cancellation_policy || '');
+          setRestrictions(data.restrictions || '');
+          setLocation(data.location_details?.name || '');
+          setSelectedLocationData(data.location_details ? { locationId: data.location_details.id, location: data.location_details.name } : null);
+          setTermsAndConditions(data.terms_and_conditions || '');
+          setReturnDeliveryPolicy(data.return_delivery_policy || '');
+          setWebsiteLink(data.website_link || '');
+          setInstagramLink(data.instagram_link || '');
+          setFacebookLink(data.facebook_link || '');
+          setAddress(data.address || '');
+          setAlternativeNumber(data.alternative_number || '');
+          setBusinessRegistrationNumber(data.business_registration_number || '');
+          setGstNumber(data.gst_number || '');
+          setYearsOfExperience(data.years_of_experience || '');
+          setThumbnailUrl(data.thumbnail_url_detail || null);
+          setThumbnailKey(data.thumbnail_url || null); 
+
+          if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
+          if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
+          if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
+          if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.setContent(data.return_delivery_policy || '');
+
+          if (data.services_offered_details) {
+            setSelectedServices(new Set(data.services_offered_details.map(service => service.id)));
+          }
+          if (data.event_types_details) {
+            setSelectedEventTypes(new Set(data.event_types_details.map(eventType => eventType.id)));
+          }
+          if (data.faq_details && Array.isArray(data.faq_details)) {
+            const loadedFaqs = data.faq_details.map((faq, index) => ({
+              id: `faq-${index}-${Date.now()}`,
+              question: faq.question || '',
+              answer: faq.answer || ''
+            }));
+            setFaqs(loadedFaqs);
+          }
+          if (data.images && Array.isArray(data.images)) {
+            const imageUrls = data.images.map(imageObject => imageObject.image_key);
+            setInitialGallery(imageUrls);
+          }
+
+          if (data.packages && Array.isArray(data.packages)) {
+            const loadedPackages = data.packages.map(pkg => ({
+              id: pkg.id,
+              name: pkg.name || '',
+              description: pkg.description || '',
+              pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
+              included_items: Array.isArray(pkg.included_items) ? pkg.included_items : [],
+              isOpen: false,
+              equipmentInput: ''
+            }));
+            setStaffingPackages(loadedPackages);
+          } else {
+            setStaffingPackages([]);
+          }
+        } catch (error) {
+          console.error("Error fetching event staffing data:", error);
+          setFormMessage({ type: 'error', text: 'Failed to load event staffing data.' });
+        }
+      }
+    };
+    fetchEventStaffingData();
+  }, [eventStaffingId, session, services, eventTypes]);
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await api.get("/services/venue/");
+        if (response.data && Array.isArray(response.data.results)) {
+          setServices(response.data.results);
+        }
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+
+    const fetchEventTypes = async () => {
+      try {
+        const response = await api.get("/event-types/");
+        if (response.data && Array.isArray(response.data.results)) {
+          setEventTypes(response.data.results);
+        }
+      } catch (error) {
+        console.error("Error fetching event types:", error);
+      }
+    };
+
+    fetchServices();
+    fetchEventTypes();
+  }, []);
+
+  const handleServiceToggle = (serviceId) => {
+    setSelectedServices(prevSelectedServices => {
+      const newSelected = new Set(prevSelectedServices);
+      if (newSelected.has(serviceId)) newSelected.delete(serviceId);
+      else newSelected.add(serviceId);
+      return newSelected;
+    });
+  };
+
+  const handleEventTypeToggle = (eventTypeId) => {
+    setSelectedEventTypes(prevSelectedEventTypes => {
+      const newSelected = new Set(prevSelectedEventTypes);
+      if (newSelected.has(eventTypeId)) newSelected.delete(eventTypeId);
+      else newSelected.add(eventTypeId);
+      return newSelected;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -375,7 +376,7 @@ const handleEquipmentBlur = (id, value) => {
     if (!address.trim()) {
       newErrors.address = 'Business Address is required.';
     }
-    accommodationTravelPackages.forEach((pkg) => {
+    staffingPackages.forEach((pkg) => {
       if (!pkg.pricing || isNaN(parseFloat(pkg.pricing)) || parseFloat(pkg.pricing) <= 0) {
         newErrors[`packagePricing-${pkg.id}`] = 'Pricing is required and must be a positive number.';
       }
@@ -392,8 +393,6 @@ const handleEquipmentBlur = (id, value) => {
       }
       return; // Stop the submission
     }
-
-
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
@@ -404,22 +403,14 @@ const handleEquipmentBlur = (id, value) => {
       }
       finalThumbnailKey = uploadResult.key;
     }
+
+    // Upload all galleries separately
     let galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
       setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
       return;
     }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
-    let lowestPackagePrice = null;
-    if (accommodationTravelPackages.length > 0) {
-      const validPrices = accommodationTravelPackages
-        .map(pkg => parseFloat(pkg.pricing))
-        .filter(price => !isNaN(price));
-
-      if (validPrices.length > 0) {
-        lowestPackagePrice = Math.min(...validPrices);
-      }
-    }
     const faqsForApi = faqs
       .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
       .map((faq, index) => ({
@@ -427,7 +418,14 @@ const handleEquipmentBlur = (id, value) => {
         answer: faq.answer,
         order: index + 1,
       }));
-    const packagesData = accommodationTravelPackages.map(pkg => {
+    let minPrice = parseFloat(startingPrice); // Initialize with existing startingPrice, if any
+    if (staffingPackages.length > 0) {
+      const packagePrices = staffingPackages.map(pkg => parseFloat(pkg.pricing)).filter(price => !isNaN(price));
+      if (packagePrices.length > 0) {
+        minPrice = Math.min(...packagePrices);
+      }
+    }
+    const packagesData = staffingPackages.map(pkg => {
         const packagePayload = {
             name: pkg.name,
             description: pkg.description,
@@ -443,24 +441,27 @@ const handleEquipmentBlur = (id, value) => {
 
         return packagePayload;
     });
-
     const formData = {
       name: Name,
       vendor: vendorId,
       subcategory: subcategory,
-      services_offered: Array.from(selectedAmenities),
-      event_types: Array.from(selectedAccommodationTypes),
-
+      services_offered: Array.from(selectedServices),
       location: selectedLocationData?.locationId || null,
       about: aboutContent,
-      starting_price: lowestPackagePrice,
+      starting_price: minPrice,
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
+      event_types: Array.from(selectedEventTypes),
       manager_name: contactName,
       email: emailAddress,
       advance_payment_required: parseFloat(advancePayment),
+      event_spaces: eventSpaces,
+      // total_area_sqft: parseFloat(totalAreaSqft),
+      // advance_booking_notice: advanceBookingNotice,
+      // advance_payment_required: advancePaymentRequired,
       restrictions: restrictions,
       terms_and_conditions: termsAndConditions,
+      return_delivery_policy: returnDeliveryPolicy,
       website_link: websiteLink,
       instagram_link: instagramLink,
       facebook_link: facebookLink,
@@ -469,17 +470,18 @@ const handleEquipmentBlur = (id, value) => {
       business_registration_number: businessRegistrationNumber,
       gst_number: gstNumber,
       years_of_experience: yearsOfExperience,
+      packages_data: packagesData,
       faqs: faqsForApi,
       gallery_images: finalGalleryList,
       thumbnail_url: finalThumbnailKey,
-      packages_data: packagesData,
     };
     Object.keys(formData).forEach(key => {
-      if (formData[key] === null || formData[key] === '' || (typeof formData[key] === 'number' && isNaN(formData[key]))) {
+      if (formData[key] === null || formData[key] === '') {
         delete formData[key];
       }
     });
-    console.log("Submitting data for Accommodation & Travel:", formData);
+
+    console.log("Submitting data for Event Staffing:", formData);
 
     try {
       const accessToken = session?.accessToken;
@@ -491,21 +493,21 @@ const handleEquipmentBlur = (id, value) => {
       };
 
       let response;
-      if (accommodationTravelId) {
-        response = await api.put(`/accommodationtravel/${accommodationTravelId}/`, formData, config);
-        setFormMessage({ type: 'success', text: 'Accommodation & Travel service updated successfully!' });
+      if (eventStaffingId) {
+        response = await api.put(`/eventstaffing/${eventStaffingId}/`, formData, config);
+        setFormMessage({ type: 'success', text: 'Event staffing service updated successfully!' });
       } else {
-        response = await api.post("/accommodationtravel/", formData, config);
-        setFormMessage({ type: 'success', text: 'Accommodation & Travel service added successfully!' });
+        response = await api.post("/eventstaffing/", formData, config);
+        setFormMessage({ type: 'success', text: 'Event staffing service added successfully!' });
       }
       console.log("Operation successful:", response.data);
     } catch (error) {
-      console.error("Error adding/updating Accommodation & Travel service:", error);
+      console.error("Error adding/updating Event Staffing service:", error);
       if (error.response) {
         console.error("Error data:", error.response.data);
         console.error("Error status:", error.response.status);
         console.error("Error headers:", error.response.headers);
-        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Accommodation & Travel service.'}` });
+        setFormMessage({ type: 'error', text: `Error: ${error.response.data.detail || 'Failed to process Event Staffing service.'}` });
       } else if (error.request) {
         console.error("Error request:", error.request);
         setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
@@ -530,60 +532,62 @@ const handleEquipmentBlur = (id, value) => {
                 <div className="lg:col-span-4 space-y-4">
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Accommodation & Travel Service Info</h2>
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Event Staffing Service Info</h2>
                     </div>
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="AccommodationTravelName" label="Service Name" placeholder="Grand Hotel & Resorts" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name} />
-                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value) } required error={errors.contactName} />
+                        <FormInput id="EventStaffingName" label="Service Name" placeholder="Pro Event Staffing" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name} />
+                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} required error={errors.contactName} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999999" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactNumber} />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="grandhotel@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="staffing@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress}/>
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                          <FormInput
-                            id="alternativeNumber"
-                            label="Alternative Number"
-                            type="text"
-                            placeholder="Enter Alternative Number"
-                            value={alternativeNumber}
-                            onChange={(e) => setAlternativeNumber(e.target.value)}
-                          />
-                          <FormInput
-                            id="businessRegistrationNumber"
-                            label="Business Registration Number"
-                            type="text"
-                            placeholder="Enter Business Registration Number"
-                            value={businessRegistrationNumber}
-                            onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
-                          />
+                        <FormInput
+                          id="alternativeNumber"
+                          label="Alternative Number"
+                          type="text"
+                          placeholder="Enter Alternative Number"
+                          value={alternativeNumber}
+                          onChange={(e) => setAlternativeNumber(e.target.value)}
+                        />
+
+                        <FormInput
+                          id="businessRegistrationNumber"
+                          label="Business Registration Number"
+                          type="text"
+                          placeholder="Enter Business Registration Number"
+                          value={businessRegistrationNumber}
+                          onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
+                        />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                          <FormInput
-                            id="gstNumber"
-                            label="GST Number"
-                            type="text"
-                            placeholder="Enter GST Number"
-                            value={gstNumber}
-                            onChange={(e) => setGstNumber(e.target.value)}
-                          />
-                          <FormInput
-                            id="yearsOfExperience"
-                            label="Years of Experience"
-                            type="number"
-                            placeholder="Enter Years of Experience"
-                            value={yearsOfExperience}
-                            onChange={(e) => setYearsOfExperience(e.target.value)}
-                            required
-                            error={errors.yearsOfExperience}
-                          />
+                        <FormInput
+                          id="gstNumber"
+                          label="GST Number"
+                          type="text"
+                          placeholder="Enter GST Number"
+                          value={gstNumber}
+                          onChange={(e) => setGstNumber(e.target.value)}
+                        />
+
+                        <FormInput
+                          id="yearsOfExperience"
+                          label="Years of Experience"
+                          type="number"
+                          placeholder="Enter Years of Experience"
+                          value={yearsOfExperience}
+                          onChange={(e) => setYearsOfExperience(e.target.value)}
+                          required
+                          error={errors.yearsOfExperience}
+                        />
                       </div>
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Description (About)</label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your accommodation & travel service..." />
+                          <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your event staffing service..." />
                         </div>
                          {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
                       </div>
@@ -598,30 +602,30 @@ const handleEquipmentBlur = (id, value) => {
                   />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Amenities Offered</h2>
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Event Staffing Services Offered</h2>
                     </div>
                     <div className="p-4">
                       <CheckboxGroup
-                        items={amenities}
-                        selectedItems={selectedAmenities}
-                        onToggle={handleAmenityToggle}
-                        name="amenities"
+                        items={services}
+                        selectedItems={selectedServices}
+                        onToggle={handleServiceToggle}
+                        name="services"
                       />
                     </div>
                   </div>
 
                   <ServicePackages
-                    packages={accommodationTravelPackages}
+                    packages={staffingPackages}
                     togglePackage={togglePackage}
                     addPackage={addPackage}
                     handlePackageChange={handlePackageChange}
-                    handleEquipmentBlur={handleEquipmentBlur}
-                    handleEquipmentKeyDown={handleEquipmentKeyDown}
-                    removeEquipmentTag={removeEquipmentTag}
+                    handleEquipmentBlur={handleEquipmentBlur} // Use the renamed function
+                    handleEquipmentKeyDown={handleEquipmentKeyDown} // Use the renamed function
+                    removeEquipmentTag={removeEquipmentTag} // Use the renamed function
                     deletePackage={deletePackage}
-                    sectionTitle="Accommodation & Travel Packages"
-                    equipmentLabel="Amenities Included"
-                    equipmentPlaceholder="e.g., Wi-Fi, Breakfast, Swimming Pool"
+                    sectionTitle="Event Staffing Packages"
+                    equipmentLabel="Staff Roles"
+                    equipmentPlaceholder="e.g., Bartender, Security, Usher, Host"
                     errors={errors}
                   />
 
@@ -631,7 +635,7 @@ const handleEquipmentBlur = (id, value) => {
                     </div>
                     <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <TiptapEditor content={termsAndConditions} onUpdate={setTermsAndConditions} placeholder="Outline your terms and conditions for accommodation & travel services..." />
+                        <TiptapEditor content={termsAndConditions} onUpdate={setTermsAndConditions} placeholder="Outline your terms and conditions for event staffing services..." />
                       </div>
                     </div>
                   </div>
@@ -642,7 +646,7 @@ const handleEquipmentBlur = (id, value) => {
                     </div>
                     <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <TiptapEditor content={cancellationPolicy} onUpdate={setCancellationPolicy} placeholder="Enter your accommodation & travel cancellation policy..." />
+                        <TiptapEditor content={cancellationPolicy} onUpdate={setCancellationPolicy} placeholder="Enter your event staffing cancellation policy..." />
                       </div>
                     </div>
                   </div>
@@ -653,8 +657,8 @@ const handleEquipmentBlur = (id, value) => {
                     </div>
                     <div className="ml-4 mt-2 mr-4 mb-2 grid sm:grid-cols-3 gap-3 sm:gap-5">
                       <FormInput id="websiteLink" label="Website Link" type="url" placeholder="https://example.com" value={websiteLink} onChange={(e) => setWebsiteLink(e.target.value)} />
-                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/yourtravel" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
-                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/yourtravel" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
+                      <FormInput id="instagramLink" label="Instagram Link" type="url" placeholder="https://instagram.com/youreventstaffing" value={instagramLink} onChange={(e) => setInstagramLink(e.target.value)} />
+                      <FormInput id="facebookLink" label="Facebook Link" type="url" placeholder="https://facebook.com/youreventstaffing" value={facebookLink} onChange={(e) => setFacebookLink(e.target.value)} />
                     </div>
                   </div>
                 </div>
@@ -701,10 +705,8 @@ const handleEquipmentBlur = (id, value) => {
                             </button>
                           </div>
                           {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
-
                         </div>
-                                                <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
-
+                        <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
                     </div>
                     <AddressInput
@@ -714,20 +716,19 @@ const handleEquipmentBlur = (id, value) => {
                       onChange={(e) => setAddress(e.target.value)}
                       error={errors.address}
                     />
-                    
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Accommodation Types Supported</h2>
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Events Supported</h2>
                       </div>
                       <div id="hs-add-product-Event-supported-card-body" className="p-5 space-y-4">
                         <div>
-                          <label htmlFor="accommodationTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Types of Accommodation Covered</label>
+                          <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Types of Events Covered</label>
                           <div className="p-2">
                             <CheckboxGroup
-                              items={accommodationTypes}
-                              selectedItems={selectedAccommodationTypes}
-                              onToggle={handleAccommodationTypeToggle}
-                              name="accommodationTypes"
+                              items={eventTypes}
+                              selectedItems={selectedEventTypes}
+                              onToggle={handleEventTypeToggle}
+                              name="eventTypes"
                             />
                           </div>
                         </div>
