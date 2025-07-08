@@ -17,6 +17,7 @@ import CheckboxGroup from '@/components/CheckboxGroup';
 import Pricing from '@/components/Pricing'; // Assuming Pricing is a generic component
 import AddressInput from '@/components/AddressInput';
 import ServicePackages from '@/components/ServicePackages'; // Import the generic ServicePackages component
+import FAQEditor from '@/components/FAQEditor';
 
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -95,10 +96,11 @@ export default function AddBeautyAndGroomingProduct() {
   const [beautyGroomingPackages, setBeautyGroomingPackages] = useState([]); // Changed package state
   const [minimumAdvanceBookingTime, setMinimumAdvanceBookingTime] = useState('');
   // NEW: For legal and compliance / certifications
-const legalMediaManagerRef = useRef(null); // New ref for the certification MediaManager
-const [initialCertifications, setInitialCertifications] = useState([]); // State for pre-existing certs
-const [updatedExistingCertifications, setUpdatedExistingCertifications] = useState([]); // For existing certs after updates
-const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For newly uploaded certs
+  const legalMediaManagerRef = useRef(null); // New ref for the certification MediaManager
+  const [initialCertifications, setInitialCertifications] = useState([]); // State for pre-existing certs
+  const [updatedExistingCertifications, setUpdatedExistingCertifications] = useState([]); // For existing certs after updates
+  const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For newly uploaded certs
+  const [errors, setErrors] = useState({}); //
 
   // === PACKAGE HANDLERS (Generic, but operate on beautyGroomingPackages) ===
   const togglePackage = (idToToggle) => {
@@ -111,10 +113,10 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
     );
   };
 
-  const addPackage = () => {
-    setBeautyGroomingPackages(currentPackages => [
+ const addPackage = () => {    
+  setBeautyGroomingPackages(currentPackages => [
       ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
-      { id: `pkg-${Date.now()}`, name: '', description: '', pricing: '', equipment: [], isOpen: true, equipmentInput: '' }
+      { id: `${Date.now()}`, name: '', description: '', pricing: '', included_items: [], isOpen: true, equipmentInput: '' }
     ]);
   };
 
@@ -126,14 +128,15 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
     );
   };
 
+
   const handleEquipmentBlur = (id, value) => {
     const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
 
     setBeautyGroomingPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === id) {
-          const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentArray]));
-          return { ...pkg, equipment: updatedEquipment };
+          const updatedEquipment = Array.from(new Set([...pkg.included_items, ...equipmentArray]));
+          return { ...pkg, included_items: updatedEquipment };
         }
         return pkg;
       })
@@ -149,13 +152,15 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
         setBeautyGroomingPackages(currentPackages =>
           currentPackages.map(pkg => {
             if (pkg.id === id) {
-              const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
+              const updatedEquipment = Array.from(new Set([...pkg.included_items, newTag]));
               console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
-              return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
+              return { ...pkg, included_items: updatedEquipment, equipmentInput: '' };
             }
             return pkg;
           })
         );
+      } else {
+        console.log(`[KEY DOWN DEBUG] No new tag to add.`);
       }
     }
   };
@@ -164,7 +169,7 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
     setBeautyGroomingPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === packageId) {
-          return { ...pkg, equipment: pkg.equipment.filter(tag => tag !== tagToRemove) };
+          return { ...pkg, included_items: pkg.included_items.filter(tag => tag !== tagToRemove) };
         }
         return pkg;
       })
@@ -208,24 +213,25 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
             headers: { Authorization: `Bearer ${session?.accessToken}` },
           };
           // IMPORTANT: Adjust this API endpoint for Beauty & Grooming
-          const response = await api.get(`/beauty-grooming/${beautyGroomingId}/`, config);
+          const response = await api.get(`/beautygrooming/${beautyGroomingId}/`, config);
           const data = response.data;
           setName(data.name || '');
           setcontactName(data.manager_name || '');
           setContactNumber(data.contact_number || '');
-          setEmailAddress(data.email_address || '');
+          setEmailAddress(data.email || '');
           setAboutContent(data.about || '');
           setStartingPrice(data.starting_price || '');
-          setAdvancePayment(data.advance_payment || '');
+          setAdvancePayment(data.advance_payment_required || '');
           // Remove guestCapacity, eventSpaces, totalAreaSqft if not applicable
           // setGuestCapacity(data.guest_capacity || '');
           // setEventSpaces(data.event_spaces || '');
           // setTotalAreaSqft(data.total_area_sqft || '');
           setAdvanceBookingNotice(data.advance_booking_notice || '');
-          setAdvancePaymentRequired(data.advance_payment_required || '');
+          // setAdvancePaymentRequired(data.advance_payment_required || '');
           setCancellationPolicy(data.cancellation_policy || '');
           setRestrictions(data.restrictions || '');
-          setLocation(data.location || '');
+          setLocation(data.location_details?.name || '');
+          setSelectedLocationData(data.location_details ? { locationId: data.location_details.id, location: data.location_details.name } : null);
           setTermsAndConditions(data.terms_and_conditions || '');
           setReturnDeliveryPolicy(data.return_delivery_policy || '');
           setWebsiteLink(data.website_link || '');
@@ -236,23 +242,38 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
           setBusinessRegistrationNumber(data.business_registration_number || '');
           setGstNumber(data.gst_number || '');
           setYearsOfExperience(data.years_of_experience || '');
+          setThumbnailUrl(data.thumbnail_url_detail || null);
+          setThumbnailKey(data.thumbnail_url || null);
 
           if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
           if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
           if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.setContent(data.return_delivery_policy || '');
-
-          // Services/Events Supported will likely be different for Beauty & Grooming
-          setSelectedServices(new Set(data.services_offered || []));
-          setSelectedEventTypes(new Set(data.events_supported || [])); // Still relevant for bridal events etc.
-
+          if (data.faq_details && Array.isArray(data.faq_details)) {
+            const loadedFaqs = data.faq_details.map((faq, index) => ({
+              id: `faq-${index}-${Date.now()}`,
+              question: faq.question || '',
+              answer: faq.answer || ''
+            }));
+            setFaqs(loadedFaqs);
+          }
+          if (data.services_offered_details) {
+            setSelectedServices(new Set(data.services_offered_details.map(service => service.id)));
+          }
+          if (data.event_types_details) {
+            setSelectedEventTypes(new Set(data.event_types_details.map(eventType => eventType.id)));
+          }
+          if (data.images && Array.isArray(data.images)) {
+            const imageUrls = data.images.map(imageObject => imageObject.image_url);
+            setInitialGallery(imageUrls);
+          }
           if (data.packages && Array.isArray(data.packages)) {
             const loadedPackages = data.packages.map(pkg => ({
-              id: pkg.id,
+              id: pkg.id, // This will be a number from the backend
               name: pkg.name || '',
               description: pkg.description || '',
               pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
-              equipment: Array.isArray(pkg.equipment) ? pkg.equipment : [],
+              included_items: Array.isArray(pkg.included_items) ? pkg.included_items : [],
               isOpen: false,
               equipmentInput: ''
             }));
@@ -267,7 +288,7 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
       }
     };
     fetchBeautyGroomingData();
-  }, [beautyGroomingId, session]); 
+  }, [beautyGroomingId, session]);
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -317,6 +338,106 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
   // === SUBMIT HANDLER (Adjust API endpoint and payload) ===
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: '', text: '' }); // Clear previous messages
+    setErrors({}); // Clear previous errors
+
+    const newErrors = {}; // Object to collect errors
+
+    // Validate required fields (adjust field names as per beautyandgrooming.js form)
+    if (!Name.trim()) {
+      newErrors.Name = 'Service Name is required.';
+    }
+    if (!contactName.trim()) {
+      newErrors.contactName = 'Contact Person Name is required.';
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = 'Contact Number is required.';
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = 'Email Address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = 'Email Address is invalid.';
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = 'Years of Experience is required.';
+    }
+    if (!aboutContent.trim()) {
+      newErrors.aboutContent = 'Description (About) is required.';
+    }
+    if (!location.trim() || !selectedLocationData) { // Assuming location is required and uses selectedLocationData
+      newErrors.location = 'Service Area Location is required.';
+    }
+    if (!address.trim()) {
+      newErrors.address = 'Business Address is required.';
+    }
+    // Add validation for packages, similar to decoration_&_design.js
+    beautyGroomingPackages.forEach((pkg) => {
+      if (!pkg.pricing || isNaN(parseFloat(pkg.pricing)) || parseFloat(pkg.pricing) <= 0) {
+        newErrors[`packagePricing-${pkg.id}`] = 'Pricing is required and must be a positive number.';
+      }
+    });
+
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      // Optional: Scroll to the first error field
+      const firstErrorField = document.getElementById(Object.keys(newErrors)[0]);
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return; // Stop the submission
+    }
+    let finalThumbnailKey = thumbnailKey;
+
+    if (thumbnailFile) {
+      const uploadResult = await thumbnailUploaderRef.current.upload();
+      if (!uploadResult.success) {
+        setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        return;
+      }
+      finalThumbnailKey = uploadResult.key;
+    }
+    let galleryResult = await mediaManagerRef.current.upload();
+    if (!galleryResult.success) {
+      setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
+      return;
+    }
+    const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
+    let lowestPackagePrice = null;
+  if (beautyGroomingPackages.length > 0) {
+    // Filter out packages with empty or invalid pricing, then parse to float
+    const validPrices = beautyGroomingPackages
+      .map(pkg => parseFloat(pkg.pricing))
+      .filter(price => !isNaN(price)); // Ensure it's a valid number
+
+    if (validPrices.length > 0) {
+      lowestPackagePrice = Math.min(...validPrices);
+    }
+  }
+    const faqsForApi = faqs
+      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
+      .map((faq, index) => ({
+        question: faq.question,
+        answer: faq.answer,
+        order: index + 1,
+      }));
+       const packagesData = beautyGroomingPackages.map(pkg => {
+        const packagePayload = {
+            name: pkg.name,
+            description: pkg.description,
+            price: parseFloat(pkg.pricing),
+            included_items: pkg.included_items
+        };
+
+        // Only include the 'id' if it's a number (i.e., it came from the backend).
+        // New packages have a string timestamp ID, which will be ignored.
+        if (typeof pkg.id === 'number') {
+            packagePayload.id = pkg.id;
+        }
+
+        return packagePayload;
+    });
 
     const formData = {
       name: Name,
@@ -325,18 +446,18 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
       services_offered: Array.from(selectedServices),
       location: selectedLocationData?.locationId || location,
       about: aboutContent,
-      starting_price: parseFloat(startingPrice),
+      starting_price: lowestPackagePrice,
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
-      events_supported: Array.from(selectedEventTypes),
+      event_types: Array.from(selectedEventTypes),
       manager_name: contactName,
-      email_address: emailAddress,
-      advance_payment: parseFloat(advancePayment),
+      email: emailAddress,
+      advance_payment_required: parseFloat(advancePayment),
       // Remove event_spaces, total_area_sqft if not applicable
       // event_spaces: eventSpaces,
       // total_area_sqft: parseFloat(totalAreaSqft),
       advance_booking_notice: advanceBookingNotice,
-      advance_payment_required: advancePaymentRequired,
+      // advance_payment_required: advancePaymentRequired,
       restrictions: restrictions,
       terms_and_conditions: termsAndConditions,
       return_delivery_policy: returnDeliveryPolicy,
@@ -348,13 +469,10 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
       business_registration_number: businessRegistrationNumber,
       gst_number: gstNumber,
       years_of_experience: yearsOfExperience,
-      packages: beautyGroomingPackages.map(pkg => ({ // Use beautyGroomingPackages here
-        id: pkg.id,
-        name: pkg.name,
-        description: pkg.description,
-        price: parseFloat(pkg.pricing),
-        equipment: pkg.equipment
-      })),
+      packages_data : packagesData,
+      gallery_images: finalGalleryList,
+      thumbnail_url: finalThumbnailKey,
+      faqs: faqsForApi,
     };
 
     console.log("Submitting data for Beauty & Grooming:", formData);
@@ -371,11 +489,12 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
       let response;
       if (beautyGroomingId) {
         // IMPORTANT: Adjust this API endpoint for Beauty & Grooming update
-        response = await api.put(`/beauty-grooming/${beautyGroomingId}/`, formData, config);
+        response = await api.put(`/beautygrooming/${beautyGroomingId}/`, formData, config);
         setFormMessage({ type: 'success', text: 'Beauty & Grooming service updated successfully!' });
       } else {
         // IMPORTANT: Adjust this API endpoint for Beauty & Grooming creation
-        response = await api.post("/beauty-grooming/", formData, config);
+        response = await api.post("/beautygrooming/", formData, config);
+        setBeautyGroomingId(response.data.id);
         setFormMessage({ type: 'success', text: 'Beauty & Grooming service added successfully!' });
       }
       console.log("Operation successful:", response.data);
@@ -416,12 +535,12 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="ServiceName" label="Service Name" placeholder="Glamour Studio" value={Name} onChange={(e) => setName(e.target.value)} required /> {/* Placeholder changed */}
-                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="ServiceName" label="Service Name" placeholder="Glamour Studio" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name} /> {/* Placeholder changed */}
+                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} required error={errors.contactName} /> {/* */}
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="glamourstudio@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} /> {/* Placeholder changed */}
+                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactNumber} /> {/* */}
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="glamourstudio@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress} /> {/* Placeholder changed */}
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput
@@ -456,14 +575,14 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
                           type="number"
                           placeholder="Enter Years of Experience"
                           value={yearsOfExperience}
-                          onChange={(e) => setYearsOfExperience(e.target.value)}
-                        />
+                          onChange={(e) => setYearsOfExperience(e.target.value)} required error={errors.yearsOfExperience} /> {/* */}
                       </div>
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">Description (About)</label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your beauty and grooming service..." /> {/* Placeholder changed */}
                         </div>
+                        {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
                       </div>
                     </div>
                   </div>
@@ -497,6 +616,7 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
                     sectionTitle="Beauty & Grooming Packages" // Specific title for this section
                     equipmentLabel="Products Used" // Specific label for beauty products
                     equipmentPlaceholder="e.g., Mac Foundation, Hair Spray, Facial Kit" // Specific placeholder
+                    errors={errors} // Pass errors to ServicePackages
                   />
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -509,6 +629,7 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
                       </div>
                     </div>
                   </div>
+                  <FAQEditor faqs={faqs} setFaqs={setFaqs} />
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Cancellation/Refund Policy</h2>
@@ -574,6 +695,7 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
                               </svg>
                             </button>
                           </div>
+                          {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
@@ -583,6 +705,7 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
                       placeholder="Enter the full business address."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
+                      error={errors.address} //
                     />
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
@@ -602,23 +725,23 @@ const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For n
                         </div>
                       </div>
                     </div>
-<div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-  <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-    <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Legal and Compliance (for verification, not public)</h2>
-  </div>
-  <div className="p-5 space-y-4">
-    {/* MediaManager for Certifications */}
-    <MediaManager
-      ref={legalMediaManagerRef} // Use the new ref
-      initialMedia={initialCertifications} // Use the new state for initial certs
-      onUpdate={(existing, newFiles) => {
-        setUpdatedExistingCertifications(existing); // Update cert-specific state
-        setNewCertificationFiles(newFiles);       // Update cert-specific state
-      }}
-      pathPrefix={'vendors/certifications'} // Recommended: specific path for certifications
-    />
-  </div>
-</div>
+                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Legal and Compliance (for verification, not public)</h2>
+                      </div>
+                      <div className="p-5 space-y-4">
+                        {/* MediaManager for Certifications */}
+                        <MediaManager
+                          ref={legalMediaManagerRef} // Use the new ref
+                          initialMedia={initialCertifications} // Use the new state for initial certs
+                          onUpdate={(existing, newFiles) => {
+                            setUpdatedExistingCertifications(existing); // Update cert-specific state
+                            setNewCertificationFiles(newFiles);       // Update cert-specific state
+                          }}
+                          pathPrefix={'vendors/certifications'} // Recommended: specific path for certifications
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 {formMessage.text && (
