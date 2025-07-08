@@ -89,6 +89,8 @@ export default function AddTransportation() {
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
+    const [errors, setErrors] =useState({});
+  
    const [vendorId, setVendorId] = useState(null);
   const [serviceName, setServiceName] = useState(null);
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
@@ -123,10 +125,10 @@ console.log(serviceName);
     );
   };
 
-  const addPackage = () => {
+ const addPackage = () => {
     setTransportationPackages(currentPackages => [
       ...currentPackages.map(pkg => ({ ...pkg, isOpen: false })),
-      { id: `${Date.now()}`, name: '', description: '', pricing: '', equipment: [], isOpen: true, equipmentInput: '' }
+      { id: `${Date.now()}`, name: '', description: '', pricing: '', included_items: [], isOpen: true, equipmentInput: '' }
     ]);
   };
 
@@ -138,44 +140,47 @@ console.log(serviceName);
     );
   };
 
-  const handleEquipmentTagsBlur = (id, value) => {
-    const equipmentTagsArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
+const handleEquipmentBlur = (id, value) => {
+  const equipmentArray = String(value).split(',').map(item => item.trim()).filter(item => item !== '');
 
-    setTransportationPackages(currentPackages =>
-      currentPackages.map(pkg => {
-        if (pkg.id === id) {
-          const updatedEquipment = Array.from(new Set([...pkg.equipment, ...equipmentTagsArray]));
-          return { ...pkg, equipment: updatedEquipment };
-        }
-        return pkg;
-      })
-    );
-  };
-
-  const handleEquipmentTagsKeyDown = (id, e) => {
-    if (e.key === ',' || e.key === '.') {
-      e.preventDefault();
-      const newTag = e.target.value.trim();
-
-      if (newTag) {
-        setTransportationPackages(currentPackages =>
-          currentPackages.map(pkg => {
-            if (pkg.id === id) {
-              const updatedEquipment = Array.from(new Set([...pkg.equipment, newTag]));
-              return { ...pkg, equipment: updatedEquipment, equipmentInput: '' };
-            }
-            return pkg;
-          })
-        );
+  setTransportationPackages(currentPackages =>
+    currentPackages.map(pkg => {
+      if (pkg.id === id) {
+        const updatedEquipment = Array.from(new Set([...pkg.included_items, ...equipmentArray]));
+        return { ...pkg, included_items: updatedEquipment };
       }
+      return pkg;
+    })
+  );
+};
+
+ const handleEquipmentKeyDown = (id, e) => {
+  if (e.key === ',' || e.key === '.') {
+    e.preventDefault();
+    const newTag = e.target.value.trim();
+
+    if (newTag) {
+      setTransportationPackages(currentPackages =>
+        currentPackages.map(pkg => {
+          if (pkg.id === id) {
+            const updatedEquipment = Array.from(new Set([...pkg.included_items, newTag]));
+            console.log(`[KEY DOWN DEBUG] Package ID: ${id}, Equipment array TO BE SET (includes new tag):`, updatedEquipment);
+            return { ...pkg, included_items: updatedEquipment, equipmentInput: '' };
+          }
+          return pkg;
+        })
+      );
+    } else {
+      console.log(`[KEY DOWN DEBUG] No new tag to add.`);
     }
-  };
+  }
+};
 
   const removeEquipmentTag = (packageId, tagToRemove) => {
     setTransportationPackages(currentPackages =>
       currentPackages.map(pkg => {
         if (pkg.id === packageId) {
-          return { ...pkg, equipment: pkg.equipment.filter(tag => tag !== tagToRemove) };
+          return { ...pkg, included_items: pkg.included_items.filter(tag => tag !== tagToRemove) };
         }
         return pkg;
       })
@@ -275,8 +280,7 @@ console.log(serviceName);
               name: pkg.name || '',
               description: pkg.description || '',
               pricing: pkg.price ? parseFloat(pkg.price).toString() : '',
-              // Assuming backend uses 'vehicles_offered' or 'amenities' for transportation packages
-              equipment: Array.isArray(pkg.vehicles_offered) ? pkg.vehicles_offered : [], // Or pkg.amenities
+              included_items: Array.isArray(pkg.included_items) ? pkg.included_items : [],
               isOpen: false,
               equipmentInput: ''
             }));
@@ -340,6 +344,55 @@ console.log(serviceName);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: '', text: '' }); // Clear previous messages
+    setErrors({}); // Clear previous errors
+
+    const newErrors = {};
+
+    // Validate required fields
+    if (!Name.trim()) {
+      newErrors.Name = 'Service Name is required.';
+    }
+    if (!contactName.trim()) {
+      newErrors.contactName = 'Contact Person Name is required.';
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = 'Contact Number is required.';
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = 'Email Address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = 'Email Address is invalid.';
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = 'Years of Experience is required.';
+    }
+    if (!aboutContent.trim()) {
+      newErrors.aboutContent = 'Description (About) is required.';
+    }
+    if (!location.trim() || !selectedLocationData) {
+      newErrors.location = 'Service Area Location is required.';
+    }
+    if (!address.trim()) {
+      newErrors.address = 'Business Address is required.';
+    }
+    transportationPackages.forEach((pkg) => {
+      if (!pkg.pricing || isNaN(parseFloat(pkg.pricing)) || parseFloat(pkg.pricing) <= 0) {
+        newErrors[`packagePricing-${pkg.id}`] = 'Pricing is required and must be a positive number.';
+      }
+    });
+
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      // Scroll to the first error or top of the form
+      const firstErrorField = document.getElementById(Object.keys(newErrors)[0]);
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return; // Stop the submission
+    }
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
@@ -372,6 +425,22 @@ console.log(serviceName);
         answer: faq.answer,
         order: index + 1,
       }));
+      const packagesData = transportationPackages.map(pkg => {
+        const packagePayload = {
+            name: pkg.name,
+            description: pkg.description,
+            price: parseFloat(pkg.pricing),
+            included_items: pkg.included_items
+        };
+
+        // Only include the 'id' if it's a number (i.e., it came from the backend).
+        // New packages have a string timestamp ID, which will be ignored.
+        if (typeof pkg.id === 'number') {
+            packagePayload.id = pkg.id;
+        }
+
+        return packagePayload;
+    });
 
     const formData = {
       name: Name,
@@ -401,14 +470,7 @@ console.log(serviceName);
       business_registration_number: businessRegistrationNumber,
       gst_number: gstNumber,
       years_of_experience: yearsOfExperience,
-      packages: transportationPackages.map(pkg => ({
-        id: pkg.id,
-        name: pkg.name,
-        description: pkg.description,
-        price: parseFloat(pkg.pricing),
-        // Map frontend 'equipment' to a backend-appropriate field for transportation, e.g., 'vehicles_offered' or 'amenities'
-        vehicles_offered: pkg.equipment // Changed to vehicles_offered for transportation
-      })),
+      packages_data: packagesData,
       faqs: faqsForApi,
       gallery_images: finalGalleryList,
       thumbnail_url: finalThumbnailKey,
@@ -436,6 +498,7 @@ console.log(serviceName);
         setFormMessage({ type: 'success', text: 'Transportation service updated successfully!' });
       } else {
         response = await api.post("/transportation/", formData, config); // Changed API endpoint
+        setTransportationId(response.data.id);
         setFormMessage({ type: 'success', text: 'Transportation service added successfully!' });
       }
       console.log("Operation successful:", response.data);
@@ -475,12 +538,12 @@ console.log(serviceName);
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="TransportationName" label="Service Name" placeholder="Pro Transportation" value={Name} onChange={(e) => setName(e.target.value)} required />
-                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="TransportationName" label="Service Name" placeholder="Pro Transportation" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name} />
+                        <FormInput id="contactName" label="Contact Person Name" placeholder="Jane Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} required error={errors.contactName} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999999" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="transport@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999999" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactNumber} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="transport@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput
@@ -518,6 +581,7 @@ console.log(serviceName);
                           placeholder="Enter Years of Experience"
                           value={yearsOfExperience}
                           onChange={(e) => setYearsOfExperience(e.target.value)}
+                          error={errors.yearsOfExperience}
                         />
                       </div>
                       <div>
@@ -525,6 +589,7 @@ console.log(serviceName);
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your transportation service..." />
                         </div>
+                         {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
                       </div>
                     </div>
                   </div>
@@ -554,13 +619,14 @@ console.log(serviceName);
                     togglePackage={togglePackage}
                     addPackage={addPackage}
                     handlePackageChange={handlePackageChange}
-                    handleEquipmentBlur={handleEquipmentTagsBlur}
-                    handleEquipmentKeyDown={handleEquipmentTagsKeyDown}
+                    handleEquipmentBlur={handleEquipmentBlur}
+                    handleEquipmentKeyDown={handleEquipmentKeyDown}
                     removeEquipmentTag={removeEquipmentTag}
                     deletePackage={deletePackage}
                     sectionTitle="Transportation Packages"
                     equipmentLabel="Vehicle Types / Amenities"
                     equipmentPlaceholder="e.g., Sedan, SUV, Limo, Wi-Fi, A/C"
+                    errors={errors}
                   />
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -638,6 +704,7 @@ console.log(serviceName);
                               </svg>
                             </button>
                           </div>
+                          {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
@@ -647,6 +714,7 @@ console.log(serviceName);
                       placeholder="Enter the full business address."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
+                      error={errors.address}
                     />
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
