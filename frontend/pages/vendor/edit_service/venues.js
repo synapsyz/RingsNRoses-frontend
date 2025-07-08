@@ -1,157 +1,66 @@
-import Head from 'next/head'
-import Script from 'next/script'
+import Head from "next/head";
+import Script from "next/script";
 import Link from "next/link";
-import LocationSelector from '@/components/LocationSelector';
-import React, { useEffect, useState, useRef } from 'react';
-import { Editor } from '@tiptap/core';
-import StarterKit from '@tiptap/starter-kit';
-import Placeholder from '@tiptap/extension-placeholder';
-import Paragraph from '@tiptap/extension-paragraph';
-import Bold from '@tiptap/extension-bold';
-import Underline from '@tiptap/extension-underline';
-import BulletList from '@tiptap/extension-bullet-list';
-import OrderedList from '@tiptap/extension-ordered-list';
-import ListItem from '@tiptap/extension-list-item';
-import Blockquote from '@tiptap/extension-blockquote';
-import FAQEditor from '@/components/FAQEditor';
-import { Link as TiptapLink } from '@tiptap/extension-link';
+import LocationSelector from "@/components/LocationSelector";
+import React, { useEffect, useState, useRef } from "react";
+import FAQEditor from "@/components/FAQEditor";
 import axios from "axios";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from 'next/router';
-import ThumbnailUploader from '@/components/ThumbnailUploader';
-import CustomHead from '@/components/vendor/Head';
-import Header from '@/components/vendor/Header';
-import SecondaryNav from '@/components/vendor/SecondaryNav';
-import MediaManager from '@/components/MediaManager';
-import SuccessPopup from '@/components/SuccessPopup';
-import ConfirmationModal from '@/components/ConfirmationModal';
-import ActionButtons from '@/components/ActionButtons'; 
+import { useRouter } from "next/router";
+import ThumbnailUploader from "@/components/ThumbnailUploader";
+import CustomHead from "@/components/vendor/Head";
+import Header from "@/components/vendor/Header";
+import SecondaryNav from "@/components/vendor/SecondaryNav";
+import MediaManager from "@/components/MediaManager";
+import SuccessPopup from "@/components/SuccessPopup";
+import ConfirmationModal from "@/components/ConfirmationModal";
+import ActionButtons from "@/components/ActionButtons";
+import FormInput from "@/components/FormInput";
+import TiptapEditor from "@/components/TiptapEditor";
+import CheckboxGroup from "@/components/CheckboxGroup";
+import AddressInput from "@/components/AddressInput";
+import FoodPackageCheckboxGroup from "@/components/FoodPackageCheckboxGroup.js";
+import Pricing from "@/components/Pricing";
 
 let api_url;
 let isNgrok;
 
-isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
+isNgrok = process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
 
 const getApiUrl = () => {
-  return process.env.NEXT_PUBLIC_APP_ENV === 'development'
+  return process.env.NEXT_PUBLIC_APP_ENV === "development"
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
     : process.env.NEXT_PUBLIC_HOST;
 };
 api_url = getApiUrl();
 
-
 const api = axios.create({
   baseURL: api_url + "/api/v1",
   headers: {
-    ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' })
-  }
+    ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+  },
 });
-
-const EditorToolbar = ({ editor, editorId }) => {
-  if (!editor) return null;
-
-  return (
-    <div className="sticky top-0 bg-white flex align-middle gap-x-0.5 border-b border-stone-200 p-2 dark:bg-neutral-800 dark:border-neutral-700">
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-stone-100 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 ${editor.isActive('bold') ? 'bg-stone-100 dark:bg-neutral-700' : ''}`}
-        data-editor-id={editorId}
-      >
-        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 12a4 4 0 0 0 0-8H6v8" />
-          <path d="M15 20a4 4 0 0 0 0-8H6v8Z" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-stone-100 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 ${editor.isActive('italic') ? 'bg-stone-100 dark:bg-neutral-700' : ''}`}
-        data-editor-id={editorId}
-      >
-        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="19" x2="10" y1="4" y2="4" />
-          <line x1="14" x2="5" y1="20" y2="20" />
-          <line x1="15" x2="9" y1="4" y2="20" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-stone-100 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 ${editor.isActive('underline') ? 'bg-stone-100 dark:bg-neutral-700' : ''}`}
-        data-editor-id={editorId}
-      >
-        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 4v6a6 6 0 0 0 12 0V4" />
-          <line x1="4" x2="20" y1="20" y2="20" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        onClick={() => {
-          const url = window.prompt('Enter the URL');
-          editor.chain().focus().setLink({ href: url }).run();
-        }}
-        className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-stone-100 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 ${editor.isActive('link') ? 'bg-stone-100 dark:bg-neutral-700' : ''}`}
-        data-editor-id={editorId}
-      >
-        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-stone-100 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 ${editor.isActive('orderedList') ? 'bg-stone-100 dark:bg-neutral-700' : ''}`}
-        data-editor-id={editorId}
-      >
-        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="10" x2="21" y1="6" y2="6" />
-          <line x1="10" x2="21" y1="12" y2="12" />
-          <line x1="10" x2="21" y1="18" y2="18" />
-          <path d="M4 6h1v4" />
-          <path d="M4 10h2" />
-          <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-stone-100 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 ${editor.isActive('bulletList') ? 'bg-stone-100 dark:bg-neutral-700' : ''}`}
-        data-editor-id={editorId}
-      >
-        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="8" x2="21" y1="6" y2="6" />
-          <line x1="8" x2="21" y1="12" y2="12" />
-          <line x1="8" x2="21" y1="18" y2="18" />
-          <line x1="3" x2="3.01" y1="6" y2="6" />
-          <line x1="3" x2="3.01" y1="12" y2="12" />
-          <line x1="3" x2="3.01" y1="18" y2="18" />
-        </svg>
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={`size-8 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-full border border-transparent text-stone-800 hover:bg-stone-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-stone-100 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 ${editor.isActive('blockquote') ? 'bg-stone-100 dark:bg-neutral-700' : ''}`}
-        data-editor-id={editorId}
-      >
-        <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 6H3" />
-          <path d="M21 12H8" />
-          <path d="M21 18H8" />
-          <path d="M3 12v6" />
-        </svg>
-      </button>
-    </div>
-  );
-};
-
 export default function EditService() {
-
   const [thumbnailUrl, setThumbnailUrl] = useState(null);
   const [thumbnailKey, setThumbnailKey] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [selectedFoodPackages, setSelectedFoodPackages] = useState(new Set());
+  const [initialGalleryVeg, setInitialGalleryVeg] = useState([]);
+  const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
+  const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
+
+  const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
+  const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState(
+    []
+  );
+  const [newGalleryFilesNonVeg, setNewGalleryFilesNonVeg] = useState([]);
+  const [perPlatePriceVeg, setPerPlatePriceVeg] = useState("");
+  const [perPlatePriceNonVeg, setPerPlatePriceNonVeg] = useState("");
+
+  // Refs for each MediaManager
+  const mediaManagerRefVeg = useRef(null);
+  const mediaManagerRefNonVeg = useRef(null);
+
   const [initialGallery, setInitialGallery] = useState([]);
   const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]);
   const [newGalleryFiles, setNewGalleryFiles] = useState([]);
@@ -169,9 +78,19 @@ export default function EditService() {
     setNewGalleryFiles(newFiles);
   };
 
+  const handleVegGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMediaVeg(existingMedia);
+    setNewGalleryFilesVeg(newFiles);
+  };
+
+  const handleNonVegGalleryUpdate = (existingMedia, newFiles) => {
+    setUpdatedExistingMediaNonVeg(existingMedia);
+    setNewGalleryFilesNonVeg(newFiles);
+  };
+
   async function uploadFile(file, accessToken) {
     console.log(`Uploading ${file.name}...`);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     return { success: true, key: `media/uploads/${Date.now()}-${file.name}` };
   }
 
@@ -200,49 +119,70 @@ export default function EditService() {
   const restrictionsEditorInstance = useRef(null);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [selectedLocationData, setSelectedLocationData] = useState(null);
-  const [termsAndConditions, setTermsAndConditions] = useState('');
+  const [termsAndConditions, setTermsAndConditions] = useState("");
   const termsEditorRef = useRef(null);
   const termsEditorInstance = useRef(null);
-  const [websiteLink, setWebsiteLink] = useState('');
-  const [instagramLink, setInstagramLink] = useState('');
-  const [facebookLink, setFacebookLink] = useState('');
+  const [websiteLink, setWebsiteLink] = useState("");
+  const [instagramLink, setInstagramLink] = useState("");
+  const [facebookLink, setFacebookLink] = useState("");
 
   const { data: session, status } = useSession();
   let accessToken = session?.accessToken;
   let config = {
     headers: { Authorization: `Bearer ${accessToken}` },
   };
-
+  const [aboutContent, setAboutContent] = useState("");
   const [eventTypes, setEventTypes] = useState([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState(new Set());
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState(new Set());
 
-  const [venueName, setVenueName] = useState('');
-  const [managerName, setManagerName] = useState('');
-  const [contactNumber, setContactNumber] = useState('');
-  const [emailAddress, setEmailAddress] = useState('');
-  const [about, setAbout] = useState('');
-  const [perPlatePrice, setPerPlatePrice] = useState('');
-  const [guestCapacity, setGuestCapacity] = useState('');
-  const [eventSpaces, setEventSpaces] = useState('');
-  const [totalAreaSqft, setTotalAreaSqft] = useState('');
-  const [advanceBookingNotice, setAdvanceBookingNotice] = useState('');
-  const [advancePaymentRequired, setAdvancePaymentRequired] = useState('');
-  const [cancellationPolicy, setCancellationPolicy] = useState('');
-  const [restrictions, setRestrictions] = useState('');
-  const [location, setLocation] = useState('');
-  const [locationId, setLocationId] = useState('');
-  const [venueId, setvenueId] = useState('');
-  const [gstNumber, setGstNumber] = useState('');
-  const [alternativeNumber, setAlternativeNumber] = useState('');
-  const [yearsOfExperience, setYearsOfExperience] = useState('');
-  const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
-  const [address, setAddress] = useState('');
+  const [venueName, setVenueName] = useState("");
+  const [managerName, setManagerName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
+  const [about, setAbout] = useState("");
+  const [perPlatePrice, setPerPlatePrice] = useState("");
+  const [guestCapacity, setGuestCapacity] = useState("");
+  const [eventSpaces, setEventSpaces] = useState("");
+  const [totalAreaSqft, setTotalAreaSqft] = useState("");
+  const [advanceBookingNotice, setAdvanceBookingNotice] = useState("");
+  const [advancePaymentRequired, setAdvancePaymentRequired] = useState("");
+  const [cancellationPolicy, setCancellationPolicy] = useState("");
+  const [restrictions, setRestrictions] = useState("");
+  const [location, setLocation] = useState("");
+  const [locationId, setLocationId] = useState("");
+  const [venueId, setvenueId] = useState("");
+  const [gstNumber, setGstNumber] = useState("");
+  const [alternativeNumber, setAlternativeNumber] = useState("");
+  const [yearsOfExperience, setYearsOfExperience] = useState("");
+  const [businessRegistrationNumber, setBusinessRegistrationNumber] =
+    useState("");
+  const [address, setAddress] = useState("");
 
-  const [formMessage, setFormMessage] = useState({ type: '', text: '' });
+  const [formMessage, setFormMessage] = useState({ type: "", text: "" });
 
-  const subcategory = session?.user?.vendor_profile?.subcategory.id;
+  const [errors, setErrors] = useState({});
+  const [vendorId, setVendorId] = useState(null);
+  const [serviceName, setServiceName] = useState(null);
+  const [serviceId, setServiceId] = useState(null);
+  const subcategory = session?.user?.vendor_profile?.subcategory?.id;
+  useEffect(() => {
+    // ... existing useEffect for cateringId
+
+    if (session?.user?.vendor_profile) {
+      setVendorId(session.user.vendor_profile.id);
+      const formattedServiceName =
+        session.user.vendor_profile.subcategory?.category?.name
+          .replace(/ /g, "_")
+          .toLowerCase();
+      setServiceName(formattedServiceName);
+      setServiceId(session.user.vendor_profile.service_id); // Assuming service_id is directly available here
+    }
+  }, [session]);
+  console.log(vendorId);
+  console.log(serviceName);
+  console.log(serviceId);
   useEffect(() => {
     const serviceId = session?.user?.vendor_profile?.service_id;
     if (serviceId) {
@@ -252,70 +192,124 @@ export default function EditService() {
 
   useEffect(() => {
     const fetchVenueDetails = async () => {
-      if (!venueId || status !== 'authenticated') return;
+      if (!venueId || status !== "authenticated") return;
 
       try {
         const response = await api.get(`/venues/${venueId}`, config);
         const venueData = response.data;
         console.log(venueData);
 
-        setVenueName(venueData.name || '');
-        setvenueId(venueData.id || '');
-        setManagerName(venueData.manager_name || '');
-        setContactNumber(venueData.contact_number || '');
-        setEmailAddress(venueData.email || '');
-        setAbout(venueData.about || '');
-        setPerPlatePrice(venueData.per_plate_price || '');
-        setGuestCapacity(venueData.guest_capacity || '');
-        setEventSpaces(venueData.event_spaces || '');
-        setTotalAreaSqft(venueData.total_area_sqft || '');
-        setAdvanceBookingNotice(venueData.advance_booking_notice || '');
-        setAdvancePaymentRequired(venueData.advance_payment_required || '');
-        setCancellationPolicy(venueData.cancellation_policy || '');
-        setRestrictions(venueData.restrictions || '');
-        setLocationId(venueData.location_details.id || '');
-        setGstNumber(venueData.gst_number || '');
-        setAlternativeNumber(venueData.alternative_number || '');
-        setYearsOfExperience(venueData.years_of_experience || '');
-        setBusinessRegistrationNumber(venueData.business_registration_number || '');
-        setAddress(venueData.address || '');
+        setVenueName(venueData.name || "");
+        setvenueId(venueData.id || "");
+        setManagerName(venueData.manager_name || "");
+        setContactNumber(venueData.contact_number || "");
+        setEmailAddress(venueData.email || "");
+        setAbout(venueData.about || "");
+        setPerPlatePrice(venueData.per_plate_price || "");
+        setGuestCapacity(venueData.guest_capacity || "");
+        setEventSpaces(venueData.event_spaces || "");
+        setTotalAreaSqft(venueData.total_area_sqft || "");
+        setAdvanceBookingNotice(venueData.advance_booking_notice || "");
+        setAdvancePaymentRequired(venueData.advance_payment_required || "");
+        setCancellationPolicy(venueData.cancellation_policy || "");
+        setRestrictions(venueData.restrictions || "");
+        setLocation(venueData.location_details?.name || "");
+        setSelectedLocationData(
+          venueData.location_details
+            ? {
+                locationId: venueData.location_details.id,
+                location: venueData.location_details.name,
+              }
+            : null
+        );
+        setGstNumber(venueData.gst_number || "");
+        setAlternativeNumber(venueData.alternative_number || "");
+        setYearsOfExperience(venueData.years_of_experience || "");
+        setBusinessRegistrationNumber(
+          venueData.business_registration_number || ""
+        );
+        setAddress(venueData.address || "");
 
-        setLocation([venueData.location_details.name, venueData.location_details.district_name]
-          .filter(Boolean)
-          .join(' , ')
+        setLocation(
+          [
+            venueData.location_details.name,
+            venueData.location_details.district_name,
+          ]
+            .filter(Boolean)
+            .join(" , ")
         );
         setThumbnailUrl(venueData.thumbnail_url_detail || null);
         setThumbnailKey(venueData.thumbnail_url || null);
 
         if (venueData.services_offered_details) {
-          setSelectedServices(new Set(venueData.services_offered_details.map(service => service.id)));
+          setSelectedServices(
+            new Set(
+              venueData.services_offered_details.map((service) => service.id)
+            )
+          );
         }
         if (venueData.event_types_details) {
-          setSelectedEventTypes(new Set(venueData.event_types_details.map(eventType => eventType.id)));
+          setSelectedEventTypes(
+            new Set(
+              venueData.event_types_details.map((eventType) => eventType.id)
+            )
+          );
         }
 
         if (venueData.images && Array.isArray(venueData.images)) {
-          const imageUrls = venueData.images.map(imageObject => imageObject.image_url);
+          const imageUrls = venueData.images.map(
+            (imageObject) => imageObject.image_url
+          );
           setInitialGallery(imageUrls);
         }
 
         if (venueData.faq_details && Array.isArray(venueData.faq_details)) {
           const loadedFaqs = venueData.faq_details.map((faq, index) => ({
             id: `faq-${index}-${Date.now()}`,
-            question: faq.question || '',
-            answer: faq.answer || ''
+            question: faq.question || "",
+            answer: faq.answer || "",
           }));
           setFaqs(loadedFaqs);
         }
+        const foodPackagesSet = new Set();
+        if (venueData.packages?.Vegetarian) {
+          foodPackagesSet.add("veg");
+          setPerPlatePriceVeg(
+            venueData.packages.Vegetarian[0].starting_price || ""
+          );
+          if (venueData.packages.Vegetarian[0].menu_images) {
+            setInitialGalleryVeg(
+              venueData.packages.Vegetarian[0].menu_images.map(
+                (img) => img.image_url
+              )
+            );
+          }
+        }
+        if (venueData.packages?.Non_Vegetarian) {
+          foodPackagesSet.add("non-veg");
+          setPerPlatePriceNonVeg(
+            venueData.packages.Non_Vegetarian[0].starting_price || ""
+          );
+          if (venueData.packages.Non_Vegetarian[0].menu_images) {
+            setInitialGalleryNonVeg(
+              venueData.packages.Non_Vegetarian[0].menu_images.map(
+                (img) => img.image_url
+              )
+            );
+          }
+        }
+        setSelectedFoodPackages(foodPackagesSet);
 
-        setWebsiteLink(venueData.website_link || '');
-        setInstagramLink(venueData.instagram_link || '');
-        setFacebookLink(venueData.facebook_link || '');
-        setTermsAndConditions(venueData.terms_and_conditions || '');
-
+        setWebsiteLink(venueData.website_link || "");
+        setInstagramLink(venueData.instagram_link || "");
+        setFacebookLink(venueData.facebook_link || "");
+        setTermsAndConditions(venueData.terms_and_conditions || "");
       } catch (error) {
         console.error("Error fetching venue details:", error);
-        setFormMessage({ type: 'error', text: 'Error: Could not fetch venue details.' });
+        setFormMessage({
+          type: "error",
+          text: "Error: Could not fetch venue details.",
+        });
       }
     };
 
@@ -349,285 +343,8 @@ export default function EditService() {
     fetchEventTypes();
   }, []);
 
-  useEffect(() => {
-    if (!editorRef.current) return;
-
-    const editor = new Editor({
-      element: editorRef.current,
-      extensions: [
-        StarterKit.configure({
-          history: false
-        }),
-        Placeholder.configure({
-          placeholder: 'Add a message, if you\'d like.',
-          emptyNodeClass: 'before:text-stone-400'
-        }),
-        Paragraph.configure({
-          HTMLAttributes: {
-            class: 'text-sm text-stone-800 dark:text-stone-200'
-          }
-        }),
-        Bold.configure({
-          HTMLAttributes: {
-            class: 'font-bold'
-          }
-        }),
-        Underline,
-        TiptapLink.configure({
-          HTMLAttributes: {
-            class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
-          }
-        }),
-        BulletList.configure({
-          HTMLAttributes: {
-            class: 'list-disc list-inside text-stone-800 dark:text-white'
-          }
-        }),
-        OrderedList.configure({
-          HTMLAttributes: {
-            class: 'list-decimal list-inside text-stone-800 dark:text-white'
-          }
-        }),
-        ListItem.configure({
-          HTMLAttributes: {
-            class: 'marker:text-sm'
-          }
-        }),
-        Blockquote.configure({
-          HTMLAttributes: {
-            class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
-          }
-        })
-      ],
-      onUpdate: ({ editor }) => {
-        setAbout(editor.getHTML());
-      },
-      content: about || '',
-    });
-
-    editorInstance.current = editor;
-
-    return () => {
-      if (editorInstance.current) {
-        editorInstance.current.destroy();
-      }
-    };
-  }, []);
-  useEffect(() => {
-    if (editorInstance.current && about) {
-      editorInstance.current.commands.setContent(about);
-    }
-  }, [about]);
-  useEffect(() => {
-    if (!cancellationEditorRef.current) return;
-
-    const editor = new Editor({
-      element: cancellationEditorRef.current,
-      extensions: [
-        StarterKit.configure({
-          history: false
-        }),
-        Placeholder.configure({
-          placeholder: 'Enter cancellation policy...',
-          emptyNodeClass: 'before:text-stone-400'
-        }),
-        Paragraph.configure({
-          HTMLAttributes: {
-            class: 'text-sm text-stone-800 dark:text-stone-200'
-          }
-        }),
-        Bold.configure({
-          HTMLAttributes: {
-            class: 'font-bold'
-          }
-        }),
-        Underline,
-        TiptapLink.configure({
-          HTMLAttributes: {
-            class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
-          }
-        }),
-        BulletList.configure({
-          HTMLAttributes: {
-            class: 'list-disc list-inside text-stone-800 dark:text-white'
-          }
-        }),
-        OrderedList.configure({
-          HTMLAttributes: {
-            class: 'list-decimal list-inside text-stone-800 dark:text-white'
-          }
-        }),
-        ListItem.configure({
-          HTMLAttributes: {
-            class: 'marker:text-sm'
-          }
-        }),
-        Blockquote.configure({
-          HTMLAttributes: {
-            class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
-          }
-        })
-      ],
-      onUpdate: ({ editor }) => {
-        setCancellationPolicy(editor.getHTML());
-      },
-      content: cancellationPolicy || '',
-    });
-
-    cancellationEditorInstance.current = editor;
-
-    return () => {
-      if (cancellationEditorInstance.current) {
-        cancellationEditorInstance.current.destroy();
-      }
-    };
-  }, []);
-  useEffect(() => {
-    if (cancellationEditorInstance.current && cancellationPolicy) {
-      cancellationEditorInstance.current.commands.setContent(cancellationPolicy);
-    }
-  }, [cancellationPolicy]);
-  useEffect(() => {
-    if (!restrictionsEditorRef.current) return;
-
-    const editor = new Editor({
-      element: restrictionsEditorRef.current,
-      extensions: [
-        StarterKit.configure({
-          history: false
-        }),
-        Placeholder.configure({
-          placeholder: 'Enter restrictions here...',
-          emptyNodeClass: 'before:text-stone-400'
-        }),
-        Paragraph.configure({
-          HTMLAttributes: {
-            class: 'text-sm text-stone-800 dark:text-stone-200'
-          }
-        }),
-        Bold.configure({
-          HTMLAttributes: {
-            class: 'font-bold'
-          }
-        }),
-        Underline,
-        TiptapLink.configure({
-          HTMLAttributes: {
-            class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
-          }
-        }),
-        BulletList.configure({
-          HTMLAttributes: {
-            class: 'list-disc list-inside text-stone-800 dark:text-white'
-          }
-        }),
-        OrderedList.configure({
-          HTMLAttributes: {
-            class: 'list-decimal list-inside text-stone-800 dark:text-white'
-          }
-        }),
-        ListItem.configure({
-          HTMLAttributes: {
-            class: 'marker:text-sm'
-          }
-        }),
-        Blockquote.configure({
-          HTMLAttributes: {
-            class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
-          }
-        })
-      ],
-      onUpdate: ({ editor }) => {
-        setRestrictions(editor.getHTML());
-      },
-      content: restrictions || '',
-    });
-
-    restrictionsEditorInstance.current = editor;
-
-    return () => {
-      if (restrictionsEditorInstance.current) {
-        restrictionsEditorInstance.current.destroy();
-      }
-    };
-  }, []);
-  useEffect(() => {
-    if (restrictionsEditorInstance.current && restrictions) {
-      restrictionsEditorInstance.current.commands.setContent(restrictions);
-    }
-  }, [restrictions]);
-  useEffect(() => {
-    if (!termsEditorRef.current) return;
-
-    const editor = new Editor({
-      element: termsEditorRef.current,
-      extensions: [
-        StarterKit.configure({
-          history: false
-        }),
-        Placeholder.configure({
-          placeholder: 'Enter terms and conditions...',
-          emptyNodeClass: 'before:text-stone-400'
-        }),
-        Paragraph.configure({
-          HTMLAttributes: {
-            class: 'text-sm text-stone-800 dark:text-stone-200'
-          }
-        }),
-        Bold.configure({
-          HTMLAttributes: {
-            class: 'font-bold'
-          }
-        }),
-        Underline,
-        TiptapLink.configure({
-          HTMLAttributes: {
-            class: 'inline-flex items-center gap-x-1 text-green-600 decoration-2 hover:underline font-medium dark:text-white'
-          }
-        }),
-        BulletList.configure({
-          HTMLAttributes: {
-            class: 'list-disc list-inside text-stone-800 dark:text-white'
-          }
-        }),
-        OrderedList.configure({
-          HTMLAttributes: {
-            class: 'list-decimal list-inside text-stone-800 dark:text-white'
-          }
-        }),
-        ListItem.configure({
-          HTMLAttributes: {
-            class: 'marker:text-sm'
-          }
-        }),
-        Blockquote.configure({
-          HTMLAttributes: {
-            class: 'relative border-s-4 ps-4 sm:ps-6 dark:border-neutral-700 sm:[&>p]:text-lg text-stone-800 dark:text-white'
-          }
-        })
-      ],
-      onUpdate: ({ editor }) => {
-        setTermsAndConditions(editor.getHTML());
-      },
-      content: termsAndConditions || ''
-    });
-
-    termsEditorInstance.current = editor;
-
-    return () => {
-      if (termsEditorInstance.current) {
-        termsEditorInstance.current.destroy();
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (termsEditorInstance.current && termsAndConditions) {
-      termsEditorInstance.current.commands.setContent(termsAndConditions);
-    }
-  }, [termsAndConditions]);
   const handleServiceToggle = (serviceId) => {
-    setSelectedServices(prevSelectedServices => {
+    setSelectedServices((prevSelectedServices) => {
       const newSelected = new Set(prevSelectedServices);
       if (newSelected.has(serviceId)) {
         newSelected.delete(serviceId);
@@ -639,7 +356,7 @@ export default function EditService() {
   };
 
   const handleEventTypeToggle = (eventTypeId) => {
-    setSelectedEventTypes(prevSelectedEventTypes => {
+    setSelectedEventTypes((prevSelectedEventTypes) => {
       const newSelected = new Set(prevSelectedEventTypes);
       if (newSelected.has(eventTypeId)) {
         newSelected.delete(eventTypeId);
@@ -651,35 +368,157 @@ export default function EditService() {
   };
 
   const [showSuccess, setShowSuccess] = useState(false);
-  const [popupMessage, setPopupMessage] = useState('');
+  const [popupMessage, setPopupMessage] = useState("");
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: "", text: "" }); // Clear previous messages
+    setErrors({}); // Clear previous errors
+
+    const newErrors = {};
+
+    // Validate required fields
+    if (!venueName.trim()) {
+      newErrors.venueName = "Service Name is required.";
+    }
+    if (!managerName.trim()) {
+      newErrors.managerName = "Contact Person Name is required.";
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = "Contact Number is required.";
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = "Email Address is required.";
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = "Email Address is invalid.";
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = "Years of Experience is required.";
+    }
+    if (!about.trim()) {
+      newErrors.aboutContent = "Description (About) is required.";
+    }
+    if (!location.trim() || !selectedLocationData) {
+      newErrors.location = "Service Area Location is required.";
+    }
+    if (!address.trim()) {
+      newErrors.address = "Business Address is required.";
+    }
+    // if (selectedFoodPackages.has('veg') && !perPlatePriceVeg) {
+    //   newErrors.perPlatePriceVeg = 'Per Plate Price (Veg) is required.';
+    // }
+    // if (selectedFoodPackages.has('non-veg') && !perPlatePriceNonVeg) {
+    //   newErrors.perPlatePriceNonVeg = 'Per Plate Price (Non-Veg) is required.';
+    // }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({
+        type: "error",
+        text: "Please fill in all required fields.",
+      });
+      // Scroll to the first error or top of the form
+      const firstErrorField = document.getElementById(
+        Object.keys(newErrors)[0]
+      );
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return; // Stop the submission
+    }
     setIsActionCardVisible(false);
 
-    setFormMessage({ type: 'info', text: 'Updating venue, please wait...' });
+    setFormMessage({ type: "info", text: "Updating venue, please wait..." });
+    const foodPackagesData = [];
+    let vegPrice = null;
+    let nonVegPrice = null;
 
+    if (selectedFoodPackages.has("veg") && perPlatePriceVeg) {
+      vegPrice = parseFloat(perPlatePriceVeg);
+      foodPackagesData.push({
+        id: 1,
+        package_type_display: "Vegetarian",
+        package_type: 1,
+        starting_price: vegPrice,
+      });
+    }
+    if (selectedFoodPackages.has("non-veg") && perPlatePriceNonVeg) {
+      nonVegPrice = parseFloat(perPlatePriceNonVeg);
+      foodPackagesData.push({
+        id: 2,
+        package_type_display: "Non-Vegetarian",
+        package_type: 2,
+        starting_price: nonVegPrice,
+      });
+    }
+
+    let calculatedStartingPrice = null;
+    if (vegPrice !== null && nonVegPrice !== null) {
+      calculatedStartingPrice = Math.min(vegPrice, nonVegPrice);
+    } else if (vegPrice !== null) {
+      calculatedStartingPrice = vegPrice;
+    } else if (nonVegPrice !== null) {
+      calculatedStartingPrice = nonVegPrice;
+    }
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
       const uploadResult = await thumbnailUploaderRef.current.upload();
       if (!uploadResult.success) {
-        setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        setFormMessage({
+          type: "error",
+          text: `Thumbnail upload failed: ${uploadResult.message}`,
+        });
         setIsActionCardVisible(true);
         return;
       }
       finalThumbnailKey = uploadResult.key;
     }
 
-    const galleryResult = await mediaManagerRef.current.upload();
+    // Upload all galleries separately
+    let galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
-      setFormMessage({ type: 'error', text: `Gallery upload failed: ${galleryResult.message}` });
-      setIsActionCardVisible(true);
+      setFormMessage({
+        type: "error",
+        text: `Main gallery upload failed: ${galleryResult.message}`,
+      });
       return;
     }
+
+    let vegGalleryResult = { success: true, keys: [] };
+    if (selectedFoodPackages.has("veg")) {
+      vegGalleryResult = await mediaManagerRefVeg.current.upload();
+      if (!vegGalleryResult.success) {
+        setFormMessage({
+          type: "error",
+          text: `Veg gallery upload failed: ${vegGalleryResult.message}`,
+        });
+        return;
+      }
+    }
+
+    let nonVegGalleryResult = { success: true, keys: [] };
+    if (selectedFoodPackages.has("non-veg")) {
+      nonVegGalleryResult = await mediaManagerRefNonVeg.current.upload();
+      if (!nonVegGalleryResult.success) {
+        setFormMessage({
+          type: "error",
+          text: `Non-veg gallery upload failed: ${nonVegGalleryResult.message}`,
+        });
+        return;
+      }
+    }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
+    const finalVegGalleryList = [
+      ...updatedExistingMediaVeg,
+      ...vegGalleryResult.keys,
+    ];
+    const finalNonVegGalleryList = [
+      ...updatedExistingMediaNonVeg,
+      ...nonVegGalleryResult.keys,
+    ];
 
     const faqsForApi = faqs
-      .filter(faq => faq.question.trim() !== '' && faq.answer.trim() !== '')
+      .filter((faq) => faq.question.trim() !== "" && faq.answer.trim() !== "")
       .map((faq, index) => ({
         question: faq.question,
         answer: faq.answer,
@@ -717,7 +556,28 @@ export default function EditService() {
       years_of_experience: parseInt(yearsOfExperience),
       business_registration_number: businessRegistrationNumber,
       address: address,
+      food_packages_data: foodPackagesData.map((pkg) => {
+        if (pkg.package_type === 1) {
+          // Vegetarian
+          return {
+            ...pkg,
+            menu_images_upload: finalVegGalleryList,
+          };
+        } else if (pkg.package_type === 2) {
+          // Non-Vegetarian
+          return {
+            ...pkg,
+            menu_images_upload: finalNonVegGalleryList,
+          };
+        }
+        return pkg;
+      }),
     };
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] === null || formData[key] === "") {
+        delete formData[key];
+      }
+    });
 
     console.log("Submitting updated data:", formData);
 
@@ -725,36 +585,46 @@ export default function EditService() {
       const accessToken = session?.accessToken;
       const config = {
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
         },
       };
 
-      const action = venueId ? 'update' : 'create';
+      const action = venueId ? "update" : "create";
 
-      if (action === 'update') {
+      if (action === "update") {
         const response = await api.put(`/venues/${venueId}/`, formData, config);
         console.log("Venue updated successfully:", response.data);
-        setFormMessage({ type: 'success', text: 'Venue updated successfully!' });
-
+        setFormMessage({
+          type: "success",
+          text: "Venue updated successfully!",
+        });
       } else {
-        const response = await api.post('/venues/', formData, config);
+        const response = await api.post("/venues/", formData, config);
+        setvenueId(response.data.id);
         console.log("Venue created successfully:", response.data);
-        setFormMessage({ type: 'success', text: 'Venue created successfully!' });
+        setFormMessage({
+          type: "success",
+          text: "Venue created successfully!",
+        });
       }
-
     } catch (error) {
-      const action = venueId ? 'update' : 'create';
+      const action = venueId ? "update" : "create";
       console.error(`Error trying to ${action} venue:`, error);
 
       if (error.response) {
         console.error("Error data:", error.response.data);
         setFormMessage({
-          type: 'error',
-          text: `Error: ${error.response.data.detail || `Failed to ${action} venue.`}`
+          type: "error",
+          text: `Error: ${
+            error.response.data.detail || `Failed to ${action} venue.`
+          }`,
         });
       } else if (error.request) {
-        setFormMessage({ type: 'error', text: 'Error: No response from server. Check network connection.' });
+        setFormMessage({
+          type: "error",
+          text: "Error: No response from server. Check network connection.",
+        });
       }
       setIsActionCardVisible(true);
     }
@@ -769,36 +639,43 @@ export default function EditService() {
     setIsActionCardVisible(false);
 
     if (!venueId) {
-      setFormMessage({ type: 'error', text: 'Cannot delete. Venue ID is missing.' });
+      setFormMessage({
+        type: "error",
+        text: "Cannot delete. Venue ID is missing.",
+      });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: 'info', text: 'Deleting venue, please wait...' });
+    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
       const config = {
         headers: {
-          'Authorization': `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`,
         },
       };
       await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: 'success', text: 'Venue deleted successfully!' });
-0
+      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      0;
       setTimeout(() => {
-        router.push('/vendor/service/preview');
+        router.push("/vendor/service/preview");
       }, 2000);
-
     } catch (error) {
       console.error("Error trying to delete venue:", error);
       if (error.response) {
         setFormMessage({
-          type: 'error',
-          text: `Error: ${error.response.data.detail || 'Failed to delete venue.'}`
+          type: "error",
+          text: `Error: ${
+            error.response.data.detail || "Failed to delete venue."
+          }`,
         });
       } else {
-        setFormMessage({ type: 'error', text: 'Error: No response from server.' });
+        setFormMessage({
+          type: "error",
+          text: "Error: No response from server.",
+        });
       }
       setIsActionCardVisible(true);
     }
@@ -816,8 +693,20 @@ export default function EditService() {
             <ol className="lg:hidden pt-5 flex items-center whitespace-nowrap">
               <li className="flex items-center text-sm text-stone-600 dark:text-neutral-500">
                 Products
-                <svg className="shrink-0 overflow-visible size-4 ms-1.5 text-stone-400 dark:text-neutral-600" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M6 13L10 3" stroke="currentColor" strokeLinecap="round"></path>
+                <svg
+                  className="shrink-0 overflow-visible size-4 ms-1.5 text-stone-400 dark:text-neutral-600"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 13L10 3"
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                  ></path>
                 </svg>
               </li>
               <li className="ps-1.5 flex items-center font-semibold text-stone-800 dark:text-neutral-200 text-sm">
@@ -848,147 +737,103 @@ export default function EditService() {
 
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         {/* Name */}
-                        <div>
-                          <label htmlFor="venueName" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Name
-                            <span className="hs-tooltip inline-block align-middle">
-                              <svg className="shrink-0 size-4 text-stone-500 dark:text-neutral-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <circle cx="12" cy="12" r="10" />
-                                <path d="M12 16v-4" />
-                                <path d="M12 8h.01" />
-                              </svg>
-                              <span className="hs-tooltip-content hs-tooltip-shown:opacity-100 hs-tooltip-shown:visible opacity-0 transition-opacity hidden invisible z-60 max-w-60 py-1 px-2 bg-stone-900 text-xs font-normal text-white rounded-lg shadow-2xs dark:bg-neutral-700" role="tooltip">
-                                Give your product a short and clear name.
-                              </span>
-                            </span>
-                          </label>
-                          <input
-                            id="venueName"
-                            type="text"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Royal Palace Banquet"
-                            value={venueName}
-                            onChange={(e) => setVenueName(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="venueName"
+                          label="Name"
+                          placeholder="Royal Palace Banquet"
+                          value={venueName}
+                          onChange={(e) => setVenueName(e.target.value)}
+                          required
+                          error={errors.venueName}
+                        />
 
-                        {/* Contact Person */}
-                        <div>
-                          <label htmlFor="managerName" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Contact Person
-                          </label>
-                          <input
-                            id="managerName"
-                            type="text"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="John Doe"
-                            value={managerName}
-                            onChange={(e) => setManagerName(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="managerName"
+                          label="Contact Person"
+                          placeholder="John Doe"
+                          value={managerName}
+                          onChange={(e) => setManagerName(e.target.value)}
+                          required
+                          error={errors.managerName}
+                        />
 
-                        {/* Contact Number */}
-                        <div>
-                          <label htmlFor="contactNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Contact Number
-                          </label>
-                          <input
-                            id="contactNumber"
-                            type="text"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="+919999999998"
-                            value={contactNumber}
-                            onChange={(e) => setContactNumber(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="contactNumber"
+                          label="Contact Number"
+                          placeholder="+919999999998"
+                          value={contactNumber}
+                          onChange={(e) => setContactNumber(e.target.value)}
+                          required
+                          error={errors.contactNumber}
+                        />
 
-                        {/* Email Address */}
-                        <div>
-                          <label htmlFor="emailAddress" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Email Address
-                          </label>
-                          <div className="relative w-full">
-                            <input
-                              id="emailAddress"
-                              type="text"
-                              className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                              placeholder="mahal@email.com"
-                              value={emailAddress}
-                              onChange={(e) => setEmailAddress(e.target.value)}
-                            />
-                          </div>
-                        </div>
+                        <FormInput
+                          id="emailAddress"
+                          label="Email Address"
+                          placeholder="mahal@email.com"
+                          value={emailAddress}
+                          onChange={(e) => setEmailAddress(e.target.value)}
+                          required
+                          error={errors.emailAddress}
+                        />
 
                         {/* Alternative Number */}
-                        <div>
-                          <label htmlFor="alternativeNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Alternative Number
-                          </label>
-                          <input
-                            id="alternativeNumber"
-                            type="text"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Enter Alternative Number"
-                            value={alternativeNumber}
-                            onChange={(e) => setAlternativeNumber(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="alternativeNumber"
+                          label="Alternative Number"
+                          placeholder="Enter Alternative Number"
+                          value={alternativeNumber}
+                          onChange={(e) => setAlternativeNumber(e.target.value)}
+                        />
 
                         {/* Business Registration Number */}
-                        <div>
-                          <label htmlFor="businessRegistrationNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Business Registration Number
-                          </label>
-                          <input
-                            id="businessRegistrationNumber"
-                            type="text"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Enter Business Registration Number"
-                            value={businessRegistrationNumber}
-                            onChange={(e) => setBusinessRegistrationNumber(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="businessRegistrationNumber"
+                          label="Business Registration Number"
+                          placeholder="Enter Business Registration Number"
+                          value={businessRegistrationNumber}
+                          onChange={(e) =>
+                            setBusinessRegistrationNumber(e.target.value)
+                          }
+                        />
 
                         {/* GST Number */}
-                        <div>
-                          <label htmlFor="gstNumber" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            GST Number
-                          </label>
-                          <input
-                            id="gstNumber"
-                            type="text"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Enter GST Number"
-                            value={gstNumber}
-                            onChange={(e) => setGstNumber(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="gstNumber"
+                          label="GST Number"
+                          placeholder="Enter GST Number"
+                          value={gstNumber}
+                          onChange={(e) => setGstNumber(e.target.value)}
+                        />
 
                         {/* Years of Experience */}
-                        <div>
-                          <label htmlFor="yearsOfExperience" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Years of Experience
-                          </label>
-                          <input
-                            id="yearsOfExperience"
-                            type="number"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Enter Years of Experience"
-                            value={yearsOfExperience}
-                            onChange={(e) => setYearsOfExperience(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="yearsOfExperience"
+                          label="Years of Experience"
+                          placeholder="Enter Years of Experience"
+                          type="number"
+                          value={yearsOfExperience}
+                          onChange={(e) => setYearsOfExperience(e.target.value)}
+                          error={errors.yearsOfExperience}
+                        />
                       </div>
-
-                      {/* Description (About) */}
                       <div>
                         <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                           Description (About)
                         </label>
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                          <EditorToolbar editor={editorInstance.current} editorId="main-editor" />
-                          <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={editorRef} contentEditable></div>
+                          <TiptapEditor
+                            content={about}
+                            onUpdate={setAbout}
+                            placeholder="Tell us about your decoration & design service..."
+                          />{" "}
+                          {/* Changed placeholder */}
                         </div>
+                        {errors.about && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.about}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -997,84 +842,128 @@ export default function EditService() {
                     ref={mediaManagerRef}
                     initialMedia={initialGallery}
                     onUpdate={handleGalleryUpdate}
-                    pathPrefix='vendors/gallery'
+                    pathPrefix="vendors/gallery"
                   />
-
-                  {/* Facilities Card */}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
-                        Facilities
+                        Food Packages
                       </h2>
                     </div>
-                    <div className="p-4">
-                      <div className="flex flex-wrap gap-4">
-                        {services.map(service => (
-                          <label
-                            key={service.id}
-                            htmlFor={`service-checkbox-${service.id}`}
-                            className={`
-                              py-2 px-2.5 relative flex justify-center items-center text-center text-[13px]
-                              bg-white border border-gray-200 ring-1 ring-transparent text-gray-800
-                              cursor-pointer rounded-xl hover:border-green-600 hover:ring-green-600
-                              dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700
-                              dark:hover:ring-neutral-600
-                              peer-checked:bg-green-100 peer-checked:border-green-200 peer-checked:ring-green-200 peer-checked:text-green-800
-                              dark:peer-checked:bg-green-800/30 dark:peer-checked:border-green-800/50
-                              dark:peer-checked:ring-green-800/50 dark:peer-checked:text-green-500
-                              has-disabled:pointer-events-none has-disabled:text-gray-200 dark:has-disabled:text-neutral-700
-                            `}
-                          >
-                            <input
-                              type="checkbox"
-                              id={`service-checkbox-${service.id}`}
-                              className="hidden peer"
-                              name="services"
-                              checked={selectedServices.has(service.id)}
-                              onChange={() => handleServiceToggle(service.id)}
+                    <FoodPackageCheckboxGroup
+                      selectedFoodPackages={selectedFoodPackages}
+                      onSelect={setSelectedFoodPackages}
+                    />
+                  </div>
+                  {(selectedFoodPackages.has("veg") ||
+                    selectedFoodPackages.has("non-veg")) && (
+                    <div
+                      className={`mt-6 grid gap-6 ${
+                        selectedFoodPackages.size === 2
+                          ? "md:grid-cols-2"
+                          : "grid-cols-1"
+                      }`}
+                    >
+                      {selectedFoodPackages.has("veg") && (
+                        <div>
+                          <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">
+                            Upload Veg Menu here
+                          </h3>
+                          <MediaManager
+                            ref={mediaManagerRefVeg}
+                            initialMedia={initialGalleryVeg}
+                            onUpdate={handleVegGalleryUpdate}
+                            pathPrefix={`vendors/${vendorId}/${serviceName}/gallery/menu/veg`}
+                          />
+                          <div className="mt-2">
+                            <Pricing
+                              perPlatePrice={perPlatePriceVeg}
+                              setPerPlatePrice={setPerPlatePriceVeg}
+                              required={selectedFoodPackages.has("veg")}
+                              error={errors.perPlatePriceVeg}
                             />
-                            <span className="flex shrink-0 justify-center items-center size-0 bg-green-500 text-transparent rounded-full transition-all duration-200 peer-checked:size-4 peer-checked:me-1.5 peer-checked:text-white">
-                              <svg className="shrink-0 size-2.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M20 6 9 17l-5-5" />
-                              </svg>
-                            </span>
-                            <span className="block">
-                              {service.name}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedFoodPackages.has("non-veg") && (
+                        <div>
+                          <h3 className="font-semibold text-stone-800 dark:text-neutral-200 mb-2">
+                            Upload Non-Veg Menu here
+                          </h3>
+                          <MediaManager
+                            ref={mediaManagerRefNonVeg}
+                            initialMedia={initialGalleryNonVeg}
+                            onUpdate={handleNonVegGalleryUpdate}
+                            pathPrefix={`vendors/${vendorId}/${serviceName}/gallery/menu/non_veg`}
+                          />
+                          <div className="mt-2">
+                            <Pricing
+                              perPlatePrice={perPlatePriceNonVeg}
+                              setPerPlatePrice={setPerPlatePriceNonVeg}
+                              required={selectedFoodPackages.has("non-veg")}
+                              error={errors.perPlatePriceNonVeg}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                    <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
+                        Decoration & Design Services Offered
+                      </h2>{" "}
+                      {/* Changed title */}
+                    </div>
+                    <div className="p-4">
+                      <CheckboxGroup
+                        items={services}
+                        selectedItems={selectedServices}
+                        onToggle={handleServiceToggle}
+                        name="services"
+                      />
                     </div>
                   </div>
 
-                  {/* Terms and Conditions Card */}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                         Terms and Conditions
                       </h2>
                     </div>
-                    <div className="p-5 space-y-4">
+                    <div
+                      id="hs-add-product-Event-supported-card-body"
+                      className="p-5 space-y-4"
+                    >
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <EditorToolbar editor={termsEditorInstance.current} editorId="terms-editor" />
-                        <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={termsEditorRef} contentEditable></div>
+                        <TiptapEditor
+                          content={termsAndConditions}
+                          onUpdate={setTermsAndConditions}
+                          placeholder="Outline your terms and conditions for decoration & design services..."
+                        />{" "}
+                        {/* Changed placeholder */}
                       </div>
                     </div>
                   </div>
-
                   <FAQEditor faqs={faqs} setFaqs={setFaqs} />
-
-                  {/* Cancellation Policy Card */}
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                       <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
-                        Cancellation Policy
+                        Cancellation/Refund Policy
                       </h2>
                     </div>
-                    <div className="p-5 space-y-4">
+                    <div
+                      id="hs-add-product-Event-supported-card-body"
+                      className="p-5 space-y-4"
+                    >
                       <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                        <EditorToolbar editor={cancellationEditorInstance.current} editorId="cancellation-editor" />
-                        <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={cancellationEditorRef} contentEditable></div>
+                        <TiptapEditor
+                          content={cancellationPolicy}
+                          onUpdate={setCancellationPolicy}
+                          placeholder="Enter your decoration & design cancellation policy..."
+                        />{" "}
+                        {/* Changed placeholder */}
                       </div>
                     </div>
                   </div>
@@ -1090,7 +979,18 @@ export default function EditService() {
                       {/* Website Link */}
                       <div>
                         <div className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A9A9A9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-globe-lock">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#A9A9A9"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-globe-lock"
+                          >
                             <path d="M15.686 15A14.5 14.5 0 0 1 12 22a14.5 14.5 0 0 1 0-20 10 10 0 1 0 9.542 13" />
                             <path d="M2 12h8.5" />
                             <path d="M20 6V4a2 2 0 1 0-4 0v2" />
@@ -1110,8 +1010,26 @@ export default function EditService() {
                       {/* Instagram Link */}
                       <div>
                         <div className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A9A9A9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-instagram-icon">
-                            <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#A9A9A9"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-instagram-icon"
+                          >
+                            <rect
+                              width="20"
+                              height="20"
+                              x="2"
+                              y="2"
+                              rx="5"
+                              ry="5"
+                            />
                             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                             <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                           </svg>
@@ -1129,7 +1047,18 @@ export default function EditService() {
                       {/* Facebook Link */}
                       <div>
                         <div className="flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#A9A9A9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-facebook-icon">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#A9A9A9"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-facebook-icon"
+                          >
                             <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                           </svg>
                           <input
@@ -1149,7 +1078,7 @@ export default function EditService() {
                 <div className="lg:col-span-2">
                   <div className="lg:sticky lg:top-5 space-y-4">
                     {/* Pricing Card */}
-                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                    {/* <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
                         <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
                           Pricing
@@ -1175,7 +1104,7 @@ export default function EditService() {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
 
                     {/* Service Details Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -1185,26 +1114,26 @@ export default function EditService() {
                         </h2>
                       </div>
                       <div className="p-5 space-y-4">
-                        <div>
-                          <label htmlFor="guestCapacity" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Guest Capacity
-                          </label>
-                          <input
-                            id="guestCapacity"
-                            type="number"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="eg. 450"
-                            value={guestCapacity}
-                            onChange={(e) => setGuestCapacity(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="guestCapacity"
+                          label="Guest Capacity"
+                          placeholder="eg. 450"
+                          type="number"
+                          value={guestCapacity}
+                          onChange={(e) => setGuestCapacity(e.target.value)}
+                        />
                         <div>
                           <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
                             Category
                           </label>
                           <div className="relative">
                             <div className="hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-1.5 sm:py-2 px-4 pe-9 flex text-nowrap w-full cursor-default bg-white border border-stone-200 rounded-lg text-start sm:text-sm text-stone-800 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200">
-                              <span className="truncate">{session?.user?.vendor_profile?.subcategory?.category?.name}</span>
+                              <span className="truncate">
+                                {
+                                  session?.user?.vendor_profile?.subcategory
+                                    ?.category?.name
+                                }
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1214,12 +1143,20 @@ export default function EditService() {
                           </label>
                           <div className="relative">
                             <div className="hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-1.5 sm:py-2 px-4 pe-9 flex text-nowrap w-full cursor-default bg-white border border-stone-200 rounded-lg text-start sm:text-sm text-stone-800 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200">
-                              <span className="truncate">{session?.user?.vendor_profile?.subcategory?.name}</span>
+                              <span className="truncate">
+                                {
+                                  session?.user?.vendor_profile?.subcategory
+                                    ?.name
+                                }
+                              </span>
                             </div>
                           </div>
                         </div>
                         <div className="mt-4">
-                          <label htmlFor="location" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                          <label
+                            htmlFor="location"
+                            className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200"
+                          >
                             Location
                           </label>
                           <div className="relative">
@@ -1236,12 +1173,31 @@ export default function EditService() {
                               onClick={() => setIsLocationModalOpen(true)}
                               className="absolute inset-y-0 right-2 flex items-center justify-center"
                             >
-                              <svg className="w-5 h-5" fill="none" stroke="#E91E63" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 11.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.25-7.5 11.25-7.5 11.25S4.5 17.75 4.5 10.5a7.5 7.5 0 1115 0z" />
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="#E91E63"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M12 11.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M19.5 10.5c0 7.25-7.5 11.25-7.5 11.25S4.5 17.75 4.5 10.5a7.5 7.5 0 1115 0z"
+                                />
                               </svg>
                             </button>
                           </div>
+                          {errors.location && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.location}
+                            </p>
+                          )}
                         </div>
                         <LocationSelector
                           isOpen={isLocationModalOpen}
@@ -1261,24 +1217,13 @@ export default function EditService() {
                       </div>
                     </div>
 
-                    {/* Address Card */}
-                    <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">
-                          Address
-                        </h2>
-                      </div>
-                      <div className="p-5">
-                        <textarea
-                          id="fullAddress"
-                          className="py-2 px-3 block w-full border-stone-200 rounded-lg text-sm focus:border-green-500 focus:ring-green-500 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-400"
-                          rows="4"
-                          placeholder="Enter the full address of the venue."
-                          value={address}
-                          onChange={(e) => setAddress(e.target.value)}
-                        ></textarea>
-                      </div>
-                    </div>
+                    <AddressInput
+                      heading="Business Address"
+                      placeholder="Enter the full business address."
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      error={errors.address}
+                    />
 
                     {/* Service Details Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -1288,35 +1233,25 @@ export default function EditService() {
                         </h2>
                       </div>
                       <div className="p-5 space-y-4">
-                        <div>
-                          <label htmlFor="eventSpaces" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Event Spaces
-                          </label>
-                          <input
-                            id="eventSpaces"
-                            type="text"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="e.g., halls, lawns"
-                            value={eventSpaces}
-                            onChange={(e) => setEventSpaces(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="totalAreaSqft" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Total Area
-                          </label>
-                          <input
-                            id="totalAreaSqft"
-                            type="number"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="in sq. ft."
-                            value={totalAreaSqft}
-                            onChange={(e) => setTotalAreaSqft(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="eventSpaces"
+                          label="Event Spaces"
+                          placeholder="e.g., halls, lawns"
+                          value={eventSpaces}
+                          onChange={(e) => setEventSpaces(e.target.value)}
+                        />
+
+                        <FormInput
+                          id="totalAreaSqft"
+                          label="Total Area"
+                          placeholder="in sq. ft."
+                          type="number"
+                          value={totalAreaSqft}
+                          onChange={(e) => setTotalAreaSqft(e.target.value)}
+                        />
                       </div>
                     </div>
-                    
+
                     {/* Booking Details Card */}
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                       <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
@@ -1325,32 +1260,27 @@ export default function EditService() {
                         </h2>
                       </div>
                       <div className="p-5 space-y-4">
-                        <div>
-                          <label htmlFor="advanceBookingNotice" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Advance Booking Notice
-                          </label>
-                          <input
-                            id="advanceBookingNotice"
-                            type="number"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Enter in Days"
-                            value={advanceBookingNotice}
-                            onChange={(e) => setAdvanceBookingNotice(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <label htmlFor="advancePaymentRequired" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Advance Payment Required
-                          </label>
-                          <input
-                            id="advancePaymentRequired"
-                            type="number"
-                            className="py-1.5 sm:py-2 px-3 block w-full border border-stone-200 rounded-lg sm:text-sm text-stone-800 placeholder:text-stone-500 focus:z-10 focus:border-green-600 focus:ring-green-600 dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200 dark:placeholder:text-neutral-500 dark:focus:outline-hidden dark:focus:ring-1 dark:focus:ring-neutral-600"
-                            placeholder="Enter in %"
-                            value={advancePaymentRequired}
-                            onChange={(e) => setAdvancePaymentRequired(e.target.value)}
-                          />
-                        </div>
+                        <FormInput
+                          id="advanceBookingNotice"
+                          label="Advance Booking Notice"
+                          placeholder="Enter in Days"
+                          type="number"
+                          value={advanceBookingNotice}
+                          onChange={(e) =>
+                            setAdvanceBookingNotice(e.target.value)
+                          }
+                        />
+
+                        <FormInput
+                          id="advancePaymentRequired"
+                          label="Advance Payment Required"
+                          placeholder="Enter in %"
+                          type="number"
+                          value={advancePaymentRequired}
+                          onChange={(e) =>
+                            setAdvancePaymentRequired(e.target.value)
+                          }
+                        />
                       </div>
                     </div>
 
@@ -1363,55 +1293,34 @@ export default function EditService() {
                       </div>
                       <div className="p-5 space-y-4">
                         <div>
-                          <label htmlFor="eventTypes" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                            Event Types
+                          <label
+                            htmlFor="eventTypes"
+                            className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200"
+                          >
+                            Types of Events Covered
                           </label>
                           <div className="p-2">
-                            <div className="flex flex-wrap gap-2">
-                              {eventTypes.map(eventType => (
-                                <label
-                                  key={eventType.id}
-                                  htmlFor={`eventType-checkbox-${eventType.id}`}
-                                  className={`
-                                    py-2 px-2.5 relative flex justify-center items-center text-center text-[11px]
-                                    bg-white border border-gray-200 ring-1 ring-transparent text-gray-800
-                                    cursor-pointer rounded-xl hover:border-green-600 hover:ring-green-600
-                                    dark:bg-neutral-800 dark:text-neutral-200 dark:border-neutral-700
-                                    dark:hover:ring-neutral-600
-                                    peer-checked:bg-green-100 peer-checked:border-green-200 peer-checked:ring-green-200 peer-checked:text-green-800
-                                    dark:peer-checked:bg-green-800/30 dark:peer-checked:border-green-800/50
-                                    dark:peer-checked:ring-green-800/50 dark:peer-checked:text-green-500
-                                    has-disabled:pointer-events-none has-disabled:text-gray-200 dark:has-disabled:text-neutral-700
-                                  `}
-                                >
-                                  <input
-                                    type="checkbox"
-                                    id={`eventType-checkbox-${eventType.id}`}
-                                    className="hidden peer"
-                                    name="eventTypes"
-                                    checked={selectedEventTypes.has(eventType.id)}
-                                    onChange={() => handleEventTypeToggle(eventType.id)}
-                                  />
-                                  <span className="flex shrink-0 justify-center items-center size-0 bg-green-500 text-transparent rounded-full transition-all duration-200 peer-checked:size-4 peer-checked:me-1.5 peer-checked:text-white">
-                                    <svg className="shrink-0 size-2.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                                      <path d="M20 6 9 17l-5-5" />
-                                    </svg>
-                                  </span>
-                                  <span className="block">
-                                    {eventType.name}
-                                  </span>
-                                </label>
-                              ))}
-                            </div>
+                            <CheckboxGroup
+                              items={eventTypes}
+                              selectedItems={selectedEventTypes}
+                              onToggle={handleEventTypeToggle}
+                              name="eventTypes"
+                            />
                           </div>
                         </div>
                         <div>
-                          <label htmlFor="restrictions" className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
+                          <label
+                            htmlFor="restrictions"
+                            className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200"
+                          >
                             Restrictions
                           </label>
                           <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
-                            <EditorToolbar editor={restrictionsEditorInstance.current} editorId="restrictions-editor" />
-                            <div className="h-40 overflow-auto px-3 py-2 text-sm text-stone-800 dark:text-stone-200" ref={restrictionsEditorRef} contentEditable></div>
+                            <TiptapEditor
+                              content={restrictions}
+                              onUpdate={setRestrictions}
+                              placeholder="Enter any restrictions or specific rules..."
+                            />
                           </div>
                         </div>
                       </div>
@@ -1419,7 +1328,7 @@ export default function EditService() {
                   </div>
                 </div>
               </div>
-              
+
               {showSuccess && (
                 <SuccessPopup
                   message={popupMessage}
@@ -1428,12 +1337,17 @@ export default function EditService() {
               )}
 
               {formMessage.text && (
-                <div className={`fixed bottom-24 start-1/2 -translate-x-1/2 p-4 rounded-lg shadow-md text-white ${formMessage.type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}>
+                <div
+                  className={`fixed bottom-24 start-1/2 -translate-x-1/2 p-4 rounded-lg shadow-md text-white ${
+                    formMessage.type === "success"
+                      ? "bg-green-500"
+                      : "bg-red-500"
+                  }`}
+                >
                   {formMessage.text}
                 </div>
               )}
 
-        
               {isActionCardVisible && (
                 <ActionButtons
                   isMinimized={isActionCardMinimized}
@@ -1458,12 +1372,22 @@ export default function EditService() {
         onConfirm={handleConfirmDelete}
         title="Delete Service"
       >
-        Are you sure you want to delete this service? This action is irreversible.
+        Are you sure you want to delete this service? This action is
+        irreversible.
       </ConfirmationModal>
 
-      <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
-      <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
-      <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
+      <Script
+        src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0"
+        strategy="lazyOnload"
+      />
+      <Script
+        src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js"
+        strategy="lazyOnload"
+      />
+      <Script
+        src="https://preline.co/assets/js/hs-copy-clipboard-helper.js"
+        strategy="lazyOnload"
+      />
     </>
   );
 }
