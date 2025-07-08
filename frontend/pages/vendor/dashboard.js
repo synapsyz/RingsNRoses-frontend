@@ -35,10 +35,11 @@ export default function DashboardPage() {
   // If `showAccessModal` is true, render the access denied modal.
   if (showAccessModal) {
     return (
-        <AccessDeniedModal 
-            isOpen={showAccessModal} 
-            userType={session?.user_type || 'customer'} 
-        />
+      <AccessDeniedModal
+        isOpen={showAccessModal}
+        userType={session?.user_type || 'unknown'}
+        allowedUserType="vendor"
+      />
     );
   }
   

@@ -1,6 +1,8 @@
 import React from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import axios from 'axios';
+import AccessDeniedModal from '@/components/AccessDeniedModal'; 
+
 
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
@@ -20,6 +22,17 @@ const CustomerUserProfile = () => {
     const { data: session, status } = useSession();
     const user = session?.user;
     const accessToken = session?.accessToken;
+
+
+      if (session?.user_type !== 'customer') {
+    return (
+      <AccessDeniedModal
+        isOpen={true} // It's always open if this condition is met
+        userType={session?.user_type}
+        allowedUserType="customer"
+      />
+    );
+  }
     const handleLogoutClick = async () => {
       console.log("Logout process started...");
       localStorage.removeItem('eventFormData');
