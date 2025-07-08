@@ -106,6 +106,7 @@ export default function AddProduct() {
   const [businessRegistrationNumber, setBusinessRegistrationNumber] = useState('');
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
+  const [errors, setErrors] =useState({});
   const [vendorId, setVendorId] = useState(null);
   const [serviceName, setServiceName] = useState(null);
   const [serviceId, setServiceId] = useState(null);
@@ -303,6 +304,56 @@ console.log(serviceId);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormMessage({ type: '', text: '' }); // Clear previous messages
+    setErrors({}); // Clear previous errors
+
+    const newErrors = {};
+
+    // Validate required fields
+    if (!Name.trim()) {
+      newErrors.Name = 'Service Name is required.';
+    }
+    if (!contactName.trim()) {
+      newErrors.contactName = 'Contact Person Name is required.';
+    }
+    if (!contactNumber.trim()) {
+      newErrors.contactNumber = 'Contact Number is required.';
+    }
+    if (!emailAddress.trim()) {
+      newErrors.emailAddress = 'Email Address is required.';
+    } else if (!/\S+@\S+\.\S+/.test(emailAddress)) {
+      newErrors.emailAddress = 'Email Address is invalid.';
+    }
+    if (!yearsOfExperience) {
+      newErrors.yearsOfExperience = 'Years of Experience is required.';
+    }
+    if (!aboutContent.trim()) {
+      newErrors.aboutContent = 'Description (About) is required.';
+    }
+    if (!location.trim() || !selectedLocationData) {
+      newErrors.location = 'Service Area Location is required.';
+    }
+    if (!address.trim()) {
+      newErrors.address = 'Business Address is required.';
+    }
+    if (selectedFoodPackages.has('veg') && !perPlatePriceVeg) {
+      newErrors.perPlatePriceVeg = 'Per Plate Price (Veg) is required.';
+    }
+    if (selectedFoodPackages.has('non-veg') && !perPlatePriceNonVeg) {
+      newErrors.perPlatePriceNonVeg = 'Per Plate Price (Non-Veg) is required.';
+    }
+
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setFormMessage({ type: 'error', text: 'Please fill in all required fields.' });
+      // Scroll to the first error or top of the form
+      const firstErrorField = document.getElementById(Object.keys(newErrors)[0]);
+      if (firstErrorField) {
+        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      return; // Stop the submission
+    }
 
     const foodPackagesData = [];
     let vegPrice = null;
@@ -499,12 +550,12 @@ console.log(serviceId);
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="CateringName" label="Name" placeholder="ABC Catering" value={Name} onChange={(e) => setName(e.target.value)} required />
-                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} />
+                        <FormInput id="CateringName" label="Name" placeholder="ABC Catering" value={Name} onChange={(e) => setName(e.target.value)} required error={errors.Name} />
+                        <FormInput id="contactName" label="Contact Name" placeholder="John Doe" value={contactName} onChange={(e) => setcontactName(e.target.value)} required error={errors.contactName} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
-                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abccaters@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} />
+                        <FormInput id="contactNumber" label="Contact Number" placeholder="+919999999998" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required error={errors.contactNumber} />
+                        <FormInput id="emailAddress" label="Email Address" type="email" placeholder="abccaters@email.com" value={emailAddress} onChange={(e) => setEmailAddress(e.target.value)} required error={errors.emailAddress} />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
                         <FormInput
@@ -540,6 +591,8 @@ console.log(serviceId);
                           placeholder="Enter Years of Experience"
                           value={yearsOfExperience}
                           onChange={(e) => setYearsOfExperience(e.target.value)}
+                          required
+                          error={errors.yearsOfExperience}
                         />
                       </div>
                       <div>
@@ -547,6 +600,7 @@ console.log(serviceId);
                         <div className="bg-white border border-stone-200 rounded-xl overflow-hidden dark:bg-neutral-800 dark:border-neutral-700">
                           <TiptapEditor content={aboutContent} onUpdate={setAboutContent} placeholder="Tell us about your catering service..." />
                         </div>
+                         {errors.aboutContent && <p className="text-red-500 text-sm mt-1">{errors.aboutContent}</p>}
                       </div>
                     </div>
                   </div>
@@ -555,7 +609,7 @@ console.log(serviceId);
                     ref={mediaManagerRef}
                     initialMedia={initialGallery}
                     onUpdate={handleGalleryUpdate}
-                    pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery`}
+                    pathPrefix={`vendors/${vendorId}/${serviceName}/gallery`}
                   />
                   
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
@@ -577,10 +631,15 @@ console.log(serviceId);
                             ref={mediaManagerRefVeg}
                             initialMedia={initialGalleryVeg}
                             onUpdate={handleVegGalleryUpdate}
-                            pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery/menu/veg`}
+                            pathPrefix={`vendors/${vendorId}/${serviceName}/gallery/menu/veg`}
                           />
                           <div className="mt-2">
-                            <Pricing perPlatePrice={perPlatePriceVeg} setPerPlatePrice={setPerPlatePriceVeg} />
+                            <Pricing
+                                perPlatePrice={perPlatePriceVeg}
+                                setPerPlatePrice={setPerPlatePriceVeg}
+                                required={selectedFoodPackages.has('veg')}
+                                error={errors.perPlatePriceVeg}
+                            />
                           </div>
                         </div>
                       )}
@@ -592,10 +651,15 @@ console.log(serviceId);
                             ref={mediaManagerRefNonVeg}
                             initialMedia={initialGalleryNonVeg}
                             onUpdate={handleNonVegGalleryUpdate}
-                            pathPrefix={`vendors/${vendorId}/${serviceName}/${serviceId}/gallery/menu/non_veg`}
+                            pathPrefix={`vendors/${vendorId}/${serviceName}/gallery/menu/non_veg`}
                           />
                           <div className="mt-2">
-                            <Pricing perPlatePrice={perPlatePriceNonVeg} setPerPlatePrice={setPerPlatePriceNonVeg} />
+                            <Pricing
+                                perPlatePrice={perPlatePriceNonVeg}
+                                setPerPlatePrice={setPerPlatePriceNonVeg}
+                                required={selectedFoodPackages.has('non-veg')}
+                                error={errors.perPlatePriceNonVeg}
+                            />
                           </div>
                         </div>
                       )}
@@ -695,6 +759,7 @@ console.log(serviceId);
                               </svg>
                             </button>
                           </div>
+                          {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                         </div>
                         <LocationSelector isOpen={isLocationModalOpen} onClose={() => setIsLocationModalOpen(false)} onChange={(locData) => { if (locData?.location) { setLocation(locData.location); setSelectedLocationData(locData); } }} onSave={(locData) => { setLocation(locData.location); setSelectedLocationData(locData); setIsLocationModalOpen(false); }} />
                       </div>
@@ -705,6 +770,7 @@ console.log(serviceId);
                       placeholder="Enter the full address of the venue."
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
+                      error={errors.address}
                     />
                     
                     <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
