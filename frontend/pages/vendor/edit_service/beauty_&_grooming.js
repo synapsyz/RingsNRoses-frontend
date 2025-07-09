@@ -18,6 +18,7 @@ import Pricing from '@/components/Pricing'; // Assuming Pricing is a generic com
 import AddressInput from '@/components/AddressInput';
 import ServicePackages from '@/components/ServicePackages'; // Import the generic ServicePackages component
 import FAQEditor from '@/components/FAQEditor';
+import CertificateManager from '@/components/CertificateManager';
 
 let api_url;
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -92,15 +93,34 @@ export default function AddBeautyAndGroomingProduct() {
   const [gstNumber, setGstNumber] = useState('');
   const [yearsOfExperience, setYearsOfExperience] = useState('');
   const subcategory = session?.user?.vendor_profile?.subcategory?.id;
-  const vendorId = session?.user?.vendor_profile?.id;
   const [beautyGroomingPackages, setBeautyGroomingPackages] = useState([]); // Changed package state
   const [minimumAdvanceBookingTime, setMinimumAdvanceBookingTime] = useState('');
+  // Add these state variables if they don't exist
+const [initialCertifications, setInitialCertifications] = useState([]); // For displaying the certificate image(s)
+const [fetchedCertificateKey, setFetchedCertificateKey] = useState(null); // To store the key for submission
   // NEW: For legal and compliance / certifications
   const legalMediaManagerRef = useRef(null); // New ref for the certification MediaManager
-  const [initialCertifications, setInitialCertifications] = useState([]); // State for pre-existing certs
   const [updatedExistingCertifications, setUpdatedExistingCertifications] = useState([]); // For existing certs after updates
   const [newCertificationFiles, setNewCertificationFiles] = useState([]); // For newly uploaded certs
   const [errors, setErrors] = useState({}); //
+  const [vendorId, setVendorId] = useState(null);
+    const [serviceName, setServiceName] = useState(null);
+    const [serviceId, setServiceId] = useState(null);
+    useEffect(() => {
+      // ... existing useEffect for cateringId
+  
+      if (session?.user?.vendor_profile) {
+        setVendorId(session.user.vendor_profile.id);
+        const formattedServiceName = session.user.vendor_profile.subcategory?.category?.name
+          .replace(/ /g, '_')
+          .toLowerCase();
+        setServiceName(formattedServiceName);
+        setServiceId(session.user.vendor_profile.service_id); // Assuming service_id is directly available here
+      }
+    }, [session]);
+    console.log(vendorId);
+    console.log(serviceName);
+    console.log(serviceId);
 
   // === PACKAGE HANDLERS (Generic, but operate on beautyGroomingPackages) ===
   const togglePackage = (idToToggle) => {
@@ -226,7 +246,7 @@ export default function AddBeautyAndGroomingProduct() {
           // setGuestCapacity(data.guest_capacity || '');
           // setEventSpaces(data.event_spaces || '');
           // setTotalAreaSqft(data.total_area_sqft || '');
-          setAdvanceBookingNotice(data.advance_booking_notice || '');
+          setMinimumAdvanceBookingTime(data.advance_booking_notice || '');
           // setAdvancePaymentRequired(data.advance_payment_required || '');
           setCancellationPolicy(data.cancellation_policy || '');
           setRestrictions(data.restrictions || '');
@@ -244,6 +264,12 @@ export default function AddBeautyAndGroomingProduct() {
           setYearsOfExperience(data.years_of_experience || '');
           setThumbnailUrl(data.thumbnail_url_detail || null);
           setThumbnailKey(data.thumbnail_url || null);
+          if (data.certificate_url_detail) {
+            setInitialCertifications([data.certificate_url_detail]);
+          } else {
+            setInitialCertifications([]);
+          }
+          setFetchedCertificateKey(data.certificate_url || null);
 
           if (editorInstance.current) editorInstance.current.commands.setContent(data.about || '');
           if (cancellationEditorInstance.current) cancellationEditorInstance.current.commands.setContent(data.cancellation_policy || '');
@@ -398,15 +424,27 @@ export default function AddBeautyAndGroomingProduct() {
       }
       finalThumbnailKey = uploadResult.key;
     }
+    
     let galleryResult = await mediaManagerRef.current.upload();
     if (!galleryResult.success) {
       setFormMessage({ type: 'error', text: `Main gallery upload failed: ${galleryResult.message}` });
       return;
     }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
+     let certificateUploadResult = await legalMediaManagerRef.current.upload();
+  if (!certificateUploadResult.success) {
+    setFormMessage({ type: 'error', text: `Certificate upload failed: ${certificateUploadResult.message}` });
+    return;
+  }
+
+  // certificateUploadResult.keys will now contain either:
+  // - [] if the certificate was removed or never uploaded.
+  // - [key] if a certificate is present (either existing kept or newly uploaded).
+  const certificateKeyForPayload = certificateUploadResult.keys.length > 0
+    ? certificateUploadResult.keys[0]
+    : null;
     let lowestPackagePrice = null;
   if (beautyGroomingPackages.length > 0) {
-    // Filter out packages with empty or invalid pricing, then parse to float
     const validPrices = beautyGroomingPackages
       .map(pkg => parseFloat(pkg.pricing))
       .filter(price => !isNaN(price)); // Ensure it's a valid number
@@ -456,7 +494,7 @@ export default function AddBeautyAndGroomingProduct() {
       // Remove event_spaces, total_area_sqft if not applicable
       // event_spaces: eventSpaces,
       // total_area_sqft: parseFloat(totalAreaSqft),
-      advance_booking_notice: advanceBookingNotice,
+      advance_booking_notice: parseFloat(minimumAdvanceBookingTime),
       // advance_payment_required: advancePaymentRequired,
       restrictions: restrictions,
       terms_and_conditions: termsAndConditions,
@@ -472,7 +510,9 @@ export default function AddBeautyAndGroomingProduct() {
       packages_data : packagesData,
       gallery_images: finalGalleryList,
       thumbnail_url: finalThumbnailKey,
+      certificate_url: certificateKeyForPayload,
       faqs: faqsForApi,
+
     };
 
     console.log("Submitting data for Beauty & Grooming:", formData);
@@ -587,7 +627,7 @@ export default function AddBeautyAndGroomingProduct() {
                     </div>
                   </div>
 
-                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={'vendors/gallery/beauty-grooming'} /> {/* Path Prefix Changed */}
+                  <MediaManager ref={mediaManagerRef} initialMedia={initialGallery} onUpdate={(existing, newFiles) => { setUpdatedExistingMedia(existing); setNewGalleryFiles(newFiles); }} pathPrefix={`vendors/${vendorId}/${serviceName}/gallery`} /> {/* Path Prefix Changed */}
 
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
                     <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
@@ -731,15 +771,15 @@ export default function AddBeautyAndGroomingProduct() {
                       </div>
                       <div className="p-5 space-y-4">
                         {/* MediaManager for Certifications */}
-                        <MediaManager
-                          ref={legalMediaManagerRef} // Use the new ref
-                          initialMedia={initialCertifications} // Use the new state for initial certs
-                          onUpdate={(existing, newFiles) => {
-                            setUpdatedExistingCertifications(existing); // Update cert-specific state
-                            setNewCertificationFiles(newFiles);       // Update cert-specific state
-                          }}
-                          pathPrefix={'vendors/certifications'} // Recommended: specific path for certifications
-                        />
+                        <CertificateManager
+    ref={legalMediaManagerRef}
+    initialMedia={initialCertifications}
+    onUpdate={(existing, newFiles) => {
+        setUpdatedExistingCertifications(existing);
+        setNewCertificationFiles(newFiles);
+    }}
+    pathPrefix={`vendors/${vendorId}/${serviceName}/certificate`}
+/>
                       </div>
                     </div>
                   </div>
