@@ -431,18 +431,22 @@ const [fetchedCertificateKey, setFetchedCertificateKey] = useState(null); // To 
       return;
     }
     const finalGalleryList = [...updatedExistingMedia, ...galleryResult.keys];
-     let certificateUploadResult = await legalMediaManagerRef.current.upload();
-  if (!certificateUploadResult.success) {
-    setFormMessage({ type: 'error', text: `Certificate upload failed: ${certificateUploadResult.message}` });
-    return;
-  }
-
-  // certificateUploadResult.keys will now contain either:
-  // - [] if the certificate was removed or never uploaded.
-  // - [key] if a certificate is present (either existing kept or newly uploaded).
-  const certificateKeyForPayload = certificateUploadResult.keys.length > 0
-    ? certificateUploadResult.keys[0]
-    : null;
+     let certificateKeyForPayload = fetchedCertificateKey; // Start with the existing key
+    if (newCertificationFiles.length > 0) {
+        let certificateUploadResult = await legalMediaManagerRef.current.upload();
+        if (!certificateUploadResult.success) {
+            setFormMessage({ type: 'error', text: `Certificate upload failed: ${certificateUploadResult.message}` });
+            return;
+        }
+        // If upload was successful, use the newly uploaded key (assuming single cert)
+        if (certificateUploadResult.keys.length > 0) {
+            certificateKeyForPayload = certificateUploadResult.keys[0];
+        }
+    } else if (updatedExistingCertifications.length === 0 && fetchedCertificateKey) {
+         if (initialCertifications.length > 0 && updatedExistingCertifications.length === 0) {
+             certificateKeyForPayload = null;
+         }
+    }
     let lowestPackagePrice = null;
   if (beautyGroomingPackages.length > 0) {
     const validPrices = beautyGroomingPackages
