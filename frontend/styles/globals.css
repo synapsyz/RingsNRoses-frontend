@@ -23,3 +23,26 @@ label:has(input[type="radio"]:checked) {
   background-color: #e0e7ff; /* Example: Light indigo background */
   color: #4f46e5; /* Change text color when selected */
 }
+
+
+
+@layer utilities {
+  .animate-slide-in {
+    @apply transform translate-y-[-20px] opacity-0 animate-fadeInUp;
+  }
+
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.4s ease-out forwards;
+  }
+}
