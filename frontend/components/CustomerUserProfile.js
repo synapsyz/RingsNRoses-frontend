@@ -24,15 +24,16 @@ const CustomerUserProfile = () => {
     const accessToken = session?.accessToken;
 
 
-      if (session?.user_type !== 'customer') {
-    return (
-      <AccessDeniedModal
-        isOpen={true} // It's always open if this condition is met
-        userType={session?.user_type}
-        allowedUserType="customer"
-      />
-    );
-  }
+if (session && session?.user_type !== 'customer') {
+  return (
+    <AccessDeniedModal
+      isOpen={true}
+      userType={session.user_type}
+      allowedUserType="customer"
+    />
+  );
+}
+
     const handleLogoutClick = async () => {
       console.log("Logout process started...");
       localStorage.removeItem('eventFormData');
