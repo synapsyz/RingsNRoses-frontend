@@ -32,7 +32,6 @@ const CertificateManager = forwardRef(function BeautyCertificateManager({ initia
         setIsUploading(true);
         const uploadedKeys = [];
 
-        // Only process the first (and only) new file
         const file = newFiles[0]; 
         const uniqueFileName = `${pathPrefix}/${Date.now()}-${file.name}`;
         try {
@@ -73,9 +72,8 @@ const CertificateManager = forwardRef(function BeautyCertificateManager({ initia
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
-    // Only accept the first file if multiple are selected, and clear previous if any
     if (files.length > 0) {
-      if (previews.length > 0) { // Revoke existing URL if a file was already chosen
+      if (previews.length > 0) { 
         URL.revokeObjectURL(previews[0].url);
       }
       setNewFiles([files[0]]);
@@ -99,15 +97,15 @@ const CertificateManager = forwardRef(function BeautyCertificateManager({ initia
 
   const handleRemoveExisting = (index) => {
     setExistingMedia(current => current.filter((_, i) => i !== index));
-    // When removing existing, clear newFiles and previews as well if only one file is allowed
+    
     setNewFiles([]);
     setPreviews([]);
   };
 
   const handleRemoveNew = (index) => {
     URL.revokeObjectURL(previews[index].url);
-    setNewFiles([]); // Clear all new files as only one is allowed
-    setPreviews([]); // Clear all previews as only one is allowed
+    setNewFiles([]); 
+    setPreviews([]); 
   };
 
   const renderMediaItem = (url, type, index, isNew = false) => {
@@ -134,7 +132,6 @@ const CertificateManager = forwardRef(function BeautyCertificateManager({ initia
   };
 
   const isGalleryEmpty = existingMedia.length === 0 && previews.length === 0;
-  // Determine if adding more is allowed (only if no existing or new file is present)
   const canAddMore = existingMedia.length === 0 && newFiles.length === 0;
 
   return (
@@ -144,7 +141,6 @@ const CertificateManager = forwardRef(function BeautyCertificateManager({ initia
           Media Gallery
         </h2>
         
-        {/* Conditionally display "Uploading..." or "Add More" button */}
         {isUploading ? (
           <span className="text-sm font-semibold text-green-600 dark:text-green-400">Uploading...</span>
         ) : (
@@ -163,9 +159,7 @@ const CertificateManager = forwardRef(function BeautyCertificateManager({ initia
       <div className="p-5 space-y-4">
         {!isGalleryEmpty ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {/* Ensure only the first existing media item is rendered */}
                 {existingMedia.slice(0,1).map((url, index) => renderMediaItem(url, '', index, false))}
-                {/* Ensure only the first new preview item is rendered */}
                 {previews.slice(0,1).map((p, index) => renderMediaItem(p.url, p.type, index, true))}
             </div>
         ) : (
@@ -192,10 +186,10 @@ const CertificateManager = forwardRef(function BeautyCertificateManager({ initia
             id={uniqueId}
             type="file"
             className="sr-only"
-            multiple={false} // Set to false to accept only one file
+            multiple={false} 
             accept="image/*,video/*"
             onChange={handleFileChange}
-            disabled={isUploading || (!isGalleryEmpty && !canAddMore)} // Disable if uploading or if a file already exists
+            disabled={isUploading || (!isGalleryEmpty && !canAddMore)} 
         />
       </div>
     </div>
