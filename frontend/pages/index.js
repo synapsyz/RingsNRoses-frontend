@@ -1,5 +1,7 @@
 'use client';
 
+import AccessDeniedModal from '@/components/AccessDeniedModal'; 
+import { signIn } from 'next-auth/react';
 
 // import { Html, Head, Main, NextScript } from 'next/document';
 // import '../styles/globals.css';
@@ -309,7 +311,6 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
 
   const [isMobile, setIsMobile] = useState(false);
   
-
   // THIS IS THE CRUCIAL LOG (presumably index.js:88 for you)
   console.log("dataFromLocalStorage (in component body, AFTER RENDER):",dataFromLocalStorage);
   // Effect to determine mobile view
