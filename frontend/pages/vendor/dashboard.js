@@ -1,35 +1,67 @@
+import { useSession, signIn } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+
+// Import your modal component
+import AccessDeniedModal from '@/components/AccessDeniedModal'; 
+
+// --- Your standard page components ---
 import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
-import SecondaryNav from '@/components/vendor/SecondaryNav'; // 1. Import SecondaryNav
-import DashboardStats from '@/components/vendor/DashboardStats'; // 1. Import the new component
-import OrdersChart from '@/components/vendor/OrdersChart'; // 1. Import the new component
-import SummaryCharts from '@/components/vendor/SummaryCharts'; // 1. Import the new component<Footer />
-import Footer from '@/components/vendor/Footer'; // 1. Import the new component<Footer />
-
-
-
+import SecondaryNav from '@/components/vendor/SecondaryNav';
+import DashboardStats from '@/components/vendor/DashboardStats';
+import OrdersChart from '@/components/vendor/OrdersChart';
+import SummaryCharts from '@/components/vendor/SummaryCharts';
+import Footer from '@/components/vendor/Footer';
 
 export default function DashboardPage() {
-  return (
-    <div>
-      <CustomHead />
-      <Header />
-      <SecondaryNav />
-      <DashboardStats />
-            <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 mx-auto">
-        {/* We can use a grid for layout */}
-        <div className="grid lg:grid-cols-4 gap-5">
-          {/* Orders Chart takes up 4 of 6 columns */}
-          <OrdersChart />
-          
-          {/* Other components like 'Recent Activity' could go here, taking up 2 columns */}
-        </div>
-        <SummaryCharts />
-      </div>
-      <Footer />
+  const { data: session, status } = useSession();
+  const [showAccessModal, setShowAccessModal] = useState(false);
 
-      {/* The rest of your dashboard content goes here */}
-      
-    </div>
-  );
+  useEffect(() => {
+    if (status === 'loading') {
+      return;
+    }
+
+    if (!session) {
+      signIn();
+      return;
+    }
+
+    if (session && session.user_type !== 'vendor') {
+      setShowAccessModal(true);
+    }
+  }, [session, status]);
+
+  // If `showAccessModal` is true, render the access denied modal.
+  if (showAccessModal) {
+    return (
+      <AccessDeniedModal
+        isOpen={showAccessModal}
+        userType={session?.user_type || 'unknown'}
+        allowedUserType="vendor"
+      />
+    );
+  }
+  
+  // If all checks pass, render the vendor dashboard.
+  if (session && session.user_type === 'vendor') {
+    return (
+      <div>
+        <CustomHead />
+        <Header />
+        <SecondaryNav />
+        <DashboardStats />
+        <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 mx-auto">
+          <div className="grid lg:grid-cols-4 gap-5">
+            <OrdersChart />
+          </div>
+          <SummaryCharts />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Fallback case
+  return null;
 }
