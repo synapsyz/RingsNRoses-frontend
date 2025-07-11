@@ -3,7 +3,7 @@ const FAQ = ({ data }) => {
   return (
     <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
         {data?.faq_details && data.faq_details.length > 0 &&
-      <div className="max-w-2xl mx-auto text-center mb-10 lg:mb-14">
+      <div className="max-w-2xl mx-auto text-center mb-6 lg:mb-6">
         <h2 className="text-xl font-semibold md:text-xl md:leading-tight text-gray-800 dark:text-neutral-200">
           Frequently Asked Questions
         </h2>

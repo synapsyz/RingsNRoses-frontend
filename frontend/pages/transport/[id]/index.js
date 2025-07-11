@@ -17,6 +17,7 @@ import SocialMediaLinks from "@/components/customer/SocialMediaLinks";
 import ContactModal from "@/components/customer/ContactModal";
 import Suggestions from "@/components/customer/Suggestions";
 import LocationSelector from "@/components/LocationSelector";
+import Packages from "@/components/customer/Packages";
 
 const isNgrok =
   process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
@@ -36,10 +37,9 @@ const api = axios.create(
     },
   }
 );
-
 export default function Home() {
-  const [eventStaffingData, setEventStaffingData] = useState(null);
-  const [eventStaffingId, setEventStaffingId] = useState(null);
+  const [transportData, setTransportData] = useState(null);
+  const [transportId, setTransportId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [error, setError] = useState(null);
@@ -64,14 +64,14 @@ export default function Home() {
   useEffect(() => {
     if (router.isReady && router.query.id) {
       console.log(router.query.id);
-      setEventStaffingId(router.query.id);
+      setTransportId(router.query.id);
     }
   }, [router.isReady, router.query.id]);
 
   useEffect(() => {
-    const fetchRelatedEventStaffingData = async () => {
+    const fetchRelatedTransportData = async () => {
       setLoading(true);
-      let loc_id = selectedLocationId || eventStaffingData?.location_details?.id;
+      let loc_id = selectedLocationId || transportData?.location_details?.id;
       try {
         if (loc_id !== undefined && loc_id !== null) {
           const config = {
@@ -81,7 +81,7 @@ export default function Home() {
             },
           };
           const response = await api.get(
-            `/eventstaffing/?location=${loc_id}`,
+            `/transportation/?location=${loc_id}`,
             config
           );
 
@@ -90,18 +90,18 @@ export default function Home() {
           setRelatedItems(apiResponse);
         }
       } catch (err) {
-        console.error("Error fetching related event staffing data:", err);
-        setError("Failed to load related event staffing data.");
+        console.error("Error fetching related transportation data:", err);
+        setError("Failed to load related transportation data.");
       } finally {
-        // setLoading(false); // Consistent with previous examples
+        //setLoading(false); 
       }
     };
-    fetchRelatedEventStaffingData();
-  }, [accessToken, eventStaffingData, selectedLocationId]);
+    fetchRelatedTransportData();
+  }, [accessToken, transportData, selectedLocationId]);
 
   useEffect(() => {
-    if (!eventStaffingId) return;
-    const fetchEventStaffingData = async () => {
+    if (!transportId) return;
+    const fetchTransportData = async () => {
       setLoading(true);
       try {
         const config = {
@@ -110,37 +110,37 @@ export default function Home() {
             "ngrok-skip-browser-warning": "true",
           },
         };
-        const response = await api.get(`/eventstaffing/${eventStaffingId}/`, config);
-        setEventStaffingData(response.data);
+        const response = await api.get(`/transportation/${transportId}/`, config);
+        setTransportData(response.data);
         setIsFavorite(response.data.is_favorite || false);
         setShowContent(true);
         setError(null);
       } catch (err) {
-        setError("Failed to load Event Staffing data.");
-        setEventStaffingData(null);
+        setError("Failed to load Transportation data.");
+        setTransportData(null);
         setShowContent(false);
       } finally {
         setLoading(false);
       }
     };
-    fetchEventStaffingData();
-  }, [eventStaffingId, accessToken]);
+    fetchTransportData();
+  }, [transportId, accessToken]);
 
   useEffect(() => {
-    if (eventStaffingData?.name) {
+    if (transportData?.name) {
       setContent(
-        `${eventStaffingData.name} provides professional and experienced staff for a variety of events. The comprehensive range of staffing services available is mentioned below:`
+        `${transportData.name} offers a wide range of transportation solutions for all your event needs. The diverse selection of vehicles and services available is mentioned below:`
       );
       setProductContent(
-        `${eventStaffingData?.name} is your ideal partner for all your event staffing requirements.`
+        `${transportData?.name} is the perfect choice for your guests or event transportation.`
       );
       setContactInfo({
-        name: eventStaffingData?.manager_name || "N/A",
-        number: eventStaffingData?.contact_number || "N/A",
-        alternate_number: eventStaffingData?.alternative_number || "N/A",
+        name: transportData?.manager_name || "N/A",
+        number: transportData?.contact_number || "N/A",
+        alternate_number: transportData?.alternative_number || "N/A",
       });
     }
-  }, [eventStaffingData]);
+  }, [transportData]);
 
   const handleShowContactModal = () => {
     setShowContactModal(true);
@@ -170,9 +170,9 @@ export default function Home() {
     <>
       <Head>
         <title>
-          {eventStaffingData?.name
-            ? `${eventStaffingData.name} | Event Staffing`
-            : "Loading Event Staffing Details..."}
+          {transportData?.name
+            ? `${transportData.name} | Transportation`
+            : "Loading Transportation Details..."}
         </title>
         <meta name="description" content="Generated by create next app" />
         <link rel="icon" href="/favicon.ico" />
@@ -186,10 +186,10 @@ export default function Home() {
           <div id="content">
             <div className="w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
               <div className="pt-6">
-                <Breadcrumb data={eventStaffingData} />
+                <Breadcrumb data={transportData} />
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-y-10">
                   <div className="lg:col-span-3">
-                    <ImageSlider data={eventStaffingData} />
+                    <ImageSlider data={transportData} />
                     <div id="hs-sticky-sidebar-mobile-wrapper"></div>
                     <Reviews />
                     <div className="pt-14 pb-10">
@@ -197,12 +197,13 @@ export default function Home() {
                         <ServicesOffered
                           heading="Services Offered"
                           content={content}
-                          data={eventStaffingData?.services_offered_details}
+                          data={transportData?.services_offered_details}
                         />
                         <div className="max-w-4xl mx-auto text-gray-800 dark:text-neutral-200">
-                          <About data={eventStaffingData} />
-                          <EventTypes data={eventStaffingData} />
-                          <FAQ data={eventStaffingData} />
+                          <About data={transportData} />
+                          <EventTypes data={transportData} />
+                          <Packages data={transportData} />
+                          <FAQ data={transportData} />
                         </div>
                       </div>
                     </div>
@@ -220,7 +221,7 @@ export default function Home() {
                     >
                       <ProductDetails
                         content={productContent}
-                        data={eventStaffingData}
+                        data={transportData}
                         onShowContactModal={handleShowContactModal}
                       />
                     </div>
@@ -249,7 +250,7 @@ export default function Home() {
       ) : (
         <LoadingSpinner />
       )}
-      <SocialMediaLinks data={eventStaffingData} />
+      <SocialMediaLinks data={transportData} />
     </>
   );
 }

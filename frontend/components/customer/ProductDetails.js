@@ -213,14 +213,14 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
               <div className="mt-5 flex gap-3">
                 <button
                   type="button"
-                  className="w-3/4 py-3 px-4 inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-transparent bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:focus:bg-emerald-600"
+                  className="w-3/4 py-3 px-4 inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-transparent bg-[#E91E63] text-white hover:bg-[#C2185B] disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-[#C2185B] dark:bg-[#E91E63] dark:hover:bg-[#C2185B] dark:focus:bg-[#C2185B]"
                 >
                   Request Pricing
                 </button>
                 <button
                   type="button"
-                  className="w-1/4 py-2.5 px-4 inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-emerald-600 text-emerald-600 hover:bg-emerald-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-emerald-50 dark:border-emerald-500 dark:text-emerald-500 dark:hover:bg-emerald-950 dark:focus:bg-emerald-950"
-                  onClick={onShowContactModal} // Add onClick handler here
+                  className="w-1/4 py-2.5 px-4 inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-[#E91E63] text-[#E91E63] hover:bg-[#E91E63]/10 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-[#E91E63]/10 dark:border-[#E91E63] dark:text-[#E91E63] dark:hover:bg-[#E91E63]/20 dark:focus:bg-[#E91E63]/20"
+                  onClick={onShowContactModal}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
