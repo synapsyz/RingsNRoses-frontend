@@ -37,16 +37,16 @@ const api = axios.create(
     },
   }
 );
-export default function Home() {
-  const [giftsData, setGiftsData] = useState(null);
-  const [giftsId, setGiftsId] = useState(null);
+export default function MiscSupportServices() {
+  const [miscSupportData, setMiscSupportData] = useState(null);
+  const [miscSupportId, setMiscSupportId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [error, setError] = useState(null);
   const [showContent, setShowContent] = useState(false);
   const [content, setContent] = useState("");
   const [productContent, setProductContent] = useState("");
-  const [relatedItems, setrelatedItems] = useState(null);
+  const [relatedItems, setRelatedItems] = useState(null);
   const { data: session, status } = useSession();
   const user = session?.user;
   const router = useRouter();
@@ -64,14 +64,14 @@ export default function Home() {
   useEffect(() => {
     if (router.isReady && router.query.id) {
       console.log(router.query.id);
-      setGiftsId(router.query.id);
+      setMiscSupportId(router.query.id);
     }
   }, [router.isReady, router.query.id]);
 
   useEffect(() => {
-    const fetchGiftsData = async () => {
+    const fetchMiscSupportData = async () => {
       setLoading(true);
-      let loc_id = selectedLocationId || giftsData?.location_details?.id;
+      let loc_id = selectedLocationId || miscSupportData?.location_details?.id;
       try {
         if (loc_id !== undefined && loc_id !== null) {
           const config = {
@@ -80,25 +80,25 @@ export default function Home() {
               "ngrok-skip-browser-warning": "true",
             },
           };
-          const sug = await api.get(`/giftsfavors/?location=${loc_id}`, config);
+          const sug = await api.get(`/miscsupportservices/?location=${loc_id}`, config);
 
           var apiResponse = sug.data.results.slice(0, 5);
 
-          setrelatedItems(apiResponse);
+          setRelatedItems(apiResponse);
         }
       } catch (err) {
-        console.error("Error fetching gifts data:", err);
-        setError("Failed to load gifts data.");
+        console.error("Error fetching miscellaneous support services data:", err);
+        setError("Failed to load miscellaneous support services data.");
       } finally {
         //setLoading(false);
       }
     };
-    fetchGiftsData();
-  }, [accessToken, giftsData, selectedLocationId]);
+    fetchMiscSupportData();
+  }, [accessToken, miscSupportData, selectedLocationId]);
 
   useEffect(() => {
-    if (!giftsId) return;
-    const fetchGiftsData = async () => {
+    if (!miscSupportId) return;
+    const fetchMiscSupportData = async () => {
       setLoading(true);
       try {
         const config = {
@@ -107,37 +107,38 @@ export default function Home() {
             "ngrok-skip-browser-warning": "true",
           },
         };
-        const response = await api.get(`/giftsfavors/${giftsId}/`, config);
-        setGiftsData(response.data);
+        const response = await api.get(`/miscsupportservices/${miscSupportId}/`, config);
+        setMiscSupportData(response.data);
         setIsFavorite(response.data.is_favorite || false);
         setShowContent(true);
         setError(null);
       } catch (err) {
-        setError("Failed to load Gifts & Favors data.");
-        setGiftsData(null);
+        setError("Failed to load Misc Support Services data.");
+        setMiscSupportData(null);
         setShowContent(false);
       } finally {
         setLoading(false);
       }
     };
-    fetchGiftsData();
-  }, [giftsId, accessToken]);
+    fetchMiscSupportData();
+  }, [miscSupportId, accessToken]);
 
   useEffect(() => {
-    if (giftsData?.name) {
+    if (miscSupportData?.name) {
       setContent(
-        `${giftsData.name} is a delightful store offering a wide array of thoughtful presents for all your special occasions. The diverse selection of items available is mentioned below:`
+        `${miscSupportData.name} offers a variety of miscellaneous support services tailored to your diverse needs. The range of services available is detailed below:`
       );
       setProductContent(
-        `${giftsData?.name} is perfect for your guests or event needs.`
+        `${miscSupportData?.name} is here to provide the additional support you need.`
       );
       setContactInfo({
-        name: giftsData?.manager_name || "N/A",
-        number: giftsData?.contact_number || "N/A",
-        alternate_number: giftsData?.alternative_number || "N/A",
+        name: miscSupportData?.manager_name || "N/A",
+        number: miscSupportData?.contact_number || "N/A",
+        alternate_number: miscSupportData?.alternative_number || "N/A",
       });
     }
-  }, [giftsData]);
+  }, [miscSupportData]);
+
   const handleShowContactModal = () => {
     setShowContactModal(true);
   };
@@ -166,9 +167,9 @@ export default function Home() {
     <>
       <Head>
         <title>
-          {giftsData?.name
-            ? `${giftsData.name} | Gifts & Favors`
-            : "Loading Gift Details..."}
+          {miscSupportData?.name
+            ? `${miscSupportData.name} | Misc Support Services`
+            : "Loading Misc Support Services Details..."}
         </title>
         <meta name="description" content="Generated by create next app" />
         <link rel="icon" href="/favicon.ico" />
@@ -182,10 +183,10 @@ export default function Home() {
           <div id="content">
             <div className="w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
               <div className="pt-6">
-                <Breadcrumb data={giftsData} />
+                <Breadcrumb data={miscSupportData} />
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-y-10">
                   <div className="lg:col-span-3">
-                    <ImageSlider data={giftsData} />
+                    <ImageSlider data={miscSupportData} />
                     <div id="hs-sticky-sidebar-mobile-wrapper"></div>
                     <Reviews />
                     <div className="pt-14 pb-10">
@@ -193,13 +194,13 @@ export default function Home() {
                         <ServicesOffered
                           heading="Services Offered"
                           content={content}
-                          data={giftsData?.services_offered_details}
+                          data={miscSupportData?.services_offered_details}
                         />
                         <div className="max-w-4xl mx-auto text-gray-800 dark:text-neutral-200">
-                          <About data={giftsData} />
-                          <EventTypes data={giftsData} />
-                          <Packages data={giftsData} />
-                          <FAQ data={giftsData} />
+                          <About data={miscSupportData} />
+                          <EventTypes data={miscSupportData} />
+                          <Packages data={miscSupportData} />
+                          <FAQ data={miscSupportData} />
                         </div>
                       </div>
                     </div>
@@ -217,7 +218,7 @@ export default function Home() {
                     >
                       <ProductDetails
                         content={productContent}
-                        data={giftsData}
+                        data={miscSupportData}
                         onShowContactModal={handleShowContactModal}
                       />
                     </div>
@@ -246,7 +247,7 @@ export default function Home() {
       ) : (
         <LoadingSpinner />
       )}
-      <SocialMediaLinks data={giftsData} />
+      <SocialMediaLinks data={miscSupportData} />
     </>
   );
 }

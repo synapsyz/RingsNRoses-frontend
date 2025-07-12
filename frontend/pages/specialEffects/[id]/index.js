@@ -19,6 +19,7 @@ import Suggestions from "@/components/customer/Suggestions";
 import LocationSelector from "@/components/LocationSelector";
 import Packages from "@/components/customer/Packages";
 
+
 const isNgrok =
   process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
 const getApiUrl = () => {
@@ -37,16 +38,16 @@ const api = axios.create(
     },
   }
 );
-export default function Home() {
-  const [giftsData, setGiftsData] = useState(null);
-  const [giftsId, setGiftsId] = useState(null);
+export default function SpecialEffectsProps() {
+  const [specialEffectsData, setSpecialEffectsData] = useState(null);
+  const [specialEffectsId, setSpecialEffectsId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [error, setError] = useState(null);
   const [showContent, setShowContent] = useState(false);
   const [content, setContent] = useState("");
   const [productContent, setProductContent] = useState("");
-  const [relatedItems, setrelatedItems] = useState(null);
+  const [relatedItems, setRelatedItems] = useState(null);
   const { data: session, status } = useSession();
   const user = session?.user;
   const router = useRouter();
@@ -64,14 +65,14 @@ export default function Home() {
   useEffect(() => {
     if (router.isReady && router.query.id) {
       console.log(router.query.id);
-      setGiftsId(router.query.id);
+      setSpecialEffectsId(router.query.id);
     }
   }, [router.isReady, router.query.id]);
 
   useEffect(() => {
-    const fetchGiftsData = async () => {
+    const fetchSpecialEffectsData = async () => {
       setLoading(true);
-      let loc_id = selectedLocationId || giftsData?.location_details?.id;
+      let loc_id = selectedLocationId || specialEffectsData?.location_details?.id;
       try {
         if (loc_id !== undefined && loc_id !== null) {
           const config = {
@@ -80,25 +81,25 @@ export default function Home() {
               "ngrok-skip-browser-warning": "true",
             },
           };
-          const sug = await api.get(`/giftsfavors/?location=${loc_id}`, config);
+          const sug = await api.get(`/specialeffectsprops/?location=${loc_id}`, config);
 
           var apiResponse = sug.data.results.slice(0, 5);
 
-          setrelatedItems(apiResponse);
+          setRelatedItems(apiResponse);
         }
       } catch (err) {
-        console.error("Error fetching gifts data:", err);
-        setError("Failed to load gifts data.");
+        console.error("Error fetching special effects & props data:", err);
+        setError("Failed to load special effects & props data.");
       } finally {
         //setLoading(false);
       }
     };
-    fetchGiftsData();
-  }, [accessToken, giftsData, selectedLocationId]);
+    fetchSpecialEffectsData();
+  }, [accessToken, specialEffectsData, selectedLocationId]);
 
   useEffect(() => {
-    if (!giftsId) return;
-    const fetchGiftsData = async () => {
+    if (!specialEffectsId) return;
+    const fetchSpecialEffectsData = async () => {
       setLoading(true);
       try {
         const config = {
@@ -107,37 +108,38 @@ export default function Home() {
             "ngrok-skip-browser-warning": "true",
           },
         };
-        const response = await api.get(`/giftsfavors/${giftsId}/`, config);
-        setGiftsData(response.data);
+        const response = await api.get(`/specialeffectsprops/${specialEffectsId}/`, config);
+        setSpecialEffectsData(response.data);
         setIsFavorite(response.data.is_favorite || false);
         setShowContent(true);
         setError(null);
       } catch (err) {
-        setError("Failed to load Gifts & Favors data.");
-        setGiftsData(null);
+        setError("Failed to load Special Effects & Props data.");
+        setSpecialEffectsData(null);
         setShowContent(false);
       } finally {
         setLoading(false);
       }
     };
-    fetchGiftsData();
-  }, [giftsId, accessToken]);
+    fetchSpecialEffectsData();
+  }, [specialEffectsId, accessToken]);
 
   useEffect(() => {
-    if (giftsData?.name) {
+    if (specialEffectsData?.name) {
       setContent(
-        `${giftsData.name} is a delightful store offering a wide array of thoughtful presents for all your special occasions. The diverse selection of items available is mentioned below:`
+        `${specialEffectsData.name} offers incredible special effects and props to make your event truly unforgettable. Discover the exciting range of services and items available below:`
       );
       setProductContent(
-        `${giftsData?.name} is perfect for your guests or event needs.`
+        `${specialEffectsData?.name} can add that extra sparkle to your event.`
       );
       setContactInfo({
-        name: giftsData?.manager_name || "N/A",
-        number: giftsData?.contact_number || "N/A",
-        alternate_number: giftsData?.alternative_number || "N/A",
+        name: specialEffectsData?.manager_name || "N/A",
+        number: specialEffectsData?.contact_number || "N/A",
+        alternate_number: specialEffectsData?.alternative_number || "N/A",
       });
     }
-  }, [giftsData]);
+  }, [specialEffectsData]);
+
   const handleShowContactModal = () => {
     setShowContactModal(true);
   };
@@ -166,9 +168,9 @@ export default function Home() {
     <>
       <Head>
         <title>
-          {giftsData?.name
-            ? `${giftsData.name} | Gifts & Favors`
-            : "Loading Gift Details..."}
+          {specialEffectsData?.name
+            ? `${specialEffectsData.name} | Special Effects & Props`
+            : "Loading Special Effects & Props Details..."}
         </title>
         <meta name="description" content="Generated by create next app" />
         <link rel="icon" href="/favicon.ico" />
@@ -182,10 +184,10 @@ export default function Home() {
           <div id="content">
             <div className="w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
               <div className="pt-6">
-                <Breadcrumb data={giftsData} />
+                <Breadcrumb data={specialEffectsData} />
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-y-10">
                   <div className="lg:col-span-3">
-                    <ImageSlider data={giftsData} />
+                    <ImageSlider data={specialEffectsData} />
                     <div id="hs-sticky-sidebar-mobile-wrapper"></div>
                     <Reviews />
                     <div className="pt-14 pb-10">
@@ -193,13 +195,13 @@ export default function Home() {
                         <ServicesOffered
                           heading="Services Offered"
                           content={content}
-                          data={giftsData?.services_offered_details}
+                          data={specialEffectsData?.services_offered_details}
                         />
                         <div className="max-w-4xl mx-auto text-gray-800 dark:text-neutral-200">
-                          <About data={giftsData} />
-                          <EventTypes data={giftsData} />
-                          <Packages data={giftsData} />
-                          <FAQ data={giftsData} />
+                          <About data={specialEffectsData} />
+                          <EventTypes data={specialEffectsData} />
+                          <Packages data={specialEffectsData} />
+                          <FAQ data={specialEffectsData} />
                         </div>
                       </div>
                     </div>
@@ -217,7 +219,7 @@ export default function Home() {
                     >
                       <ProductDetails
                         content={productContent}
-                        data={giftsData}
+                        data={specialEffectsData}
                         onShowContactModal={handleShowContactModal}
                       />
                     </div>
@@ -246,7 +248,7 @@ export default function Home() {
       ) : (
         <LoadingSpinner />
       )}
-      <SocialMediaLinks data={giftsData} />
+      <SocialMediaLinks data={specialEffectsData} />
     </>
   );
 }
