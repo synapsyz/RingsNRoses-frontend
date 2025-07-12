@@ -17,6 +17,7 @@ import SocialMediaLinks from "@/components/customer/SocialMediaLinks";
 import ContactModal from "@/components/customer/ContactModal";
 import Suggestions from "@/components/customer/Suggestions";
 import LocationSelector from "@/components/LocationSelector";
+import FoodPackages from "@/components/customer/FoodPackages";
 
 const isNgrok =
   process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
@@ -185,6 +186,9 @@ export default function Home() {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-y-10">
                   <div className="lg:col-span-3">
                     <ImageSlider data={cateringData} />
+                    <div className="mt-5">
+                      <FoodPackages data={cateringData} />
+                    </div>
                     <div id="hs-sticky-sidebar-mobile-wrapper"></div>
                     <Reviews />
                     <div className="pt-14 pb-10">
