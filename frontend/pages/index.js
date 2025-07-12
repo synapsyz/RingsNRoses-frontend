@@ -308,7 +308,9 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
 
   const [relatedItems , setrelatedItems] = useState(null);
   const [favoriteData, setfavoriteData] = useState(null);
-  
+  const [venueData, setvenueData] = useState(null);
+  const [cateringData, setcateringData] = useState(null);
+  const [beautyData, setbeautyData] = useState(null);
   // THIS IS THE CRUCIAL LOG (presumably index.js:88 for you)
   console.log("dataFromLocalStorage (in component body, AFTER RENDER):",dataFromLocalStorage);
   // Effect to determine mobile view
@@ -460,210 +462,109 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
 
 
 
-
-
-
-
-
-
-// useEffect to fetch data when the component mounts
   useEffect(() => {
-    // This function simulates fetching data from an API
-    const fetchItems = async () => {
+
+    const fetchvenueData = async () => {
+      setLoading(true);
       try {
-        // In a real application, you would use fetch() or a library like Axios
-        // const response = await fetch('https://your-api.com/items');
-        // const data = await response.json();
+        const config = {
+          headers: {
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+          },
+        };
 
-        // For demonstration, we'll use the sample data directly
- // For demonstration, we'll use the sample data directly
-const suggestion = [
-  // 5 Venues
-  {
-    id: 1,
-    detail_url: './product-detail-1',
-    name: 'The Grand Palace Hall',
-    location: { name: 'Chennai' },
-    starting_price: '5L',
-    guest_capacity: '500-1500',
-    favorite_details: { is_favorite: true, content_type: 'venue', id: 101 },
-    reviews: { rating: 4.8, count: 152 },
-    image_url: 'https://www.weddingsutra.com/images/vendors-img/wedding-planners/the-a-cube-project/the-a-cube-project-img18.jpg'
-  },
-  {
-    id: 2,
-    detail_url: './product-detail-2',
-    name: 'Azure Beachfront Resort',
-    location: { name: 'Goa' },
-    starting_price: '8L',
-    guest_capacity: '100-300',
-    favorite_details: { is_favorite: false, content_type: 'venue', id: null },
-    reviews: { rating: 4.9, count: 98 },
-    image_url: 'https://images.livemint.com/img/2022/10/26/1600x900/Goa_1666758694142_1666758694406_1666758694406.jpg'
-  },
-  {
-    id: 3,
-    detail_url: './product-detail-3',
-    name: 'Green Meadows Garden',
-    location: { name: 'Bangalore' },
-    starting_price: '3.5L',
-    guest_capacity: '200-800',
-    favorite_details: { is_favorite: true, content_type: 'venue', id: 103 },
-    reviews: { rating: 4.7, count: 210 },
-    image_url: 'https://www.bookeventz.com/blog/wp-content/uploads/2023/12/Open-Air-Wedding-Venues-in-Bangalore.jpg'
-  },
-  {
-    id: 4,
-    detail_url: './product-detail-4',
-    name: 'The Royal Orchid',
-    location: { name: 'Mumbai' },
-    starting_price: '6L',
-    guest_capacity: '300-700',
-    favorite_details: { is_favorite: false, content_type: 'venue', id: null },
-    reviews: { rating: 4.6, count: 180 },
-    image_url: 'https://media.weddingz.in/images/993a704e6c21e658a2e1577a79f045a8/top-5-star-wedding-venues-in-mumbai-for-a-glamorous-wedding.jpg'
-  },
-  {
-    id: 5,
-    detail_url: './product-detail-5',
-    name: 'City Lights Banquet',
-    location: { name: 'Delhi' },
-    starting_price: '4L',
-    guest_capacity: '150-500',
-    favorite_details: { is_favorite: true, content_type: 'venue', id: 105 },
-    reviews: { rating: 4.5, count: 250 },
-    image_url: 'https://cdn.venuelook.com/uploads/space/5661/1684305847_5661_0.jpeg'
-  },
+        const sug = await api.get(`categories/venues/subcategories/1/`, config);
 
-  // 5 Catering Services
-  {
-    id: 6,
-    detail_url: './product-detail-6',
-    name: 'Spice Route Caterers',
-    location: { name: 'Chennai' },
-    per_plate_price: '900',
-    guest_capacity: '50-2000',
-    favorite_details: { is_favorite: true, content_type: 'caterer', id: 201 },
-    reviews: { rating: 4.9, count: 188 },
-    image_url: 'https://www.cateringserviceinchennai.com/images/svec/best-veg-catering-services-in-chennai.jpg'
-  },
-  {
-    id: 7,
-    detail_url: './product-detail-7',
-    name: 'The Gourmet Table',
-    location: { name: 'Mumbai' },
-    per_plate_price: '1500',
-    guest_capacity: '100-1000',
-    favorite_details: { is_favorite: false, content_type: 'caterer', id: null },
-    reviews: { rating: 4.8, count: 120 },
-    image_url: 'https://www.quinces.in/images/veg-catering-services-in-mumbai.jpg'
-  },
-  {
-    id: 8,
-    detail_url: './product-detail-8',
-    name: 'Saffron Epicurean',
-    location: { name: 'Hyderabad' },
-    per_plate_price: '1100',
-    guest_capacity: '200-5000',
-    favorite_details: { is_favorite: true, content_type: 'caterer', id: 203 },
-    reviews: { rating: 4.7, count: 230 },
-    image_url: 'https://sulabhcaterers.com/wp-content/uploads/2023/11/best-caterers-in-hyderabad.jpg'
-  },
-  {
-    id: 9,
-    detail_url: './product-detail-9',
-    name: 'Grandma\'s Kitchen',
-    location: { name: 'Kochi' },
-    per_plate_price: '750',
-    guest_capacity: '50-500',
-    favorite_details: { is_favorite: true, content_type: 'caterer', id: 204 },
-    reviews: { rating: 5.0, count: 95 },
-    image_url: 'https://theimperialcaterers.com/wp-content/uploads/2022/04/Wedding-Catering-Services.jpg'
-  },
-  {
-    id: 10,
-    detail_url: './product-detail-10',
-    name: 'Coastal Feasts',
-    location: { name: 'Pune' },
-    per_plate_price: '850',
-    guest_capacity: '100-800',
-    favorite_details: { is_favorite: false, content_type: 'caterer', id: null },
-    reviews: { rating: 4.6, count: 115 },
-    image_url: 'https://i.pinimg.com/736x/8f/b2/84/8fb2849b1c06d87e0787f763b0a2c091.jpg'
-  },
 
-  // 5 Photography Services
-  {
-    id: 11,
-    detail_url: './product-detail-11',
-    name: 'Moment Weavers',
-    location: { name: 'Delhi' },
-    starting_price: '1.5L',
-    guest_capacity: 'N/A',
-    favorite_details: { is_favorite: true, content_type: 'photographer', id: 301 },
-    reviews: { rating: 4.9, count: 300 },
-    image_url: 'https://www.thewedcafe.com/wp-content/uploads/2022/02/DSC_0150-2-scaled.jpg'
-  },
-  {
-    id: 12,
-    detail_url: './product-detail-12',
-    name: 'Shutter Stories',
-    location: { name: 'Mumbai' },
-    starting_price: '2L',
-    guest_capacity: 'N/A',
-    favorite_details: { is_favorite: false, content_type: 'photographer', id: null },
-    reviews: { rating: 4.8, count: 250 },
-    image_url: 'https://weddingmantras.co.in/wp-content/uploads/2022/10/d86b975e1141c43147814b764268e37d.jpg'
-  },
-  {
-    id: 13,
-    detail_url: './product-detail-13',
-    name: 'Pixel Perfect Studios',
-    location: { name: 'Bangalore' },
-    starting_price: '1.2L',
-    guest_capacity: 'N/A',
-    favorite_details: { is_favorite: true, content_type: 'photographer', id: 303 },
-    reviews: { rating: 4.9, count: 280 },
-    image_url: 'https://www.crystalgrazing.com/wp-content/uploads/2023/07/wedding-photography-kerala-2.jpg'
-  },
-  {
-    id: 14,
-    detail_url: './product-detail-14',
-    name: 'Eternal Frames',
-    location: { name: 'Jaipur' },
-    starting_price: '1.8L',
-    guest_capacity: 'N/A',
-    favorite_details: { is_favorite: false, content_type: 'photographer', id: null },
-    reviews: { rating: 5.0, count: 190 },
-    image_url: 'https://miro.medium.com/v2/resize:fit:1400/1*T-__Z1hY2-P2systjCdeMA.jpeg'
-  },
-  {
-    id: 15,
-    detail_url: './product-detail-15',
-    name: 'Candid Tales by Ravi',
-    location: { name: 'Chennai' },
-    starting_price: '90K',
-    guest_capacity: 'N/A',
-    favorite_details: { is_favorite: true, content_type: 'photographer', id: 305 },
-    reviews: { rating: 4.7, count: 155 },
-    image_url: 'https://i.ytimg.com/vi/Sjeyh4hUkjA/maxresdefault.jpg'
-  }
-];
-        
-        // Simulate a network delay
-        setTimeout(() => {
-          setSuggestions(suggestion);
-          setIsLoading(false);
-        }, 1000); // 1-second delay
+        var apiResponse = sug.data.results.slice(0, 5);
 
-      } catch (error) {
-        console.error("Failed to fetch items:", error);
-        setIsLoading(false);
+        setvenueData(apiResponse);
+
+
+      } catch (err) {
+        console.error("Error fetching venue data:", err);
+        setError("Failed to load venue data.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchItems();
-  }, []); // The empty dependency array ensures this runs only once on mount
+    fetchvenueData();
+  }, [accessToken]);
+
+
+
+
+ useEffect(() => {
+
+    const fetchcateringData = async () => {
+      setLoading(true);
+      try {
+        const config = {
+          headers: {
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+          },
+        };
+
+        const sug = await api.get(`categories/catering_&_beverages/subcategories/35/`, config);
+
+
+        var apiResponse = sug.data.results.slice(0, 5);
+
+        setcateringData(apiResponse);
+
+
+      } catch (err) {
+        console.error("Error fetching catering data:", err);
+        setError("Failed to load catering data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchcateringData();
+  }, [accessToken]);
+
+
+
+
+
+
+ useEffect(() => {
+
+    const fetbeautyData = async () => {
+      setLoading(true);
+      try {
+        const config = {
+          headers: {
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+          },
+        };
+
+        const sug = await api.get(`categories/beauty_&_grooming/subcategories/15/`, config);
+
+
+        var apiResponse = sug.data.results.slice(0, 5);
+
+        setbeautyData(apiResponse);
+
+
+      } catch (err) {
+        console.error("Error fetching beauty data:", err);
+        setError("Failed to load beauty data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetbeautyData();
+  }, [accessToken]);
+
+
+
+
+
+
 
 
 
@@ -1150,31 +1051,11 @@ useEffect(() => {
 
      <div className="mb-3">
     {/* List */}
-    <div className="relative flex flex-1 items-center overflow-hidden">
-      <div className="flex flex-row items-center gap-2 py-2 overflow-x-auto [&::-webkit-scrollbar]:h-0 after:h-px after:min-w-10">
-        {categories.length > 0 ? (
-          categories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              className={`py-1.5 px-3 flex whitespace-nowrap items-center gap-x-1.5 rounded-full 
-  ${selectedCategoryId === category.id 
-    ? 'bg-[#E91E63] text-white' 
-    : 'bg-white text-gray-500 dark:bg-neutral-900 dark:text-neutral-400'} 
-  border border-gray-200 hover:border-gray-300 focus:outline-hidden focus:border-gray-300 
-  dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600`}
-
-              onClick={() => setSelectedCategoryId(category.id)} // Update selected category on click
-            >
-              
-              {category.name}
-            </button>
-          ))
-        ) : (
-          <div className="text-sm text-gray-500">No categories found.</div>
-        )}
-      </div>
-    </div>
+    {/* <div className="relative flex flex-1 items-center overflow-hidden"> */}
+     <CategoryGrid items={venueData} />
+     <CategoryGrid items={cateringData} />
+     <CategoryGrid items={beautyData} />
+    {/* </div> */}
     {/* End List */}
   </div>
 
