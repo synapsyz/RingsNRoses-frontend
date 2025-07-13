@@ -165,7 +165,7 @@ console.log(serviceName);
           if (termsEditorInstance.current) termsEditorInstance.current.commands.setContent(data.terms_and_conditions || '');
           if (returnDeliveryEditorInstance.current) returnDeliveryEditorInstance.current.commands.setContent(data.return_delivery_policy || '');
            if (data.images && Array.isArray(data.images)) {
-            const imageUrls = data.images.map(imageObject => imageObject.image_key);
+            const imageUrls = data.images.map(imageObject => imageObject.image_url);
             setInitialGallery(imageUrls);
           }
           if (data.services_offered_details) {

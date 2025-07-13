@@ -270,7 +270,7 @@ const handleEquipmentBlur = (id, value) => {
             setFaqs(loadedFaqs);
           }
           if (data.images && Array.isArray(data.images)) {
-            const imageUrls = data.images.map(imageObject => imageObject.image_key);
+            const imageUrls = data.images.map(imageObject => imageObject.image_url);
             setInitialGallery(imageUrls);
           }
 
