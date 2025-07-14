@@ -1,11 +1,10 @@
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation'; // Hook to detect the active page
-import { useSession } from "next-auth/react"; // Only import useSession, signIn is not used here
+import { usePathname } from 'next/navigation';
+import { useSession } from "next-auth/react";
 
 // --- Sub-Components to keep the main component clean ---
 
-// This component renders a single, simple navigation link.
 const NavLink = ({ href, label, isActive }) => (
   <Link
     href={href}
@@ -17,7 +16,6 @@ const NavLink = ({ href, label, isActive }) => (
   </Link>
 );
 
-// This component renders a dropdown menu with its sub-links.
 const NavDropdown = ({ label, badge, sublinks, pathname }) => (
   <div className="hs-dropdown [--strategy:static] lg:[--strategy:fixed] [--adaptive:none] lg:[--trigger:hover] lg:inline-block">
     <button
@@ -47,18 +45,14 @@ const NavDropdown = ({ label, badge, sublinks, pathname }) => (
   </div>
 );
 
-
 // --- Main SecondaryNav Component ---
 
 const SecondaryNav = () => {
   const pathname = usePathname();
-  // Move useSession inside the component
   const { data: session, status } = useSession();
 
-  // Derive category_name inside the component
- let category_name = session?.user?.vendor_profile?.subcategory?.category?.name?.replace(/ /g, '_')?.toLowerCase();
+  let category_name = session?.user?.vendor_profile?.subcategory?.category?.name?.replace(/ /g, '_')?.toLowerCase();
 
-  // Define navLinks inside the component so category_name is available
   const navLinks = [
     { type: 'link', label: 'Dashboard', href: '/vendor/dashboard' },
     {
@@ -77,6 +71,49 @@ const SecondaryNav = () => {
   return (
     <nav className="relative bg-white border-b border-stone-200 dark:bg-neutral-800 dark:border-neutral-700">
       <div className="max-w-[85rem] flex flex-wrap justify-between gap-2 basis-full items-center w-full mx-auto lg:py-2.5 px-4 sm:px-6 lg:px-8">
+        {/* Hamburger Menu Button for Mobile */}
+        <div className="lg:hidden"> {/* Only visible on screens smaller than lg */}
+          <button
+            type="button"
+            className="hs-collapse-toggle p-2 inline-flex justify-center items-center gap-x-2 rounded-lg text-stone-800 dark:text-neutral-200 hover:bg-stone-100 dark:hover:bg-neutral-700"
+            data-hs-collapse="#hs-pro-emh" // Target the ID of your collapsible menu
+            aria-controls="hs-pro-emh"
+            aria-label="Toggle navigation"
+          >
+            <svg
+              className="hs-collapse-open:hidden flex-shrink-0 size-4"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="3" x2="21" y1="6" y2="6" />
+              <line x1="3" x2="21" y1="12" y2="12" />
+              <line x1="3" x2="21" y1="18" y2="18" />
+            </svg>
+            <svg
+              className="hs-collapse-open:block hidden flex-shrink-0 size-4"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+
         <div className="basis-full grow lg:basis-auto lg:grow-0">
           <div id="hs-pro-emh" className="hs-collapse hidden overflow-hidden transition-all duration-300 lg:block">
             <div className="overflow-hidden overflow-y-auto max-h-[75vh] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-stone-100 [&::-webkit-scrollbar-thumb]:bg-stone-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
@@ -91,7 +128,6 @@ const SecondaryNav = () => {
             </div>
           </div>
         </div>
-        {/* Placeholder for the project dropdown on the right, if needed */}
       </div>
     </nav>
   );
