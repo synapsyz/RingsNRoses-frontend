@@ -1656,7 +1656,7 @@ useEffect(() => {
                   {/* Filter Sidebar Toggle Button */}
                   {isMobileSidebarOpen && (
   <div
-    className="fixed inset-0 z-[70] bg-black"
+    className="fixed inset-0 z-[70] bg-white/10 backdrop-blur-sm transition-opacity duration-300"
     onClick={() => setIsMobileSidebarOpen(false)}
   />
 )}
@@ -1744,10 +1744,11 @@ useEffect(() => {
   {/* Sidebar */}
     <div
      ref={mobileSidebarRef}
-     className={`fixed inset-y-0 start-0 z-[80] w-80 bg-white transform transition-transform duration-300 dark:bg-neutral-900
-       ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-       lg:static lg:block lg:translate-x-0 ${isMobileSidebarOpen ? '' : 'hidden lg:block'}
-     `}
+     className={`
+    fixed inset-y-0 left-0 z-[80] w-4/5 max-w-sm bg-white dark:bg-neutral-900 shadow-lg
+    transition-all duration-300 ease-in-out
+    transform ${isMobileSidebarOpen ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-full opacity-0 scale-95'}
+  `}
   role="dialog"
   tabIndex={-1}
   aria-label="Sidebar"
