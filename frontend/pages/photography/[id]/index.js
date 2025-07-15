@@ -37,8 +37,8 @@ const api = axios.create(
   }
 );
 export default function Home() {
-  const [bridalgroomattireData, setBridalGroomAttireData] = useState(null);
-  const [bridalgroomattireId, setBridalGroomAttireId] = useState(null);
+  const [photographyData, setPhotographyData] = useState(null);
+  const [photographyId, setPhotographyId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const [error, setError] = useState(null);
@@ -63,14 +63,14 @@ export default function Home() {
   useEffect(() => {
     if (router.isReady && router.query.id) {
       console.log(router.query.id);
-      setBridalGroomAttireId(router.query.id);
+      setPhotographyId(router.query.id);
     }
   }, [router.isReady, router.query.id]);
 
   useEffect(() => {
-    const fetchBridalGroomAttireData = async () => {
+    const fetchPhotographyData = async () => {
       setLoading(true);
-      let loc_id = selectedLocationId || bridalgroomattireData?.location_details?.id;
+      let loc_id = selectedLocationId || photographyData?.location_details?.id;
       try {
         if (loc_id !== undefined && loc_id !== null) {
           const config = {
@@ -79,25 +79,25 @@ export default function Home() {
               "ngrok-skip-browser-warning": "true",
             },
           };
-          const sug = await api.get(`/bridalgroomattire/?location=${loc_id}`, config);
+          const sug = await api.get(`/photography/?location=${loc_id}`, config);
 
           var apiResponse = sug.data.results.slice(0, 5);
 
           setrelatedItems(apiResponse);
         }
       } catch (err) {
-        console.error("Error fetching bridalgroomattire data:", err);
-        setError("Failed to load bridalgroomattire data.");
+        console.error("Error fetching photography data:", err);
+        setError("Failed to load photography data.");
       } finally {
         //setLoading(false);
       }
     };
-    fetchBridalGroomAttireData();
-  }, [accessToken, bridalgroomattireData, selectedLocationId]);
+    fetchPhotographyData();
+  }, [accessToken, photographyData, selectedLocationId]);
 
   useEffect(() => {
-    if (!bridalgroomattireId) return;
-    const fetchBridalGroomAttireData = async () => {
+    if (!photographyId) return;
+    const fetchPhotographyData = async () => {
       setLoading(true);
       try {
         const config = {
@@ -106,37 +106,37 @@ export default function Home() {
             "ngrok-skip-browser-warning": "true",
           },
         };
-        const response = await api.get(`/bridalgroomattire/${bridalgroomattireId}/`, config);
-        setBridalGroomAttireData(response.data);
+        const response = await api.get(`/photography/${photographyId}/`, config);
+        setPhotographyData(response.data);
         setIsFavorite(response.data.is_favorite || false);
         setShowContent(true);
         setError(null);
       } catch (err) {
-        setError("Failed to load BridalGroomAttire data.");
-        setBridalGroomAttireData(null);
+        setError("Failed to load photography data.");
+        setPhotographyData(null);
         setShowContent(false);
       } finally {
         setLoading(false);
       }
     };
-    fetchBridalGroomAttireData();
-  }, [bridalgroomattireId, accessToken]);
+    fetchPhotographyData();
+  }, [photographyId, accessToken]);
 
   useEffect(() => {
-    if (bridalgroomattireData?.name) {
+    if (photographyData?.name) {
       setContent(
-        `${bridalgroomattireData.name} is a delightful store offering a wide array of thoughtful presents for all your special occasions. The diverse selection of items available is mentioned below:`
+        `${photographyData.name} is a delightful store offering a wide array of thoughtful presents for all your special occasions. The diverse selection of items available is mentioned below:`
       );
       setProductContent(
-        `${bridalgroomattireData?.name} is perfect for your guests or event needs.`
+        `${photographyData?.name} is perfect for your guests or event needs.`
       );
       setContactInfo({
-        name: bridalgroomattireData?.manager_name || "N/A",
-        number: bridalgroomattireData?.contact_number || "N/A",
-        alternate_number: bridalgroomattireData?.alternative_number || "N/A",
+        name: photographyData?.manager_name || "N/A",
+        number: photographyData?.contact_number || "N/A",
+        alternate_number: photographyData?.alternative_number || "N/A",
       });
     }
-  }, [bridalgroomattireData]);
+  }, [photographyData]);
   const handleShowContactModal = () => {
     setShowContactModal(true);
   };
@@ -165,9 +165,9 @@ export default function Home() {
     <>
       <Head>
         <title>
-          {bridalgroomattireData?.name
-            ? `${bridalgroomattireData.name} | BridalGroomAttire `
-            : "Loading BridalGroomAttire Details..."}
+          {photographyData?.name
+            ? `${photographyData.name} | photography`
+            : "Loading Photography Details..."}
         </title>
         <meta name="description" content="Generated by create next app" />
         <link rel="icon" href="/favicon.ico" />
@@ -181,10 +181,10 @@ export default function Home() {
           <div id="content">
             <div className="w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
               <div className="pt-6">
-                <Breadcrumb data={bridalgroomattireData} />
+                <Breadcrumb data={photographyData} />
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-y-10">
                   <div className="lg:col-span-3">
-                    <ImageSlider data={bridalgroomattireData} />
+                    <ImageSlider data={photographyData} />
                     <div id="hs-sticky-sidebar-mobile-wrapper"></div>
                     <Reviews />
                     <div className="pt-14 pb-10">
@@ -192,12 +192,12 @@ export default function Home() {
                         <ServicesOffered
                           heading="Services Offered"
                           content={content}
-                          data={bridalgroomattireData?.services_offered_details}
+                          data={photographyData?.services_offered_details}
                         />
                         <div className="max-w-4xl mx-auto text-gray-800 dark:text-neutral-200">
-                          <About data={bridalgroomattireData} />
-                          <EventTypes data={bridalgroomattireData} />
-                          <FAQ data={bridalgroomattireData} />
+                          <About data={photographyData} />
+                          <EventTypes data={photographyData} />
+                          <FAQ data={photographyData} />
                         </div>
                       </div>
                     </div>
@@ -215,7 +215,7 @@ export default function Home() {
                     >
                       <ProductDetails
                         content={productContent}
-                        data={bridalgroomattireData}
+                        data={photographyData}
                         onShowContactModal={handleShowContactModal}
                       />
                     </div>
@@ -244,7 +244,7 @@ export default function Home() {
       ) : (
         <LoadingSpinner />
       )}
-      <SocialMediaLinks data={bridalgroomattireData} />
+      <SocialMediaLinks data={photographyData} />
     </>
   );
 }
