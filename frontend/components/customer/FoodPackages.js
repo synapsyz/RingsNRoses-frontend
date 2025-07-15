@@ -1,37 +1,8 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 
-// --- Data for Menus, Prices, and Images ---
-const menuData = {
-  veg: {
-    name: 'Vegetarian',
-    price: 999,
-    menu: [
-      { name: 'Paneer Tikka', img: 'https://placehold.co/600x400/28A745/FFFFFF?text=Paneer+Tikka' },
-      { name: 'Dal Makhani', img: 'https://placehold.co/600x400/28A745/FFFFFF?text=Dal+Makhani' },
-      { name: 'Mixed Veg Korma', img: 'https://placehold.co/600x400/28A745/FFFFFF?text=Veg+Korma' },
-      { name: 'Jeera Rice & Naan', img: 'https://placehold.co/600x400/28A745/FFFFFF?text=Rice+%26+Naan' },
-    ],
-  },
-  'non-veg': {
-    name: 'Non-Vegetarian',
-    price: 1299,
-    menu: [
-      { name: 'Chicken Tandoori', img: 'https://placehold.co/600x400/DC3545/FFFFFF?text=Chicken+Tandoori' },
-      { name: 'Butter Chicken', img: 'https://placehold.co/600x400/DC3545/FFFFFF?text=Butter+Chicken' },
-      { name: 'Mutton Rogan Josh', img: 'https://placehold.co/600x400/DC3545/FFFFFF?text=Rogan+Josh' },
-      { name: 'Jeera Rice & Naan', img: 'https://placehold.co/600x400/DC3545/FFFFFF?text=Rice+%26+Naan' },
-    ],
-  },
-};
-
 // --- Helper: Compact Food Package Selector ---
-const FoodTypeSelector = ({ preference, onPreferenceChange }) => {
-  const options = [
-    { id: 'veg', label: 'Veg', color: 'green' },
-    { id: 'non-veg', label: 'Non-Veg', color: 'red' },
-  ];
-
+const FoodTypeSelector = ({ preference, onPreferenceChange, options }) => {
   return (
     <div className="flex items-center space-x-2 sm:space-x-3">
       {options.map(option => (
@@ -56,11 +27,11 @@ const ImageModal = ({ isOpen, onClose, imageUrl, imageName }) => {
     if (!isOpen) return null;
 
     return (
-        <div 
+        <div
             className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[9999] p-4 transition-opacity duration-300"
             onClick={onClose}
         >
-            <div 
+            <div
                 className="relative bg-white p-4 rounded-lg shadow-xl max-w-2xl w-full transform transition-all duration-300 scale-95 opacity-0 animate-scale-in"
                 onClick={(e) => e.stopPropagation()}
             >
@@ -92,7 +63,7 @@ const ImageSlider = ({ menu, onImageClick }) => {
             setCanScrollRight(isScrollable && el.scrollLeft < el.scrollWidth - el.clientWidth - 5);
         }
     };
-    
+
     useEffect(() => {
         const el = scrollRef.current;
         if(el) {
@@ -114,6 +85,10 @@ const ImageSlider = ({ menu, onImageClick }) => {
         }
     };
 
+    if (!menu || menu.length === 0) {
+      return <p className="text-gray-500 italic">No menu images available for this package.</p>;
+    }
+
     return (
         <div className="relative w-full">
             {canScrollLeft && (
@@ -123,12 +98,13 @@ const ImageSlider = ({ menu, onImageClick }) => {
             )}
             <div ref={scrollRef} className="flex items-center space-x-4 overflow-x-auto p-2 scrollbar-hide" style={{ scrollSnapType: 'x mandatory' }}>
                 {menu.map((item, index) => (
-                    <div key={index} className="relative group flex-shrink-0 w-36 rounded-lg overflow-hidden shadow-md bg-white cursor-pointer" style={{ scrollSnapAlign: 'start' }} onClick={() => onImageClick(item.img, item.name)}>
-                        <img src={item.img} alt={item.name} className="w-full h-24 object-cover" />
+                    <div key={index} className="relative group flex-shrink-0 w-36 rounded-lg overflow-hidden shadow-md bg-white cursor-pointer" style={{ scrollSnapAlign: 'start' }} onClick={() => onImageClick(item.image_url, item.alt_text || `Menu Image ${index + 1}`)}>
+                        <img src={item.image_url} alt={item.alt_text || `Menu Image ${index + 1}`} className="w-full h-24 object-cover" />
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
                             <span className="text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 px-2 py-1 rounded-md">View</span>
                         </div>
-                        <p className="text-center text-xs font-semibold p-2 text-gray-700 truncate">{item.name}</p>
+                        {/* No specific item name in your API for each menu image, so using alt_text or generic */}
+                        <p className="text-center text-xs font-semibold p-2 text-gray-700 truncate">{item.alt_text || `Image ${index + 1}`}</p>
                     </div>
                 ))}
             </div>
@@ -142,11 +118,56 @@ const ImageSlider = ({ menu, onImageClick }) => {
 };
 
 // --- The Main Reusable Component ---
-const FoodPackages = () => {
-  const [foodPreference, setFoodPreference] = useState('veg');
+const FoodPackages = ({ data }) => {
+  const [foodPreference, setFoodPreference] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState({ url: '', name: '' });
-  const currentPackage = menuData[foodPreference];
+
+  // Transform API data into a more usable format for the component
+  const transformedPackages = useRef({});
+  const packageOptions = useRef([]); // To hold options for FoodTypeSelector
+
+  useEffect(() => {
+    if (data && data.packages) {
+      const tempTransformed = {};
+      const tempOptions = [];
+      const packageKeys = Object.keys(data.packages);
+
+      if (packageKeys.includes("Vegetarian") && data.packages.Vegetarian.length > 0) {
+        const vegPackage = data.packages.Vegetarian[0]; // Assuming only one Vegetarian package
+        tempTransformed['veg'] = {
+          name: vegPackage.package_type_display,
+          price: parseFloat(vegPackage.starting_price),
+          menu: vegPackage.menu_images,
+        };
+        tempOptions.push({ id: 'veg', label: 'Veg', color: 'green' });
+      }
+
+      if (packageKeys.includes("Non_Vegetarian") && data.packages.Non_Vegetarian.length > 0) {
+        const nonVegPackage = data.packages.Non_Vegetarian[0]; // Assuming only one Non_Vegetarian package
+        tempTransformed['non-veg'] = {
+          name: nonVegPackage.package_type_display,
+          price: parseFloat(nonVegPackage.starting_price),
+          menu: nonVegPackage.menu_images,
+        };
+        tempOptions.push({ id: 'non-veg', label: 'Non-Veg', color: 'red' });
+      }
+
+      transformedPackages.current = tempTransformed;
+      packageOptions.current = tempOptions;
+
+      // Set initial food preference if data is available
+      if (tempOptions.length > 0 && !foodPreference) {
+        setFoodPreference(tempOptions[0].id);
+      }
+    } else {
+      transformedPackages.current = {};
+      packageOptions.current = [];
+      setFoodPreference(null); // Reset if no data
+    }
+  }, [data, foodPreference]); // Re-run when data changes
+
+  const currentPackage = foodPreference ? transformedPackages.current[foodPreference] : null;
 
   const handleImageClick = (imageUrl, imageName) => {
     setSelectedImage({ url: imageUrl, name: imageName });
@@ -165,6 +186,10 @@ const FoodPackages = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  if (!data || !data.packages || Object.keys(data.packages).length === 0) {
+    return null; // Or a loading/empty state message
+  }
+
   return (
     <>
       <style>{`
@@ -179,19 +204,31 @@ const FoodPackages = () => {
       <div className="w-full bg-white border border-gray-200 p-6 rounded-xl shadow-sm space-y-4 dark:bg-neutral-900 dark:border-neutral-700">
         <div className="flex items-center justify-between">
             <span className="text-gray-700 font-semibold text-md dark:text-neutral-200">Package Types:</span>
-            <FoodTypeSelector preference={foodPreference} onPreferenceChange={setFoodPreference} />
+            {packageOptions.current.length > 0 ? (
+                <FoodTypeSelector
+                    preference={foodPreference}
+                    onPreferenceChange={setFoodPreference}
+                    options={packageOptions.current}
+                />
+            ) : (
+                <p className="text-gray-500 italic">No package types available.</p>
+            )}
         </div>
         <div className="flex items-baseline">
             <h3 className="text-gray-500 font-medium mr-2 dark:text-neutral-400">Starting Price:</h3>
             <p className="text-2xl font-bold text-teal-600 dark:text-teal-500">
-                ₹{currentPackage.price}
+                ₹{currentPackage ? currentPackage.price : 'N/A'}
                 <span className="text-sm font-normal text-gray-500 dark:text-neutral-400">/plate</span>
             </p>
         </div>
         <div className="border-t border-gray-200 dark:border-neutral-700"></div>
         <div>
             <h3 className="text-gray-700 font-semibold mb-2 dark:text-neutral-200">Includes:</h3>
-            <ImageSlider menu={currentPackage.menu} onImageClick={handleImageClick} />
+            {currentPackage && currentPackage.menu ? (
+                <ImageSlider menu={currentPackage.menu} onImageClick={handleImageClick} />
+            ) : (
+                <p className="text-gray-500 italic">No menu details available for this package type.</p>
+            )}
         </div>
       </div>
       <ImageModal isOpen={isModalOpen} onClose={closeModal} imageUrl={selectedImage.url} imageName={selectedImage.name} />
