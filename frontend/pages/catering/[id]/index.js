@@ -18,7 +18,6 @@ import ContactModal from "@/components/customer/ContactModal";
 import Suggestions from "@/components/customer/Suggestions";
 import LocationSelector from "@/components/LocationSelector";
 import FoodPackages from "@/components/customer/FoodPackages";
-import Packages from "@/components/customer/Packages";
 
 const isNgrok =
   process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
