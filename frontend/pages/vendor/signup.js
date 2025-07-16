@@ -6,6 +6,7 @@ import axios from "axios"; // Import axios
 import AsyncSelect from "react-select/async"; // Import AsyncSelect
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
+import Image from 'next/image';
 
 
 let api_url;
@@ -548,7 +549,7 @@ export default function Signup() {
                 {/* ========== MAIN CONTENT ========== */}
                 <aside className="hidden lg:flex lg:w-1/2 xl:w-3/5 flex-col justify-between p-6 dark:bg-gray-900 h-screen sticky top-0">
                     {/* Sidebar */}
-                    <div className="hidden min-h-screen lg:w-100 xl:w-107.5bg-gray-100 lg:flex flex-col justify-between p-6 dark:bg-gray-900">
+                    <div className="hidden min-h-screen lg:w-full xl:w-107.5bg-gray-100 lg:flex flex-col justify-between p-6 dark:bg-gray-900">
                         {/* Header */}
                         <div className="flex flex-wrap justify-between items-center gap-2">
                             {/* Logo */}
@@ -575,13 +576,15 @@ export default function Signup() {
                         {/* End Header */}
 
                         {/* Body */}
-                        <div className='mt-6'>
-                            <img
-                                src="20250524_154914.png"
-                                alt="Charts Mockups"
-                            />
-                            <hr className="mt-4 border-t border-gray-300" />
-                        </div>
+<div className="mt-6">
+  <img
+    src="/vendor_signup_image.jpg"
+    alt="Charts Mockups"
+    className="w-full h-auto rounded-md shadow-md"
+  />
+  <hr className="mt-4 border-t border-gray-300" />
+</div>
+
 
 
                         {/* End Body */}

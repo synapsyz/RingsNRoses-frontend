@@ -71,33 +71,32 @@ export default function Login() {
     });
 
     if (res.ok) {
-  router.push("/vendor/dashboard");
-} else {
-  const errorText = res.error;
+        router.push("/vendor/dashboard");
+    } else {
+        const errorText = res.error;
 
-  let emailMsg = "Login failed";
-  let passwordMsg = "Login failed";
+        let emailMsg = "Login failed";
+        let passwordMsg = "Login failed";
 
-  // Check if it's JSON-like (starts with `{`)
-  if (errorText && errorText.startsWith("{")) {
-    const err = JSON.parse(errorText);
+        // Check if it's JSON-like (starts with `{`)
+        if (errorText && errorText.startsWith("{")) {
+            const err = JSON.parse(errorText);
 
-    if (Array.isArray(err.detail)) {
-      emailMsg = err.detail[0] || emailMsg;
-      passwordMsg = err.detail[1] || passwordMsg;
-    } else if (typeof err.detail === "string") {
-      emailMsg = passwordMsg = err.detail;
+            if (Array.isArray(err.detail)) {
+                emailMsg = err.detail[0] || emailMsg;
+                passwordMsg = err.detail[1] || passwordMsg;
+            } else if (typeof err.detail === "string") {
+                emailMsg = passwordMsg = err.detail;
+            }
+        } else {
+            // fallback if it's just plain string
+            emailMsg = passwordMsg = errorText || "Invalid credentials";
+        }
+
+        setEmailError(emailMsg);
+        setPasswordError(passwordMsg);
+        setIsSubmitting(false);
     }
-  } else {
-    // fallback if it's just plain string
-    emailMsg = passwordMsg = errorText || "Invalid credentials";
-  }
-
-  setEmailError(emailMsg);
-  setPasswordError(passwordMsg);
-  setIsSubmitting(false);
-}
-
   };
 
   const toggleTheme = () => {
@@ -106,7 +105,7 @@ export default function Login() {
 
   return (
     <>
-    <Head>
+      <Head>
         <title>Business Login</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -142,28 +141,27 @@ export default function Login() {
                       Email address
                     </label>
                     <div className="mt-2">
-  <input
-    type="email"
-    id="email"
-    className={`mt-1 block w-full rounded-md px-3 py-2 
-            ${
-              emailError
-                ? "border-2 border-red-500 focus:border-red-500"
-                : "border border-gray-300 focus:border-blue-500"
-            } 
-            focus:outline-none focus:ring-1
-            dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600
-          `}
-    placeholder="you@email.com"
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-    required
-  />
-  {emailError && (
-    <p className="mt-1 text-sm text-red-600 dark:text-red-500">{emailError}</p>
-  )}
-</div>
-
+                        <input
+                            type="email"
+                            id="email"
+                            className={`mt-1 block w-full rounded-md px-3 py-2 
+                                ${
+                                emailError
+                                    ? "border-2 border-red-500 focus:border-red-500"
+                                    : "border border-gray-300 focus:border-blue-500"
+                                } 
+                                focus:outline-none focus:ring-1
+                                dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600
+                            `}
+                            placeholder="you@email.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                        {emailError && (
+                            <p className="mt-1 text-sm text-red-600 dark:text-red-500">{emailError}</p>
+                        )}
+                    </div>
                   </div>
 
                   <input type="hidden" name="user_type" value="vendor" />
@@ -180,89 +178,88 @@ export default function Login() {
                     </div>
                     <div className="relative mt-2">
                       <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className={`mt-1 block w-full rounded-md px-3 py-2 
-            ${
-              passwordError
-                ? "border-2 border-red-500 focus:border-red-500"
-                : "border border-gray-300 focus:border-blue-500"
-            } 
-            focus:outline-none focus:ring-1
-            dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600
-          `}
-          placeholder="******"
-          required
-        />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none"
-                      >
-                        {showPassword ? (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-5.523 0-10-4.477-10-10 0-1.664.44-3.222 1.214-4.557m2.452-2.452A9.955 9.955 0 0112 3c5.523 0 10 4.477 10 10 0 1.5-.388 2.92-1.072 4.159M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l18 18" />
-                          </svg>
-                        ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                        )}
-                      </button>
+                        type={showPassword ? "text" : "password"}
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={`mt-1 block w-full rounded-md px-3 py-2 
+                            ${
+                            passwordError
+                                ? "border-2 border-red-500 focus:border-red-500"
+                                : "border border-gray-300 focus:border-blue-500"
+                            } 
+                            focus:outline-none focus:ring-1
+                            dark:bg-gray-900 dark:border-gray-600 dark:text-white dark:placeholder:text-white/70 dark:focus:ring-blue-600
+                        `}
+                        placeholder="******"
+                        required
+                      />
+                     <button
+                                                type="button"
+                                                onClick={() => setShowPassword((prev) => !prev)}
+                                                className="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500"
+                                            >
+                                                {showPassword ? (
+                                                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                                                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                                                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                                                        <line x1="2" x2="22" y1="2" y2="22" />
+                                                    </svg>
+                                                ) : (
+                                                    <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                                        <circle cx="12" cy="12" r="3" />
+                                                    </svg>
+                                                )}
+                                            </button>
                     </div>
-                            {passwordError && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-500">
-            {passwordError}
-          </p>
-        )}
-
+                        {passwordError && (
+                            <p className="mt-1 text-sm text-red-600 dark:text-red-500">
+                                {passwordError}
+                            </p>
+                        )}
                   </div>
 
                   <div>
                     <button
                       type="submit"
+                      disabled={isSubmitting}
                       className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-white hover:opacity-90 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2"
                       style={{
                         backgroundColor: '#E91E63',
-                        // focusRingColor: '#f9a7a4', // This is not a direct CSS property. Use Tailwind's focus:ring-purple-500
                       }}
-                      // Tailwind for focus ring if you want to use it
-                      // focus:ring-[#f9a7a4] focus:ring-offset-2
                     >
-            {isSubmitting ? (
-            <div className="flex justify-center items-center">
-              <svg
-                className="animate-spin h-5 w-5 mr-2 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
-              </svg>
-                </div>
-                ) : (
-            "Sign in"
-          )} 
+                      {isSubmitting ? (
+                        <div className="flex justify-center items-center">
+                          <svg
+                            className="animate-spin h-5 w-5 mr-2 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                            ></path>
+                          </svg>
+                        </div>
+                      ) : (
+                        "Sign in"
+                      )} 
                     </button>
                   </div>
                 </form>
-                </div>
+              </div>
 
               <div className="mt-10">
                 <div className="relative">
@@ -276,7 +273,6 @@ export default function Login() {
 
                 <div className="mt-6 grid grid-cols-1 gap-4">
                   <a
-                    type="button" // This should actually be a button if it's not a link, or if it is, remove type="button"
                     href="#"
                     className="py-2.5 px-3 w-full inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-gray-700 dark:focus:ring-neutral-600"
                   >
@@ -301,57 +297,58 @@ export default function Login() {
           </div>
         </div>
         </main>
-        {/* Right column - Image */}
-{/* Right column - Image (Visible only on large screens and up) */}
-<div className="hidden lg:block relative flex-1 dark:bg-gray-900 mt-6">
-  <img
-    alt="Background"
-    src="./20250524_154914.png"
-    className="absolute inset-0 w-full h-full object-cover"
-  />
-</div>
-
         
-<footer className="w-full py-4 px-6 bg-white dark:bg-gray-900 fixed -bottom-3 mt-8"> {/* Added background to footer */}
-        <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-400 gap-1 pb-4"> {/* Added pb-4 for some padding */}
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-            <a href="/vendor/signup" className="hover:underline">Register your business</a>
-            <a href="#" className="hover:underline">Contact us</a>
-            <a href="#" className="hover:underline">Terms & privacy</a>
-            <a href="#" className="hover:underline">Your Privacy Choices</a>
-            <a href="#" className="hover:underline">About us</a>
-          </div>
-          <div className="flex items-center gap-x-2 mt-2">
-            <p className="dark:text-gray-400">© 2025 RingsNRoses</p> {/* Ensure copyright text changes color */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-             className="text-xs text-gray-500 dark:text-gray-400 hover:underline flex items-center justify-center space-x-1"
+        {/* Right column - Video (Visible only on large screens and up) */}
+        <div className="hidden lg:flex flex-1 items-center justify-center p-8">
+            <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="rounded-lg shadow-xl max-h-[75vh]"
             >
-              {theme === "dark" ? (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-                  </svg>
-                  <span>Dark Mode</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="4" />
-                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-                  </svg>
-                  <span>Light Mode</span>
-                </>
-              )}
-            </button>
-          </div>
+                <source src="./vendor_login.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+            </video>
         </div>
         
-      </footer>
+        <footer className="w-full py-4 px-6 fixed bottom-3 mt-8"> {/* Added background to footer */}
+          <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-400 lg:gap-1"> {/* Added pb-4 for some padding */}
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <a href="/vendor/signup" className="hover:underline">Register your business</a>
+              <a href="#" className="hover:underline">Contact us</a>
+              <a href="#" className="hover:underline">Terms & privacy</a>
+              <a href="#" className="hover:underline">Your Privacy Choices</a>
+              <a href="#" className="hover:underline">About us</a>
+            </div>
+            <div className="flex items-center gap-x-2 mt-2">
+              <p className="dark:text-gray-400">© 2025 RingsNRoses</p> {/* Ensure copyright text changes color */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="text-xs text-gray-500 dark:text-gray-400 hover:underline flex items-center justify-center space-x-1"
+              >
+                {theme === "dark" ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+                    </svg>
+                    <span>Dark Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="4" />
+                      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+                    </svg>
+                    <span>Light Mode</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </footer>
       </div>
-      {/* Footer */}
-      
     </>
   );
 }
