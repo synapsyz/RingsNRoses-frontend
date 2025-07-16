@@ -17,16 +17,13 @@ const getApiUrl = () => {
     : process.env.NEXT_PUBLIC_HOST;
 };
 const api_url = getApiUrl();
-const api = axios.create(
-  {
-    baseURL: api_url + "/api/v1",
+const api = axios.create({
+  baseURL: api_url + "/api/v1",
+  headers: {
+    "ngrok-skip-browser-warning": "true",
   },
-  {
-    headers: {
-      ...(true && { "ngrok-skip-browser-warning": "true" }),
-    },
-  }
-);
+});
+
 export default function Listing() {
   const [subcategoryName, setSubcategoryName] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState(1);
@@ -280,7 +277,7 @@ export default function Listing() {
           setIsLoading(false);
         });
     }
-  }, [categories.length, isLoading, isMobile]);
+  }, [categories?.length, isLoading, isMobile]);
   const subcategories = subcategoriesMap[selectedCategoryId] || [];
   const fetchMoreData = () => {
     if (!nextPageUrl) {
