@@ -1,19 +1,12 @@
 'use client';
 
-import AccessDeniedModal from '@/components/AccessDeniedModal'; 
-import { signIn } from 'next-auth/react';
-
-// import { Html, Head, Main, NextScript } from 'next/document';
-// import '../styles/globals.css';
 import Script from 'next/script';
 import { useSession, signOut } from 'next-auth/react';
 import Image from 'next/image';
-import Link from 'next/link';
 import React, { useState, useEffect, useRef, useCallback } from 'react'; 
 import axios from 'axios';
 import EventForm from '@/components/EventForm'; 
 import LocationSelector from '../components/LocationSelector'; // Adjust the path as necessary
-import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import HeroCarousel from "@/components/HeroCarousel";
 import SearchBar from "@/components/SearchBar";
@@ -24,7 +17,7 @@ import Footer from '@/components/Footer'; // Adjust the import path as needed
 import CustomerUserProfile from '@/components/CustomerUserProfile';
 
 
-let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
+let isNgrok = process.env.NEXT_PUBLIC_AP1P_ENV === 'development' ? false : true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
@@ -96,7 +89,7 @@ function TabsSync() {
   }, []);
 
   return null; // This component only applies side effects
-}
+} 
 export default function Home() {
 
     const router = useRouter();
@@ -108,6 +101,8 @@ const accessToken = session?.accessToken;
   const [dataFromLocalStorage, setDataFromLocalStorage] = useState(null);
   const [items, setItems] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
 
   // ... (other state like 'status')
 
@@ -310,6 +305,9 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
   const [subcategoriesError, setSubcategoriesError] = useState(null);
 
   const [isMobile, setIsMobile] = useState(false);
+
+  const [relatedItems , setrelatedItems] = useState(null);
+  const [favoriteData, setfavoriteData] = useState(null);
   
   // THIS IS THE CRUCIAL LOG (presumably index.js:88 for you)
   console.log("dataFromLocalStorage (in component body, AFTER RENDER):",dataFromLocalStorage);
@@ -424,91 +422,37 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
 
 
 
-// useEffect to fetch data when the component mounts
+
+
   useEffect(() => {
-    // This function simulates fetching data from an API
-    const fetchItems = async () => {
+
+    const fetchfavoriteData = async () => {
+      setLoading(true);
       try {
-        // In a real application, you would use fetch() or a library like Axios
-        // const response = await fetch('https://your-api.com/items');
-        // const data = await response.json();
+        const config = {
+          headers: {
+            ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+          },
+        };
 
-        // For demonstration, we'll use the sample data directly
-        const sampleData = [
-    {
-      id: 1,
-      detail_url: './product-detail-1',
-      name: 'Outdoor Lawns & Gardens',
-      location: { name: 'Chennai' },
-      starting_price: '2L',
-      guest_capacity: '500-1000',
-      favorite_details: { is_favorite: true, content_type: 'venue', id: 101 },
-      reviews: { rating: 5, count: 67 },
-      image_url: 'https://images.squarespace-cdn.com/content/v1/5f152ec422af2a37ad8d4da4/1595231592681-7PDPA2AX1EQHG56NQNV3/Outdoor+Wedding+Venue+Chennai'
-    },
-    {
-      id: 2,
-      detail_url: './product-detail-2',
-      name: 'Theme Decor',
-      location: { name: 'Mumbai' },
-      starting_price: '1L',
-      guest_capacity: '300-700',
-      favorite_details: { is_favorite: false, content_type: 'decorator', id: null },
-      reviews: { rating: 4, count: 44 },
-      image_url: 'https://img.staticmb.com/mbcontent/images/uploads/2023/8/Heaven_4.jpg'
-    },
-    {
-      id: 3,
-      detail_url: './product-detail-3',
-      name: 'Drone Shoots',
-      location: { name: 'Delhi' },
-      starting_price: '80K',
-      guest_capacity: 'N/A',
-      favorite_details: { is_favorite: true, content_type: 'photographer', id: 103 },
-      reviews: { rating: 5, count: 29 },
-      image_url: 'https://t4.ftcdn.net/jpg/08/01/08/11/360_F_801081156_a7Rpu5kGuHBCPLkN9JhWe0qWpmWhwjNx.jpg'
-    },
-    {
-      id: 4,
-      detail_url: './product-detail-4',
-      name: 'Mehendi Artists',
-      location: { name: 'Bangalore' },
-      starting_price: '4k',
-      guest_capacity: '50-100',
-      favorite_details: { is_favorite: false, content_type: 'artist', id: null },
-      reviews: { rating: 4.5, count: 3 },
-      image_url: 'https://www.hamaraevent.com/uploads/blog/0076248001475654338.jpg'
-    },
-    {
-      id: 5,
-      detail_url: './product-detail-5',
-      name: 'Multi-Cuisine Caterers',
-      location: { name: 'Hyderabad' },
-      per_plate_price: '500',
-      guest_capacity: '100-2000',
-      favorite_details: { is_favorite: true, content_type: 'caterer', id: 105 },
-      reviews: { rating: 4, count: 33 },
-      image_url: 'https://imgmediagumlet.lbb.in/media/2023/10/6520072fd766a50bd12a61b5_1696597807795.jpg'
-    },
-  ];
-        
-        // Simulate a network delay
-        setTimeout(() => {
-          setItems(sampleData);
-          setIsLoading(false);
-        }, 1000); // 1-second delay
+        const sug = await api.get(`/favorite/grouped/`, config);
 
-      } catch (error) {
-        console.error("Failed to fetch items:", error);
-        setIsLoading(false);
+
+        var apiResponse = sug.data.results.slice(0, 5);
+
+        setfavoriteData(apiResponse);
+
+
+      } catch (err) {
+        console.error("Error fetching favorite data:", err);
+        setError("Failed to load favorite data.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchItems();
-  }, []); // The empty dependency array ensures this runs only once on mount
-
-
-
+    fetchfavoriteData();
+  }, [accessToken]);
 
 
 
@@ -1189,7 +1133,7 @@ useEffect(() => {
       {/* <!-- End Header --> */}
 
       {/* <!-- Grid --> */}
-  <CategoryGrid items={items} />
+  <CategoryGrid items={favoriteData} />
       {/* <!-- End Grid --> */}
     </div>
     {/* <!-- End Featured --> */}
