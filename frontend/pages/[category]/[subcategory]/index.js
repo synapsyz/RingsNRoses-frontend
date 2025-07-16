@@ -23,7 +23,7 @@ const api = axios.create(
   },
   {
     headers: {
-      ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+      ...(true && { "ngrok-skip-browser-warning": "true" }),
     },
   }
 );
