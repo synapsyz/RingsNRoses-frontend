@@ -458,19 +458,7 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
     fetchfavoriteData();
   }, [accessToken]);
 
-        setfavoriteData(apiResponse);
 
-
-      } catch (err) {
-        console.error("Error fetching favorite data:", err);
-        setError("Failed to load favorite data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchfavoriteData();
-  }, [accessToken]);
 
 
 
