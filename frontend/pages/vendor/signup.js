@@ -20,6 +20,7 @@ const getApiUrl = () => {
         : process.env.NEXT_PUBLIC_HOST;
 };
 api_url = getApiUrl()
+
 // Axios instance for backend communication
 const api = axios.create({
     baseURL: api_url + "/api/v1", // Adjust this to your backend API base URL
