@@ -1,6 +1,22 @@
 import { useState, useEffect } from "react";
-import axios from "axios"; // Make sure to import axios
+import axios from "axios";
 import { useSession } from 'next-auth/react';
+const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
+const getApiUrl = () => {
+  return process.env.NEXT_PUBLIC_APP_ENV === "development"
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+};
+const api_url = getApiUrl();
+const api = axios.create(
+  {
+    baseURL: api_url + "/api/v1",
+    headers: { 
+      ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+    },
+  }
+);
+
 const FavoriteButton = ({
   initialFavorite = false,
   contentType,
@@ -13,47 +29,37 @@ const FavoriteButton = ({
   const [animate, setAnimate] = useState(false);
   const [favId, setFavId] = useState(fav_id);
   const accessToken = session?.accessToken;
-  const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 
-  // Sync state if the initial prop changes from the parent
   useEffect(() => {
     setIsFavorite(initialFavorite);
   }, [initialFavorite]);
 
   const handleFavoriteToggle = async () => {
-    if (isLoading || !objectId) return; // Prevent clicks if loading or no ID is present
+    if (isLoading || !objectId) return;
 
     setIsLoading(true);
-    const isFavoriting = !isFavorite; // The new state we want to achieve
+    const isFavoriting = !isFavorite;
 
-    // Optimistically update the UI
     setIsFavorite(isFavoriting);
 
-    // Animate only when adding a favorite
     if (isFavoriting) {
       setAnimate(true);
       setTimeout(() => setAnimate(false), 500);
     }
-
     const config = {
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        ...(isNgrok && { 'ngrok-skip-browser-warning': 'true' }),
       },
     };
 
-
-    var res = null;
-
     try {
       if (isFavoriting) {
-        // === ADDING a favorite ===
         const payload = {
           content_type: contentType,
           object_id: objectId,
         };
-        res = await axios.post(
-          "http://localhost:8000/api/v1/favorites/",
+        const res = await api.post(
+          "/favorites/",
           payload,
           config
         );
@@ -61,17 +67,14 @@ const FavoriteButton = ({
         console.log(res.data.id);
         console.log("Item favorited successfully!");
       } else {
-        // === REMOVING a favorite ===
-        // The objectId is now in the URL for the DELETE request
-        await axios.delete(
-          `http://localhost:8000/api/v1/favorites/${favId}/`,
+        await api.delete(
+          `/favorites/${favId}/`, 
           config,
         );
         console.log("Item unfavorited successfully!");
       }
     } catch (error) {
       console.error("Failed to update favorite status:", error);
-      // If the API call fails, revert the button to its previous state
       setIsFavorite(!isFavoriting);
     } finally {
       setIsLoading(false);
@@ -87,8 +90,8 @@ const FavoriteButton = ({
     >
       <span className="sr-only">Favorite</span>
       <svg
-        className={`shrink-0 size-4 transform transition-all duration-500 ease-in-out 
-          ${isFavorite ? "scale-125 text-red-500" : "scale-100 text-gray-500"} 
+        className={`shrink-0 size-4 transform transition-all duration-500 ease-in-out
+          ${isFavorite ? "scale-125 text-red-500" : "scale-100 text-gray-500"}
           ${animate ? "animate-bounce" : ""}`}
         xmlns="http://www.w3.org/2000/svg"
         width="24"

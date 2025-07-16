@@ -311,6 +311,7 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
   const [venueData, setvenueData] = useState(null);
   const [cateringData, setcateringData] = useState(null);
   const [beautyData, setbeautyData] = useState(null);
+
   // THIS IS THE CRUCIAL LOG (presumably index.js:88 for you)
   console.log("dataFromLocalStorage (in component body, AFTER RENDER):",dataFromLocalStorage);
   // Effect to determine mobile view
@@ -440,6 +441,7 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
         const sug = await api.get(`/favorite/grouped/`, config);
 
 
+
         var apiResponse = sug.data.results.slice(0, 5);
 
         setfavoriteData(apiResponse);
@@ -456,8 +458,19 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
     fetchfavoriteData();
   }, [accessToken]);
 
+        setfavoriteData(apiResponse);
 
 
+      } catch (err) {
+        console.error("Error fetching favorite data:", err);
+        setError("Failed to load favorite data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchfavoriteData();
+  }, [accessToken]);
 
 
 
@@ -961,7 +974,7 @@ useEffect(() => {
       {/* <!-- Grid --> */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="/Listing">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="/photography_&_videography/wedding_photographers">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://cdn-blog.superprof.com/blog_in/wp-content/uploads/2020/01/in-photo-photo-1.jpg" alt="Product Image"/>
           </div>
@@ -974,7 +987,7 @@ useEffect(() => {
         {/* <!-- End Category Card --> */}
 
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="././Listing">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="/invitations_&_stationery/e_invite_digital_invite_designers">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://www.vivahcards.com/wp-content/uploads/2024/07/Indian-Wedding-Card-20272-Premium-Wedding-Invitation-Cards.jpg" alt="Product Image"/>
           </div>
@@ -987,7 +1000,7 @@ useEffect(() => {
         {/* <!-- End Category Card --> */}
 
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="././Listing">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="/gifts_&_favors/wedding_favors_suppliers">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://lamansh.in/cdn/shop/files/125-rs-each-on-buying-in-bulk-call-at-8619550223-gift-hand-bag-lamansh-new-print-bridal-haldi-ceremony-design-hand-bags-for-haldi-mehendi-sangeet-wedding-return-gifts-pooja-or-festiva_7d67749e-998b-4b90-9fc6-93fd7556111a.jpg?v=1709128018&width=2400" alt="Product Image"/>
           </div>
@@ -1000,7 +1013,7 @@ useEffect(() => {
         {/* <!-- End Category Card --> */}
 
         {/* <!-- Category Card --> */}
-        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="././Listing">
+        <a className="block flex items-center bg-white border border-gray-200 hover:border-gray-300 rounded-xl focus:outline-hidden focus:border-gray-300 dark:bg-neutral-900 dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600" href="/beauty_&_grooming/makeup_artists">
           <div className="relative shrink-0 w-20 sm:w-28 h-20">
             <img className="size-full absolute inset-0 object-cover object-center rounded-s-xl" src="https://naomisheadmasters.com/wp-content/uploads/2025/04/How-to-Book-a-Reliable-Makeup-Artist-for-Your-Destination-Wedding.jpg" alt="Product Image"/>
           </div>
