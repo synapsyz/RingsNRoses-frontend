@@ -203,7 +203,6 @@ export default function Home() {
                         <div className="max-w-4xl mx-auto text-gray-800 dark:text-neutral-200">
                           <About data={venueData} />
                           <EventTypes data={venueData} />
-                          <Packages data={venueData} />
                           <FAQ data={venueData} />
                         </div>
                       </div>
