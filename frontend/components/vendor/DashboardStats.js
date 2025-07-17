@@ -1,7 +1,9 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router"; // Keep if you use it, otherwise remove
 
 const api_url =
   process.env.NEXT_PUBLIC_APP_ENV === "development"
@@ -17,12 +19,14 @@ const api = axios.create({
   },
 });
 
+// Define the initial structure for your stats cards
 const EMPTY_STATS = [
   {
     id: 1,
+    stat_type: "profile_view", // Match your StatType enum values
     title: "Total Views",
     value: "0",
-    subtext: "",
+    subtext: "since creation", // Changed subtext to reflect cumulative data
     change: null,
     changeType: null,
     icon: (
@@ -40,9 +44,10 @@ const EMPTY_STATS = [
   },
   {
     id: 2,
-    title: "Total Quote Request",
+    stat_type: "quote_request", // Match your StatType enum values
+    title: "Total Quote Requests",
     value: "0",
-    subtext: "",
+    subtext: "since creation",
     change: null,
     changeType: null,
     icon: (
@@ -60,9 +65,10 @@ const EMPTY_STATS = [
   },
   {
     id: 3,
-    title: "Total Call Request",
+    stat_type: "call_request", // Match your StatType enum values
+    title: "Total Call Requests",
     value: "0",
-    subtext: "",
+    subtext: "since creation",
     change: null,
     changeType: null,
     icon: (
@@ -80,9 +86,10 @@ const EMPTY_STATS = [
   },
   {
     id: 4,
+    stat_type: "booking", // Match your StatType enum values
     title: "Total Bookings",
     value: "0",
-    subtext: "",
+    subtext: "since creation",
     change: null,
     changeType: null,
     icon: (
@@ -100,13 +107,87 @@ const EMPTY_STATS = [
   },
 ];
 
-const statTypeMap = {
-  profile_view: 0,
-  quote_request: 1,
-  call_request: 2,
-  booking: 3,
+const DashboardStats = () => {
+  const { data: session, status } = useSession();
+  // const router = useRouter(); // Uncomment if needed for redirects
+  const accessToken = session?.accessToken;
+
+  const [stats, setStats] = useState(EMPTY_STATS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setLoading(false);
+      // Optional: Redirect to login or show a message if not authenticated
+      // router.push('/login');
+      return;
+    }
+
+    const fetchCumulativeStats = async () => {
+      try {
+        setLoading(true);
+        // Make the API call to the cumulative-totals endpoint on the MONTHLY stats viewset
+        const response = await api.get("/monthly-stats/cumulative-totals/", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        const cumulativeData = response.data; 
+
+        const updatedStats = EMPTY_STATS.map(statCard => {
+          const foundStat = cumulativeData.find(item => item.stat_type === statCard.stat_type);
+          
+          return {
+            ...statCard,
+            value: foundStat ? foundStat.total_count.toString() : "0",
+            change: null,
+            changeType: null,
+          };
+        });
+
+        setStats(updatedStats);
+      } catch (error) {
+        console.error("Failed to load cumulative stats:", error.response?.data || error.message);
+        setStats(EMPTY_STATS); // Fallback to empty stats on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCumulativeStats();
+  }, [accessToken]); // Re-fetch when accessToken changes
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
+  if (loading)
+    return (
+      <p className="p-4 text-center text-lg text-gray-700 dark:text-gray-300">
+        Loading cumulative stats...
+      </p>
+    );
+
+  return (
+    <main className="p-6 max-w-7xl mx-auto">
+      <h1 className="mb-6 text-2xl font-semibold text-stone-800 dark:text-neutral-200">
+        {getGreeting()}, {session?.user?.name || "User"}.
+      </h1>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+        {stats.map((stat) => (
+          <StatCard key={stat.id} stat={stat} />
+        ))}
+      </div>
+    </main>
+  );
 };
 
+// StatCard component (no changes needed here, as it's purely for display)
 const StatCard = ({ stat }) => (
   <div className="p-4 sm:p-5 bg-white border border-stone-200 rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
     <div className="sm:flex sm:gap-x-3">
@@ -169,87 +250,5 @@ const StatCard = ({ stat }) => (
     </div>
   </div>
 );
-
-const DashboardStats = () => {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const accessToken = session?.accessToken;
-
-  const [stats, setStats] = useState(EMPTY_STATS);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!accessToken) {
-      // Optionally handle no token (redirect to login or show message)
-      setLoading(false);
-      return;
-    }
-
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get("/daily-stats/", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-
-        const data = response.data;
-
-        const updatedStats = [...EMPTY_STATS];
-
-        data.results.forEach((stat) => {
-          const idx = statTypeMap[stat.stat_type];
-          if (idx !== undefined) {
-            updatedStats[idx] = {
-              ...updatedStats[idx],
-              value: stat.count.toString(),
-              subtext: stat.date,
-              change: null,
-              changeType: null,
-            };
-          }
-        });
-
-        setStats(updatedStats);
-      } catch (error) {
-        console.error("Failed to load stats:", error);
-        setStats(EMPTY_STATS);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, [accessToken]);
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 18) return "Good afternoon";
-    return "Good evening";
-  };
-
-  if (loading)
-    return (
-      <p className="p-4 text-center text-lg text-gray-700 dark:text-gray-300">
-        Loading stats...
-      </p>
-    );
-
-  return (
-    <main className="p-6 max-w-7xl mx-auto">
-      <h1 className="mb-6 text-2xl font-semibold text-stone-800 dark:text-neutral-200">
-        {getGreeting()}, {session?.user?.name || "User"}.
-      </h1>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-        {stats.map((stat) => (
-          <StatCard key={stat.id} stat={stat} />
-        ))}
-      </div>
-    </main>
-  );
-};
 
 export default DashboardStats;

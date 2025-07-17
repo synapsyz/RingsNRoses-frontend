@@ -1,6 +1,25 @@
-import FavoriteButton from "@/components/FavoriteButton";
+'use client'; // This is a client component because it uses hooks and event listeners
+
+import React, { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios"; // Import axios
+import FavoriteButton from "@/components/FavoriteButton";
+import CallButton from "./CallButton"; // Ensure this path is correct for your CallButton component
+
+// Define API base URL and Ngrok header
+const api_url =
+  process.env.NEXT_PUBLIC_APP_ENV === "development"
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
+
+const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
+
+const api = axios.create({
+  baseURL: api_url + "/api/v1",
+  headers: {
+    ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+  },
+});
 
 const ProductDetails = ({ content, data, onShowContactModal }) => {
   const { data: session, status } = useSession();
@@ -16,11 +35,70 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
     const day = String(today.getDate()).padStart(2, "0");
     const formattedDate = `${year}-${month}-${day}`;
     setCurrentDate(formattedDate);
-    setSelectedDate(user?.customer_profile?.event_date);
-  }, []);
+    // Set selectedDate to user's event_date or today's date if not available
+    setSelectedDate(user?.customer_profile?.event_date || formattedDate);
+  }, [user]); // Re-run if user data changes
 
   const handleDateChange = (event) => {
     setSelectedDate(event.target.value);
+  };
+
+  /**
+   * Generic function to increment a specific stat for the venue's vendor.
+   * @param {string} statType - The type of stat to increment (e.g., 'call_request', 'quote_request').
+   */
+  const incrementVendorStat = async (statType) => {
+    if (!data?.id) {
+      console.error(`Venue ID not available to increment ${statType} stat.`);
+      return false; // Indicate failure
+    }
+    if (!accessToken) {
+        console.warn(`User not authenticated. Cannot increment ${statType} stat.`);
+        // You might want to prompt login here
+        return false; // Indicate failure
+    }
+
+    try {
+      const response = await api.post(
+        `/venues/${data.id}/increment-stat/`, // Your custom action endpoint
+        { stat_type: statType }, // Send the stat type in the body
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // Authenticated request
+          },
+        }
+      );
+      console.log(`${statType} stat incremented:`, response.data);
+      // Optional: Add a success toast notification here
+      return true; // Indicate success
+    } catch (error) {
+      console.error(`Failed to increment ${statType} stat:`, error.response?.data || error.message);
+      // Optional: Add an error toast notification here
+      return false; // Indicate failure
+    }
+  };
+
+  const handleCallButtonClick = async () => {
+    // Attempt to increment the call_request stat
+    await incrementVendorStat('call_request');
+    // Always proceed with showing the contact modal
+    onShowContactModal();
+  };
+
+  const handleRequestPricingClick = async () => {
+    // Attempt to increment the quote_request stat
+    const success = await incrementVendorStat('quote_request');
+    
+    if (success) {
+        // Only if stat incremented successfully, or if it's not critical, you can proceed
+        // with pricing request specific logic here.
+        console.log("Proceeding with request pricing logic...");
+        // This is where you'd typically send the actual quote request
+        // based on selectedDate and other form data.
+        alert(`Requesting pricing for date: ${selectedDate}. Check console for stat update.`);
+    } else {
+        alert("Failed to send pricing request due to an error. Please try again.");
+    }
   };
 
   return (
@@ -130,16 +208,16 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
           <label
             htmlFor="hs-pro-shmfdsr-pro"
             className="group relative overflow-hidden flex items-center gap-2 p-2 text-sm bg-white text-gray-800 border border-gray-200 cursor-pointer rounded-xl dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-200
-                            has-checked:text-emerald-600 dark:has-checked:text-emerald-500
-                            has-checked:border-emerald-600 dark:has-checked:border-emerald-500
-                            has-checked:ring-1
-                            has-checked:ring-emerald-600 dark:has-checked:ring-emerald-500
-                            has-disabled:pointer-events-none
-                            has-disabled:text-gray-200 dark:has-disabled:text-neutral-700
-                            has-disabled:after:absolute
-                            has-disabled:after:inset-0
-                            has-disabled:after:bg-[linear-gradient(to_right_bottom,transparent_calc(50%-1px),var(--color-gray-200)_calc(50%-1px),var(--color-gray-200)_50%,transparent_50%)]
-                            dark:has-disabled:after:bg-[linear-gradient(to_right_bottom,transparent_calc(50%-1px),var(--color-neutral-700)_calc(50%-1px),var(--color-neutral-700)_50%,transparent_50%)] "
+                             has-checked:text-emerald-600 dark:has-checked:text-emerald-500
+                             has-checked:border-emerald-600 dark:has-checked:border-emerald-500
+                             has-checked:ring-1
+                             has-checked:ring-emerald-600 dark:has-checked:ring-emerald-500
+                             has-disabled:pointer-events-none
+                             has-disabled:text-gray-200 dark:has-disabled:text-neutral-700
+                             has-disabled:after:absolute
+                             has-disabled:after:inset-0
+                             has-disabled:after:bg-[linear-gradient(to_right_bottom,transparent_calc(50%-1px),var(--color-gray-200)_calc(50%-1px),var(--color-gray-200)_50%,transparent_50%)]
+                             dark:has-disabled:after:bg-[linear-gradient(to_right_bottom,transparent_calc(50%-1px),var(--color-neutral-700)_calc(50%-1px),var(--color-neutral-700)_50%,transparent_50%)] "
           >
             <input
               type="radio"
@@ -174,7 +252,7 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
 
       <div className="mt-5 h-full">
         <div className="lg:sticky lg:top-4 space-y-5">
-          <div className="bg-white border border-gray-200 rounded-2xl dark:bg-neutral-900 dark:border-neutral-700">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm dark:bg-neutral-900 dark:border-neutral-700">
             <div className="p-5">
               <div className="flex flex-wrap justify-between items-center gap-1">
                 <div className="grow">
@@ -211,32 +289,16 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
                 </div>
               </div>
               <div className="mt-5 flex gap-3">
+                {/* Request Pricing Button */}
                 <button
                   type="button"
                   className="w-3/4 py-3 px-4 inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-transparent bg-[#E91E63] text-white hover:bg-[#C2185B] disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-[#C2185B] dark:bg-[#E91E63] dark:hover:bg-[#C2185B] dark:focus:bg-[#C2185B]"
+                  onClick={handleRequestPricingClick} // Added onClick handler
                 >
                   Request Pricing
                 </button>
-                <button
-                  type="button"
-                  className="w-1/4 py-2.5 px-4 inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-[#E91E63] text-[#E91E63] hover:bg-[#E91E63]/10 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-[#E91E63]/10 dark:border-[#E91E63] dark:text-[#E91E63] dark:hover:bg-[#E91E63]/20 dark:focus:bg-[#E91E63]/20"
-                  onClick={onShowContactModal}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="size-6 text-gray-800 dark:text-neutral-200"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M20.25 3.75v4.5m0-4.5h-4.5m4.5 0-6 6m3 12c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 0 0-.38 1.21 12.035 12.035 0 0 0 7.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 0 1 1.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 0 1-2.25 2.25h-2.25Z"
-                    />
-                  </svg>
-                </button>
+                {/* Call Button */}
+                <CallButton onCallClick={handleCallButtonClick} /> {/* Integrated CallButton */}
               </div>
             </div>
             <div className="p-5 divide-y divide-gray-200 dark:divide-neutral-700">
@@ -293,4 +355,5 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
     </div>
   );
 };
+
 export default ProductDetails;
