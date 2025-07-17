@@ -1,140 +1,170 @@
+'use client';
+
 import React, { useState, useEffect, useMemo, forwardRef } from 'react';
 import dynamic from 'next/dynamic';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useSession } from 'next-auth/react'; // Import useSession
+import axios from 'axios'; // Import axios
 
 // --- Dynamic Import for ApexCharts ---
+// This ensures ApexCharts is only loaded on the client-side
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-// --- Monthly Data Source ---
-const monthlyMasterChartData = {
-  categories: [
-    '2023-01-01T00:00:00.000Z', '2023-02-01T00:00:00.000Z', '2023-03-01T00:00:00.000Z',
-    '2023-04-01T00:00:00.000Z', '2023-05-01T00:00:00.000Z', '2023-06-01T00:00:00.000Z',
-    '2023-07-01T00:00:00.000Z', '2023-08-01T00:00:00.000Z', '2023-09-01T00:00:00.000Z',
-    '2023-10-01T00:00:00.000Z', '2023-11-01T00:00:00.000Z', '2023-12-01T00:00:00.000Z',
-    '2024-01-01T00:00:00.000Z', '2024-02-01T00:00:00.000Z', '2024-03-01T00:00:00.000Z',
-    '2024-04-01T00:00:00.000Z', '2024-05-01T00:00:00.000Z', '2024-06-01T00:00:00.000Z',
-    '2024-07-01T00:00:00.000Z', '2024-08-01T00:00:00.000Z', '2024-09-01T00:00:00.000Z',
-    '2024-10-01T00:00:00.000Z', '2024-11-01T00:00:00.000Z', '2024-12-01T00:00:00.000Z',
-  ],
-  series: {
-    profileViews: { name: 'Profile Views', data: [110, 120, 135, 125, 145, 160, 150, 165, 180, 170, 185, 200, 190, 210, 205, 220, 230, 215, 225, 240, 235, 250, 260, 255] },
-    quoteRequests: { name: 'Quote Requests', data: [60, 65, 75, 70, 80, 90, 85, 95, 100, 92, 105, 115, 110, 120, 118, 125, 130, 122, 128, 135, 132, 140, 145, 142] },
-    callRequests: { name: 'Call Requests', data: [40, 42, 48, 45, 50, 55, 52, 58, 62, 59, 65, 70, 68, 72, 75, 78, 80, 76, 82, 85, 83, 88, 90, 89] },
-    bookings: { name: 'Bookings', data: [20, 22, 28, 25, 30, 35, 32, 38, 42, 39, 45, 50, 48, 52, 55, 58, 60, 56, 62, 65, 63, 68, 70, 69] }
-  }
-};
+// --- API Configuration ---
+const api_url =
+  process.env.NEXT_PUBLIC_APP_ENV === "development"
+    ? process.env.NEXT_PUBLIC_API_LOCALHOST
+    : process.env.NEXT_PUBLIC_HOST;
 
-// --- Function to generate daily data from monthly data ---
-const generateDailyData = (monthlyData) => {
-    const dailyCategories = [];
-    const dailySeries = {
-        profileViews: { name: 'Profile Views', data: [] },
-        quoteRequests: { name: 'Quote Requests', data: [] },
-        callRequests: { name: 'Call Requests', data: [] },
-        bookings: { name: 'Bookings', data: [] }
-    };
+const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
 
-    monthlyData.categories.forEach((monthStr, index) => {
-        const monthDate = new Date(monthStr);
-        const year = monthDate.getUTCFullYear();
-        const month = monthDate.getUTCMonth();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        for (let day = 1; day <= daysInMonth; day++) {
-            const currentDate = new Date(Date.UTC(year, month, day));
-            dailyCategories.push(currentDate.toISOString());
-
-            Object.keys(dailySeries).forEach(key => {
-                const monthlyValue = monthlyData.series[key].data[index];
-                const dailyValue = (monthlyValue / daysInMonth) * (1 + (Math.random() - 0.5) * 0.4);
-                dailySeries[key].data.push(Math.max(0, Math.round(dailyValue)));
-            });
-        }
-    });
-
-    return { categories: dailyCategories, series: dailySeries };
-};
-
-// --- Generate and store daily data ---
-const dailyMasterChartData = generateDailyData(monthlyMasterChartData);
+const api = axios.create({
+  baseURL: api_url + "/api/v1",
+  headers: {
+    ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
+  },
+});
 
 // --- Configuration for Selectable Metrics ---
 const seriesConfig = {
-    profileViews: { name: 'Profile Views', color: '#06b6d4' },
-    quoteRequests: { name: 'Quote Requests', color: '#8b5cf6' },
-    callRequests: { name: 'Call Requests', color: '#ec4899' },
-    bookings: { name: 'Bookings', color: '#f59e0b' }
+  profile_view: { name: 'Profile Views', color: '#06b6d4' },
+  quote_request: { name: 'Quote Requests', color: '#8b5cf6' },
+  call_request: { name: 'Call Requests', color: '#ec4899' },
+  booking: { name: 'Bookings', color: '#f59e0b' }
 };
 
 const OrdersChart = () => {
+  const { data: session, status } = useSession();
+  const accessToken = session?.accessToken;
+  const vendorId = session?.user?.vendor_profile?.id; // Assuming vendor_profile.id exists on the session user
+
   // --- STATE MANAGEMENT: Default range set to 6 months ---
-  const [dateRange, setDateRange] = useState([new Date('2024-07-01'), new Date('2024-12-31')]);
+  const [dateRange, setDateRange] = useState([new Date(new Date().setMonth(new Date().getMonth() - 5)), new Date()]);
   const [startDate, endDate] = dateRange;
 
-  const [series1Key, setSeries1Key] = useState('profileViews');
-  const [series2Key, setSeries2Key] = useState('quoteRequests');
+  const [series1Key, setSeries1Key] = useState('profile_view'); // Use backend stat_type names
+  const [series2Key, setSeries2Key] = useState('quote_request'); // Use backend stat_type names
 
   const [chartData, setChartData] = useState({ series: [], categories: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // --- DATA FILTERING LOGIC: Updated with conditional daily/monthly view ---
+  // --- DATA FETCHING AND FILTERING LOGIC ---
   useEffect(() => {
-    if (!startDate || !endDate || !series1Key || !series2Key) {
-      setChartData({ series: [], categories: [] });
+    if (status === 'loading' || !accessToken || !vendorId || !startDate || !endDate) {
+      setLoading(true);
       return;
     }
 
-    const newFilteredData = {
-      categories: [],
-      series: [
-        { name: seriesConfig[series1Key].name, data: [] },
-        { name: seriesConfig[series2Key].name, data: [] }
-      ]
+    const fetchChartData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const diffTime = Math.abs(endDate - startDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        const isDailyView = diffDays <= 30; // Use daily data if range is 30 days or less
+
+        const fetchedData = {}; // To store data for both series keys
+        const seriesKeysToFetch = [series1Key, series2Key];
+
+        for (const key of seriesKeysToFetch) {
+          let endpoint = '';
+          let params = {
+            vendor: vendorId,
+            stat_type: key,
+          };
+
+          if (isDailyView) {
+            endpoint = '/daily-stats/';
+            params.date__gte = startDate.toISOString().split('T')[0];
+            params.date__lte = endDate.toISOString().split('T')[0];
+          } else {
+            endpoint = '/monthly-stats/';
+            // For monthly, fetch all and filter in JS for simplicity, or refine backend filter
+            // For now, let's fetch all monthly for the vendor and stat_type, then filter in JS
+            // if you need more precise month-by-month filtering, you might add year/month params
+            // params.year__gte = startDate.getFullYear();
+            // params.year__lte = endDate.getFullYear();
+            // params.month__gte = startDate.getMonth() + 1; // JS months are 0-indexed
+            // params.month__lte = endDate.getMonth() + 1;
+          }
+
+          const response = await api.get(endpoint, {
+            params: params,
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+          fetchedData[key] = response.data.results || response.data; // .results for list views, direct data for custom actions
+        }
+
+        // --- Process and Format Data for Chart ---
+        const newFilteredData = {
+          categories: [],
+          series: [
+            { name: seriesConfig[series1Key].name, data: [] },
+            { name: seriesConfig[series2Key].name, data: [] }
+          ]
+        };
+
+        if (isDailyView) {
+          const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+          let currentDateIterator = new Date(startDate);
+          currentDateIterator.setHours(0, 0, 0, 0); // Normalize to start of day
+
+          while (currentDateIterator <= endDate) {
+            const formattedDate = dayFormatter.format(currentDateIterator);
+            const isoDate = currentDateIterator.toISOString().split('T')[0]; // YYYY-MM-DD
+
+            newFilteredData.categories.push(formattedDate);
+
+            seriesKeysToFetch.forEach((key, seriesIndex) => {
+              const dataForSeries = fetchedData[key];
+              const foundEntry = dataForSeries.find(item => item.date === isoDate);
+              newFilteredData.series[seriesIndex].data.push(foundEntry ? foundEntry.count : 0);
+            });
+
+            currentDateIterator.setDate(currentDateIterator.getDate() + 1); // Move to next day
+          }
+        } else {
+          const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
+          let currentMonthIterator = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+
+          while (currentMonthIterator <= endDate) {
+            const formattedMonth = monthFormatter.format(currentMonthIterator);
+            const year = currentMonthIterator.getFullYear();
+            const month = currentMonthIterator.getMonth() + 1; // JS months are 0-indexed
+
+            newFilteredData.categories.push(formattedMonth);
+
+            seriesKeysToFetch.forEach((key, seriesIndex) => {
+              const dataForSeries = fetchedData[key];
+              const foundEntry = dataForSeries.find(item => item.year === year && item.month === month);
+              newFilteredData.series[seriesIndex].data.push(foundEntry ? foundEntry.count : 0);
+            });
+
+            currentMonthIterator.setMonth(currentMonthIterator.getMonth() + 1); // Move to next month
+          }
+        }
+
+        setChartData(newFilteredData);
+
+      } catch (err) {
+        console.error("Error fetching chart data:", err.response?.data || err.message);
+        setError("Failed to load chart data. Please try again.");
+        setChartData({ series: [], categories: [] }); // Clear chart on error
+      } finally {
+        setLoading(false);
+      }
     };
-    
-    // --- NEW: Calculate difference in days ---
-    const diffTime = Math.abs(endDate - startDate);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    // --- NEW: Conditional Logic ---
-    if (diffDays <= 30) {
-        // --- Daily View Logic ---
-        const series1Data = dailyMasterChartData.series[series1Key].data;
-        const series2Data = dailyMasterChartData.series[series2Key].data;
-        const dayFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+    fetchChartData();
+  }, [startDate, endDate, series1Key, series2Key, accessToken, vendorId, status]); // Dependencies for useEffect
 
-        dailyMasterChartData.categories.forEach((category, index) => {
-            const categoryDate = new Date(category);
-            categoryDate.setHours(0,0,0,0);
-            if (categoryDate >= startDate && categoryDate <= endDate) {
-                newFilteredData.categories.push(dayFormatter.format(categoryDate));
-                newFilteredData.series[0].data.push(series1Data[index]);
-                newFilteredData.series[1].data.push(series2Data[index]);
-            }
-        });
-    } else {
-        // --- Monthly View Logic ---
-        const series1Data = monthlyMasterChartData.series[series1Key].data;
-        const series2Data = monthlyMasterChartData.series[series2Key].data;
-        const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' });
-
-        monthlyMasterChartData.categories.forEach((category, index) => {
-            const categoryDate = new Date(category);
-            if (categoryDate >= startDate && categoryDate <= endDate) {
-                newFilteredData.categories.push(monthFormatter.format(categoryDate));
-                newFilteredData.series[0].data.push(series1Data[index]);
-                newFilteredData.series[1].data.push(series2Data[index]);
-            }
-        });
-    }
-
-    setChartData(newFilteredData);
-
-  }, [dateRange, series1Key, series2Key]);
-
-
-  // --- CHART OPTIONS ---
+  // --- CHART OPTIONS (Memoized for performance) ---
   const chartOptions = useMemo(() => ({
     chart: {
       type: 'bar',
@@ -148,7 +178,7 @@ const OrdersChart = () => {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: '55%',
+        columnWidth: '80%', // Increased bar width for better visibility
         borderRadius: 5,
       },
     },
@@ -166,6 +196,7 @@ const OrdersChart = () => {
         style: { colors: '#6b7280', fontSize: '12px' },
         formatter: (value) => `${Math.round(value)}`,
       },
+      min: 0, // Ensure y-axis starts at 0
     },
     legend: {
       show: true,
@@ -210,6 +241,7 @@ const OrdersChart = () => {
         ))}
       </select>
       <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+        {/* You can add a custom dropdown arrow icon here if needed */}
       </div>
     </div>
   );
@@ -224,14 +256,14 @@ const OrdersChart = () => {
                 Performance Comparison
             </h2>
             <div className="flex items-center gap-x-2">
-                 <DatePicker
-                   selectsRange={true}
-                   startDate={startDate}
-                   endDate={endDate}
-                   onChange={(update) => setDateRange(update)}
-                   dateFormat="MMM d, yyyy"
-                   customInput={<CustomDateInput />}
-                 />
+                <DatePicker
+                    selectsRange={true}
+                    startDate={startDate}
+                    endDate={endDate}
+                    onChange={(update) => setDateRange(update)}
+                    dateFormat="MMM d, yyyy"
+                    customInput={<CustomDateInput />}
+                />
             </div>
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 items-center gap-2 sm:gap-4">
@@ -250,14 +282,20 @@ const OrdersChart = () => {
       </div>
 
       {/* Card Body with Chart */}
-      <div className="p-4 md:p-5">
-        {typeof window !== 'undefined' && (
-             <Chart
-               options={chartOptions}
-               series={chartData.series}
-               type="bar"
-               height={350}
-             />
+      <div className=" ">
+        {loading ? (
+          <div className="text-center text-gray-500 dark:text-gray-400">Loading chart data...</div>
+        ) : error ? (
+          <div className="text-center text-red-600 dark:text-red-500">{error}</div>
+        ) : (
+          typeof window !== 'undefined' && ( // Ensure window is defined for client-side rendering
+              <Chart
+                options={chartOptions}
+                series={chartData.series}
+                type="bar"
+                height={350}
+              />
+          )
         )}
       </div>
     </div>
