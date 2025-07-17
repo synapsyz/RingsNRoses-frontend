@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'; 
-const CategoryDisplay = ({categories,selectedCategoryId, setSelectedCategoryId,categoryName, setCategoryName, setIsShowItems,isMobileSidebarOpen, setIsMobileSidebarOpen}) => {
+const CategoryDisplay = ({categories,selectedCategoryId, setSelectedCategoryId,categoryName, setCategoryName, setIsShowItems,isMobileSidebarOpen, setIsMobileSidebarOpen, setCheckedItems}) => {
     
   return (
     <>
@@ -84,6 +84,7 @@ const CategoryDisplay = ({categories,selectedCategoryId, setSelectedCategoryId,c
                   dark:border-neutral-700 dark:hover:border-neutral-600 dark:focus:border-neutral-600`}
                         onClick={() => {
                           setSelectedCategoryId(category.id);
+                          setCheckedItems({});
                           setCategoryName(category.name);
                           setIsShowItems(false);
                         }}

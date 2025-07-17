@@ -359,7 +359,7 @@ export default function Listing() {
             onChange={handleLocationChange}
           />
           <div id="content">
-            <CategoryDisplay categories={categories} selectedCategoryId={selectedCategoryId} setSelectedCategoryId={setSelectedCategoryId} categoryName={categoryName} setCategoryName={setCategoryName} setIsShowItems={setIsShowItems} isMobileSidebarOpen={isMobileSidebarOpen} setIsMobileSidebarOpen={setIsMobileSidebarOpen} />
+            <CategoryDisplay categories={categories} selectedCategoryId={selectedCategoryId} setSelectedCategoryId={setSelectedCategoryId} categoryName={categoryName} setCategoryName={setCategoryName} setIsShowItems={setIsShowItems} isMobileSidebarOpen={isMobileSidebarOpen} setIsMobileSidebarOpen={setIsMobileSidebarOpen} setCheckedItems={setCheckedItems} />
             <div className="w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
               <div className="lg:flex">
                 <div className="pt-6 lg:pt-0">

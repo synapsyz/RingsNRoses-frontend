@@ -17,6 +17,7 @@ import SocialMediaLinks from "@/components/customer/SocialMediaLinks";
 import ContactModal from "@/components/customer/ContactModal";
 import Suggestions from "@/components/customer/Suggestions";
 import LocationSelector from "@/components/LocationSelector";
+import Packages from "@/components/customer/Packages";
 
 const isNgrok =
   process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
@@ -197,6 +198,7 @@ export default function Home() {
                         <div className="max-w-4xl mx-auto text-gray-800 dark:text-neutral-200">
                           <About data={invitationsstationeryData} />
                           <EventTypes data={invitationsstationeryData} />
+                          <Packages data={invitationsstationeryData} />
                           <FAQ data={invitationsstationeryData} />
                         </div>
                       </div>
