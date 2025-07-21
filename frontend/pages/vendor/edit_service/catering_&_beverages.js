@@ -10,6 +10,7 @@ import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
 import SecondaryNav from '@/components/vendor/SecondaryNav';
 import ThumbnailUploader from '@/components/ThumbnailUploader';
+import ActionButtons from "@/components/ActionButtons";
 import FormInput from '@/components/FormInput';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
@@ -799,33 +800,9 @@ console.log(serviceId);
                     {formMessage.text}
                   </div>
                 )}
-                
-                <div className="fixed bottom-0 start-1/2 -translate-x-1/2 p-6 z-50 w-full max-w-md mx-auto hs-removing:translate-y-5 hs-removing:opacity-0 transition duration-300">
-                  <div className="py-2 ps-5 pe-2 bg-stone-800 rounded-full shadow-md dark:bg-neutral-950">
-                    <div className="flex justify-between items-center gap-x-3">
-                      <button type="button" className="text-red-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-red-500">
-                        Delete
-                      </button>
-                      <div className="inline-flex items-center gap-x-2">
-                        <button type="button" className="text-stone-300 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-neutral-400">
-                          Cancel
-                        </button>
-                        <div className="w-px h-4 bg-stone-700 dark:bg-neutral-700"></div>
-                        <button type="submit" onClick={handleSubmit} className="text-green-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-green-500">
-                          Save changes
-                        </button>
-                        <button type="button" className="size-8 inline-flex justify-center items-center gap-x-2 rounded-full text-stone-400 hover:bg-stone-700 focus:outline-hidden focus:bg-stone-700 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-label="Close">
-                          <span className="sr-only">Close</span>
-                          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M18 6 6 18" />
-                            <path d="m6 6 12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>
+                <ActionButtons                
+                />
             </div>
           </div>
         </main>
