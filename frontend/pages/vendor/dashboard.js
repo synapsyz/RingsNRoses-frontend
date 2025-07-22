@@ -12,10 +12,14 @@ import DashboardStats from '@/components/vendor/DashboardStats';
 import OrdersChart from '@/components/vendor/OrdersChart';
 import SummaryCharts from '@/components/vendor/SummaryCharts';
 import Footer from '@/components/vendor/Footer';
+import VendorChatList from '@/components/VendorChatList'; // Adjust path if necessary
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const [showAccessModal, setShowAccessModal] = useState(false);
+  const VENDOR_ID = session?.user?.vendor_profile?.supabase_vendor_chat_id;; // Replace with an actual vendor ID from your DB
+const VENDOR_NAME = session?.user?.vendor_profile?.supabase_vendor_chat_id; // Replace with the actual vendor's name
+
 
   useEffect(() => {
     if (status === 'loading') {
@@ -50,6 +54,8 @@ export default function DashboardPage() {
         <CustomHead />
         <Header />
         <SecondaryNav />
+                <VendorChatList vendorId={VENDOR_ID} vendorName={VENDOR_NAME} />
+
         <DashboardStats />
         <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 mx-auto">
           <div className="grid lg:grid-cols-4 gap-5">
