@@ -11,6 +11,7 @@ import Header from '@/components/vendor/Header';
 import SecondaryNav from '@/components/vendor/SecondaryNav';
 import ThumbnailUploader from '@/components/ThumbnailUploader';
 import ActionButtons from "@/components/ActionButtons";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import FormInput from '@/components/FormInput';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
@@ -53,6 +54,11 @@ export default function AddProduct() {
   const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
   const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState([]);
   const [newGalleryFilesNonVeg, setNewGalleryFilesNonVeg] = useState([]);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const [isActionCardVisible, setIsActionCardVisible] = useState(true);
+  const [isActionCardMinimized, setIsActionCardMinimized] = useState(false);
 
   // Refs for each MediaManager
   const mediaManagerRef = useRef(null);
@@ -355,6 +361,8 @@ console.log(serviceId);
       }
       return; // Stop the submission
     }
+    setIsActionCardVisible(false);
+
 
     const foodPackagesData = [];
     let vegPrice = null;
@@ -394,6 +402,7 @@ console.log(serviceId);
       const uploadResult = await thumbnailUploaderRef.current.upload();
       if (!uploadResult.success) {
         setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
+        setIsActionCardVisible(true);
         return;
       }
       finalThumbnailKey = uploadResult.key;
@@ -529,9 +538,59 @@ console.log(serviceId);
         console.error("Error message:", error.message);
         setFormMessage({ type: 'error', text: `Error: ${error.message}` });
       }
-    }
+      setIsActionCardVisible(true);
+    }  
+  };
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true);
   };
 
+  const handleConfirmDelete = async () => {
+    setIsDeleteModalOpen(false);
+    setIsActionCardVisible(false);
+
+    if (!venueId) {
+      setFormMessage({
+        type: "error",
+        text: "Cannot delete. Venue ID is missing.",
+      });
+      setIsActionCardVisible(true);
+      return;
+    }
+
+    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+
+    try {
+      const accessToken = session?.accessToken;
+      const config = {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      };
+      await api.delete(`/venues/${venueId}/`, config);
+      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      0;
+      setTimeout(() => {
+        router.push("/vendor/service/preview");
+      }, 2000);
+    } catch (error) {
+      console.error("Error trying to delete venue:", error);
+      if (error.response) {
+        setFormMessage({
+          type: "error",
+          text: `Error: ${
+            error.response.data.detail || "Failed to delete venue."
+          }`,
+        });
+      } else {
+        setFormMessage({
+          type: "error",
+          text: "Error: No response from server.",
+        });
+      }
+      setIsActionCardVisible(true);
+    }
+  };
   return (
     <>
       <CustomHead />
@@ -801,12 +860,32 @@ console.log(serviceId);
                   </div>
                 )}
                 </div>
-                <ActionButtons                
+                {isActionCardVisible && (
+                <ActionButtons
+                  isMinimized={isActionCardMinimized}
+                  onDeleteClick={handleDeleteClick}
+                  onSaveClick={handleSubmit}
+                  onMinimizeClick={() => setIsActionCardMinimized(true)}
+                  onRestoreClick={() => setIsActionCardMinimized(false)}
+                  onCancelClick={() => {
+                    setIsActionCardVisible(false);
+                    router.back();
+                  }}
                 />
+              )}
             </div>
           </div>
         </main>
       </div>
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Service"
+      >
+        Are you sure you want to delete this service? This action is
+        irreversible.
+      </ConfirmationModal>
       
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
