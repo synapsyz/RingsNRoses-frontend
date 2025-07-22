@@ -582,7 +582,32 @@ export default function EditService() {
     console.log("Submitting updated data:", formData);
 
     try {
-      const accessToken = session?.accessToken;
+       // Start with the token from next-auth session as a fallback.
+        let accessToken = session?.accessToken;
+
+        // Try to get the session data from sessionStorage.
+        const storedDataString = sessionStorage.getItem('session');
+        if (storedDataString) {
+            try {
+                const storedData = JSON.parse(storedDataString);
+                // If the token exists in sessionStorage, prioritize it.
+                if (storedData && storedData.tokens && storedData.tokens.access) {
+                    accessToken = storedData.tokens.access;
+                }
+            } catch (error) {
+                console.error("Failed to parse session data from sessionStorage:", error);
+            }
+        }
+
+        // If no access token is found, show an error and stop the submission.
+        if (!accessToken) {
+            alert('Authentication error. Your session may have expired. Please log in again.');
+            setIsLoading(false);
+            return;
+        }
+        // --- END OF UPDATED TOKEN LOGIC ---
+
+
       const config = {
         headers: {
           "Content-Type": "application/json",
@@ -650,7 +675,28 @@ export default function EditService() {
     setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
 
     try {
-      const accessToken = session?.accessToken;
+       let accessToken = session?.accessToken;
+
+  
+  const storedDataString = sessionStorage.getItem('session');
+  if (storedDataString) {
+    try {
+      const storedData = JSON.parse(storedDataString);
+   
+      if (storedData && storedData.tokens && storedData.tokens.access) {
+        accessToken = storedData.tokens.access;
+      }
+    } catch (error) {
+      console.error("Failed to parse session data from sessionStorage:", error);
+    }
+  }
+
+ 
+  if (!accessToken) {
+    alert('Authentication error. Your session may have expired. Please log in again.');
+    setIsLoading(false);
+    return;
+  }
       const config = {
         headers: {
           Authorization: `Bearer ${accessToken}`,

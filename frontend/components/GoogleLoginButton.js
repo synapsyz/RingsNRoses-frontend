@@ -1,90 +1,42 @@
 "use client";
 
-import { GoogleLogin } from '@react-oauth/google';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { signIn } from "next-auth/react";
 
-const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
-
-const getApiUrl = () => {
-    return process.env.NEXT_PUBLIC_APP_ENV === "development"
-        ? process.env.NEXT_PUBLIC_API_LOCALHOST
-        : process.env.NEXT_PUBLIC_HOST;
-};
-
-const api_url = getApiUrl();
-
-const api = axios.create({
-    baseURL: api_url + "/api/v1",
-    headers: { 
-        ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
-    },
-});
+// You no longer need:
+// - @react-oauth/google
+// - useRouter
+// - axios
 
 export default function GoogleLoginButton({ userType }) {
-    const router = useRouter();
+  const handleGoogleSignIn = () => {
+    // 1. Determine which NextAuth provider to use based on the userType prop.
+    // These IDs must match the 'id' fields in your [...nextauth].js file.
+    const providerId = userType === 'vendor' ? 'google-vendor' : 'google-customer';
 
-    const handleLoginSuccess = async (credentialResponse) => {
-        console.log("✅ Google login success, credential received");
+    // 2. Determine where the user should be redirected after a successful login.
+    const callbackUrl = userType === 'vendor' ? '/vendor/dashboard' : '/';
 
-        const id_token = credentialResponse.credential;
+    // 3. This single function call now handles the entire Google Sign-In flow.
+    // NextAuth will manage the pop-up, communicate with Google, and then
+    // run the logic in your `callbacks.jwt` function to talk to your Django backend.
+    signIn(providerId, { callbackUrl });
+  };
 
-        let apiUrl = '';
-        let redirectUrl = '';
-
-        if (userType === 'vendor') {
-            apiUrl = '/vendor/google-login/';
-            redirectUrl = '/vendor/dashboard';
-        } else if (userType === 'customer') {
-            apiUrl = '/customer/google-login/';
-            redirectUrl = '/';
-        } else {
-            console.error("❌ Invalid userType prop:", userType);
-            alert("Login configuration error: userType prop is missing or invalid.");
-            return;
-        }
-
-        const requestBody = { token: id_token };
-
-        try {
-            console.log("📡 Sending token to backend:", apiUrl);
-            const response = await api.post(apiUrl, requestBody);
-            const data = response.data;
-
-            console.log("✅ Backend login/registration successful", data);
-
-            // Store session and token
-            sessionStorage.setItem('session', JSON.stringify(data));
-            localStorage.setItem('token', data.tokens.access);
-
-            // Debug logging before redirect
-            console.log("🚀 Redirecting to:", redirectUrl);
-
-            // Delay slightly to avoid race conditions
-            setTimeout(() => {
-                router.push(redirectUrl);
-            }, 100);
-
-        } catch (error) {
-            console.error("❌ Backend returned an error:", error.response?.data || error.message);
-            const errorMessage = error.response?.data?.error || 'An error occurred during login.';
-            alert(errorMessage);
-        }
-    };
-
-    const handleLoginError = () => {
-        console.error('❌ Google login failed.');
-        alert('Google Sign-In was cancelled or failed. Please try again.');
-    };
-
-    return (
-        <div className="mt-6">
-            <GoogleLogin
-                onSuccess={handleLoginSuccess}
-                onError={handleLoginError}
-                width="364px"
-                theme="outline"
-            />
-        </div>
-    );
+  return (
+    <div className="mt-6">
+      {/* We replace the <GoogleLogin> component with a standard button */}
+      <button
+        type="button"
+        onClick={handleGoogleSignIn}
+        className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+      >
+        <img
+          className="h-5 w-5 mr-2"
+          src="https://www.svgrepo.com/show/50809/google.svg"
+          alt="Google logo"
+        />
+        Sign in with Google
+      </button>
+    </div>
+  );
 }

@@ -11,7 +11,7 @@ const api_url = getApiUrl();
 const api = axios.create(
   {
     baseURL: api_url + "/api/v1",
-    headers: { 
+    headers: {
       ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
     },
   }
@@ -28,7 +28,29 @@ const FavoriteButton = ({
   const [isLoading, setIsLoading] = useState(false);
   const [animate, setAnimate] = useState(false);
   const [favId, setFavId] = useState(fav_id);
-  const accessToken = session?.accessToken;
+let accessToken = session?.accessToken;
+
+  
+  const storedDataString = sessionStorage.getItem('session');
+  if (storedDataString) {
+    try {
+      const storedData = JSON.parse(storedDataString);
+   
+      if (storedData && storedData.tokens && storedData.tokens.access) {
+        accessToken = storedData.tokens.access;
+      }
+    } catch (error) {
+      console.error("Failed to parse session data from sessionStorage:", error);
+    }
+  }
+
+ 
+  if (!accessToken) {
+    alert('Authentication error. Your session may have expired. Please log in again.');
+    setIsLoading(false);
+    return;
+  }
+
 
   useEffect(() => {
     setIsFavorite(initialFavorite);
@@ -68,7 +90,7 @@ const FavoriteButton = ({
         console.log("Item favorited successfully!");
       } else {
         await api.delete(
-          `/favorites/${favId}/`, 
+          `/favorites/${favId}/`,
           config,
         );
         console.log("Item unfavorited successfully!");

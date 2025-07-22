@@ -1,5 +1,6 @@
 // Add 'use client' at the top to mark this as a Client Component
 'use client';
+import { useSession, signOut } from 'next-auth/react';
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -34,9 +35,10 @@ const UserProfile = () => {
     const router = useRouter();
 
     // ## 1. State to hold all our user data ##
-    const [user, setUser] = useState(null);
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [isSigningOut, setIsSigningOut] = useState(false);
+    const { data: session, status } = useSession();
+    const user = session?.user;
 
     // ## 2. Load user data from sessionStorage ONCE on component mount ##
     useEffect(() => {

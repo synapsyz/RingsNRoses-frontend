@@ -1,5 +1,12 @@
 import Header from "@/components/customer/Header";
-import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import LocationSelector from "@/components/LocationSelector";
@@ -7,8 +14,9 @@ import axios from "axios";
 import CategoryDisplay from "@/components/customer/Listing/CategoryDisplay";
 import FilterSidebar from "@/components/customer/Listing/FilterSidebar";
 import FilterGroup from "@/components/customer/Listing/FilterGroup";
-import ItemCardDisplay from "@/components/customer/Listing/ItemCardDisplay"; 
+import ItemCardDisplay from "@/components/customer/Listing/ItemCardDisplay";
 import Head from "next/head";
+
 const isNgrok =
   process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
 const getApiUrl = () => {
@@ -25,9 +33,9 @@ const api = axios.create({
 });
 
 export default function Listing() {
-  const [subcategoryName, setSubcategoryName] = useState('');
+  const [subcategoryName, setSubcategoryName] = useState("");
   const [selectedCategoryId, setSelectedCategoryId] = useState(1);
-  const [categoryName, setCategoryName] = useState('Venues');
+  const [categoryName, setCategoryName] = useState("Venues");
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [isShowItems, setIsShowItems] = useState(false);
   const [selectedPriceRange, setSelectedPriceRange] = useState(null);
@@ -52,13 +60,41 @@ export default function Listing() {
   const { data: session, status } = useSession();
   const user = session?.user;
   const router = useRouter();
-  const accessToken = session?.accessToken;
-
   const subcategoryItemsCache = useRef({});
   const [subcategoriesMap, setSubcategoriesMap] = useState({});
   const [checkedItems, setCheckedItems] = useState({});
   const [priceSliderValue, setPriceSliderValue] = useState([0, 10000]);
   const [capacitySliderValue, setCapacitySliderValue] = useState([0, 1000]);
+  const categoryItemsCache = useRef({});
+  const [accessToken, setAccessToken] = useState(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    let token = null;
+
+    if (session?.accessToken) {
+      token = session.accessToken;
+      setAccessToken(token);
+    } else {
+      const storedDataString = sessionStorage.getItem("session");
+      if (storedDataString) {
+        try {
+          const storedData = JSON.parse(storedDataString);
+          if (storedData?.tokens?.access) {
+            token = storedData.tokens.access;
+            setAccessToken(token);
+          }
+        } catch (error) {
+          console.error("Failed to parse session data from sessionStorage:", error);
+        }
+      }
+    }
+
+    if (!token) {
+      console.log("Authentication error. Your session may have expired. Please log in again.");
+    }
+  }, [session]);
 
   const prices = [
     { id: "0-1000", label: "₹0-₹1,000", min: 0, max: 1000 },
@@ -82,10 +118,8 @@ export default function Listing() {
 
   const handleToggle = () => {
     setIsOn(!isOn);
-    console.log('Deal toggle is now:', !isOn);
   };
 
-  const categoryItemsCache = useRef({});
   const buildParamKey = useCallback(() => {
     return JSON.stringify({
       categoryName,
@@ -96,6 +130,7 @@ export default function Listing() {
       checkedItems,
     });
   }, [categoryName, selectedCapacity, selectedPriceRange, isOn, sortBy, checkedItems]);
+
   const buildParams = useCallback(() => {
     const params = {};
     if (selectedCapacity) {
@@ -107,10 +142,11 @@ export default function Listing() {
       params.max_price = selectedPriceRange.max;
     }
     if (isOn) params.deals = true;
-    if (sortBy === 'priceLowToHigh') params.ordering = 'price';
-    if (sortBy === 'priceHighToLow') params.ordering = '-price';
+    if (sortBy === "priceLowToHigh") params.ordering = "price";
+    if (sortBy === "priceHighToLow") params.ordering = "-price";
     return params;
   }, [selectedCapacity, selectedPriceRange, isOn, sortBy]);
+
   const fetchItems = useCallback(async () => {
     if (status === "authenticated") {
       const currentAccessToken = session.accessToken;
@@ -118,7 +154,7 @@ export default function Listing() {
         headers: { Authorization: `Bearer ${currentAccessToken}` },
       };
 
-      const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, '_');
+      const currentCategoryName = categoryName.toLowerCase().replace(/\s+/g, "_");
       const selectedSubIds = Object.entries(checkedItems)
         .filter(([, isChecked]) => isChecked)
         .map(([id]) => id);
@@ -145,10 +181,7 @@ export default function Listing() {
           try {
             const res = await api.get(
               `/categories/${currentCategoryName}/subcategories/${subId}/`,
-              {
-                ...currentConfig,
-                params,
-              }
+              { ...currentConfig, params }
             );
             subcategoryItemsCache.current[cacheKey] = res.data.results;
             allItems = allItems.concat(res.data.results);
@@ -159,7 +192,6 @@ export default function Listing() {
         setCategoryItems(allItems);
         setHasMore(false);
       } else {
-        console.log("Config for categories:", currentConfig);
         try {
           const res = await api.get(`/categories/${currentCategoryName}/`, {
             ...currentConfig,
@@ -171,33 +203,24 @@ export default function Listing() {
           setNextPageUrl(overallNextUrl);
         } catch (err) {
           console.error(`Failed to fetch category ${currentCategoryName}`, err);
-          if (err.response && err.response.status === 401) {
-            console.error("Authentication error: Access token might be invalid or expired.");
-          }
         }
         setCategoryItems(allItems);
       }
 
       categoryItemsCache.current[paramKey] = allItems;
-
-    } else {
-      console.log("Not authenticated or session loading. Cannot fetch items for categories.");
     }
   }, [status, session, categoryName, checkedItems, buildParamKey, buildParams]);
+
   const fetchTimeout = useRef(null);
 
   useEffect(() => {
     if (!selectedCategoryId) return;
-
     setIsLoading(true);
     setError(null);
-
     if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
-
     fetchTimeout.current = setTimeout(() => {
       fetchItems().finally(() => setIsLoading(false));
     }, 500);
-
     return () => clearTimeout(fetchTimeout.current);
   }, [
     selectedCategoryId,
@@ -207,19 +230,14 @@ export default function Listing() {
     sortBy,
     checkedItems,
     categoryName,
-    fetchItems
+    fetchItems,
   ]);
-
 
   useEffect(() => {
     const fetchSubcategories = async () => {
       if (subcategoriesMap[selectedCategoryId]) return;
-
       try {
-        const res = await api.get(
-          `/categories/${selectedCategoryId}/subcategories/`
-        );
-
+        const res = await api.get(`/categories/${selectedCategoryId}/subcategories/`);
         setSubcategoriesMap((prev) => ({
           ...prev,
           [selectedCategoryId]: res.data.results,
@@ -229,124 +247,114 @@ export default function Listing() {
         console.error("Error fetching subcategories:", err);
       }
     };
-
     fetchSubcategories();
   }, [selectedCategoryId, subcategoriesMap]);
+
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
   };
-  const handleOpenLocationSelector = () => {
-    setIsLocationSelectorOpen(true);
-  };
-  const handleCloseLocationSelector = () => {
-    setIsLocationSelectorOpen(false);
-  };
+
+  const handleOpenLocationSelector = () => setIsLocationSelectorOpen(true);
+  const handleCloseLocationSelector = () => setIsLocationSelectorOpen(false);
+
   const handleLocationSave = (selectedLocationData) => {
-    console.log("Selected Location:", selectedLocationData);
     setSelectedLocationName(selectedLocationData.location || "Chennai");
     setSelectedLocationId(selectedLocationData.locationId);
-    console.log(selectedLocationId);
     setIsLocationSelectorOpen(false);
   };
-  const handleLocationChange = (currentSelection) => {
-    console.log("Current Selection:", currentSelection);
-  };
+
   useEffect(() => {
     if (categories.length === 0 && !isLoading) {
       setIsLoading(true);
-      setError(null);
-
       api
         .get("/categories")
-        .then((response) => {
-          setCategories(response.data.results);
-
-          if (response.data.results.length > 0) {
-            if (isMobile) {
-            } else {
-              setHoveredCategoryId(response.data.results[0].id);
-              setClickedCategoryId(response.data.results[0].id);
-            }
+        .then((res) => {
+          setCategories(res.data.results);
+          if (res.data.results.length > 0 && !isMobile) {
+            setHoveredCategoryId(res.data.results[0].id);
+            setClickedCategoryId(res.data.results[0].id);
           }
         })
         .catch((err) => {
           console.error("Error fetching categories:", err);
-          setError("Failed to load categories. Please try again.");
         })
-        .finally(() => {
-          setIsLoading(false);
-        });
+        .finally(() => setIsLoading(false));
     }
-  }, [categories?.length, isLoading, isMobile]);
-  const subcategories = subcategoriesMap[selectedCategoryId] || [];
-  const fetchMoreData = () => {
-    if (!nextPageUrl) {
-      setHasMore(false);
-      return;
-    }
+  }, [categories.length, isLoading, isMobile]);
 
-    const params = buildParams();
-
-    api.get(nextPageUrl, { params })
-      .then((response) => {
-        const newItems = response.data.results;
-        setCategoryItems((prevItems) => [...prevItems, ...newItems]);
-        setNextPageUrl(response.data.next);
-        if (response.data.next === null) {
-          setHasMore(false);
-        }
-      })
-      .catch((err) => {
-        console.error('Error fetching more items:', err);
-        setHasMore(false);
-      });
-  };
   useEffect(() => {
     if (router.isReady && router.query.category && categories.length > 0) {
       const urlCategoryName = router.query.category;
-      const normalizedUrlCategoryName = urlCategoryName.toLowerCase().replace(/\s+/g, '_');
-
-      const matchingCategory = categories.find(category =>
-        category.name.toLowerCase().replace(/\s+/g, '_') === normalizedUrlCategoryName
+      const normalizedUrlCategoryName = urlCategoryName.toLowerCase().replace(/\s+/g, "_");
+      const match = categories.find(
+        (cat) => cat.name.toLowerCase().replace(/\s+/g, "_") === normalizedUrlCategoryName
       );
-
-      if (matchingCategory) {
-        setSelectedCategoryId(matchingCategory.id);
-        setCategoryName(matchingCategory.name);
+      if (match) {
+        setSelectedCategoryId(match.id);
+        setCategoryName(match.name);
         setIsShowItems(false);
-      } else {
-        console.warn(`No matching category found for URL param: ${urlCategoryName}`);
       }
     }
   }, [router.isReady, router.query.category, categories]);
+
   useEffect(() => {
     if (router.isReady && router.query.subcategory) {
       setSubcategoryName(router.query.subcategory);
     }
   }, [router.isReady, router.query.subcategory]);
+
   useEffect(() => {
-    if (router.isReady && subcategoryName && subcategories.length > 0) {
-      const normalizedSub = subcategoryName.toLowerCase().replace(/[\s-/]+/g, '_');
-
-      const matchingSub = subcategories.find(sub =>
-        sub.name.toLowerCase().replace(/[\s-/]+/g, '_') === normalizedSub
+    if (router.isReady && subcategoryName && subcategoriesMap[selectedCategoryId]?.length > 0) {
+      const normalizedSub = subcategoryName.toLowerCase().replace(/[\s-/]+/g, "_");
+      const match = subcategoriesMap[selectedCategoryId].find(
+        (sub) => sub.name.toLowerCase().replace(/[\s-/]+/g, "_") === normalizedSub
       );
-
-      if (matchingSub && !checkedItems[matchingSub.id]) {
-        setCheckedItems(prev => ({
-          ...prev,
-          [matchingSub.id]: true,
-        }));
+      if (match && !checkedItems[match.id]) {
+        setCheckedItems((prev) => ({ ...prev, [match.id]: true }));
       }
     }
-  }, [router.isReady, subcategoryName, subcategories, checkedItems]);
- const pageTitle = `${categoryName || 'Category'} ${subcategoryName ? `| ${subcategoryName}` : ''}`;
+  }, [router.isReady, subcategoryName, subcategoriesMap, selectedCategoryId, checkedItems]);
+
+  const subcategories = subcategoriesMap[selectedCategoryId] || [];
+
+  const pageTitle = `${categoryName || "Category"}${
+    subcategoryName ? ` | ${subcategoryName}` : ""
+  }`;
+
+  const fetchMoreData = () => {
+    if (!nextPageUrl) return setHasMore(false);
+    const params = buildParams();
+    api
+      .get(nextPageUrl, { params })
+      .then((res) => {
+        setCategoryItems((prev) => [...prev, ...res.data.results]);
+        setNextPageUrl(res.data.next);
+        if (!res.data.next) setHasMore(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching more items:", err);
+        setHasMore(false);
+      });
+  };
+
   return (
     <>
-    <Head>
+      <Head>
         <title>{pageTitle}</title>
-    </Head>
-      {user ? (
+      </Head>
+      {!accessToken ? (
+        <div className="flex flex-col items-center justify-center h-screen text-center p-4">
+          <p className="text-xl md:text-2xl font-semibold mb-4 text-gray-800">
+            Authentication expired, Please Login again
+          </p>
+          <a
+            href="/login"
+            className="inline-block bg-[#E91E63] hover:bg-[#d81b60] text-white font-medium py-3 px-6 rounded-full transition duration-300 ease-in-out shadow-lg"
+          >
+            Login
+          </a>
+        </div>
+      ) : (
         <main>
           <Header
             onOpenLocationSelector={handleOpenLocationSelector}
@@ -356,16 +364,23 @@ export default function Listing() {
             isOpen={isLocationSelectorOpen}
             onClose={handleCloseLocationSelector}
             onSave={handleLocationSave}
-            onChange={handleLocationChange}
           />
           <div id="content">
-            <CategoryDisplay categories={categories} selectedCategoryId={selectedCategoryId} setSelectedCategoryId={setSelectedCategoryId} categoryName={categoryName} setCategoryName={setCategoryName} setIsShowItems={setIsShowItems} isMobileSidebarOpen={isMobileSidebarOpen} setIsMobileSidebarOpen={setIsMobileSidebarOpen} />
+            <CategoryDisplay
+              categories={categories}
+              selectedCategoryId={selectedCategoryId}
+              setSelectedCategoryId={setSelectedCategoryId}
+              categoryName={categoryName}
+              setCategoryName={setCategoryName}
+              setIsShowItems={setIsShowItems}
+              isMobileSidebarOpen={isMobileSidebarOpen}
+              setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+            />
             <div className="w-full max-w-[85rem] px-4 sm:px-6 lg:px-8 mx-auto">
               <div className="lg:flex">
                 <div className="pt-6 lg:pt-0">
                   <FilterSidebar
                     selectedCategoryId={selectedCategoryId}
-                    setSelectedCategoryId={setSelectedCategoryId}
                     isMobileSidebarOpen={isMobileSidebarOpen}
                     setIsMobileSidebarOpen={setIsMobileSidebarOpen}
                     mobileSidebarRef={mobileSidebarRef}
@@ -396,7 +411,12 @@ export default function Listing() {
                   />
                 </div>
                 <div className="grow overflow-hidden pb-10 lg:pt-10 lg:ps-4 xl:ps-8">
-                  <FilterGroup selectedFilters={selectedFilters} setSelectedFilters={setSelectedFilters} sortBy={sortBy} handleSortChange={handleSortChange} />
+                  <FilterGroup
+                    selectedFilters={selectedFilters}
+                    setSelectedFilters={setSelectedFilters}
+                    sortBy={sortBy}
+                    handleSortChange={handleSortChange}
+                  />
                   <ItemCardDisplay
                     categoryItems={categoryItems}
                     fetchMoreData={fetchMoreData}
@@ -414,16 +434,6 @@ export default function Listing() {
             </div>
           </div>
         </main>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-screen text-center p-4">
-          <p className="text-xl md:text-2xl font-semibold mb-4 text-gray-800">Authentication expired, Please Login again</p>
-          <a
-            href="/login"
-            className="inline-block bg-[#E91E63] hover:bg-[#d81b60] text-white font-medium py-3 px-6 rounded-full transition duration-300 ease-in-out shadow-lg"
-          >
-            Login
-          </a>
-        </div>
       )}
     </>
   );

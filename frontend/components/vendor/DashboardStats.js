@@ -173,7 +173,24 @@ const StatCard = ({ stat }) => (
 const DashboardStats = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const accessToken = session?.accessToken;
+let accessToken = session?.accessToken;
+
+  
+  const storedDataString = null;
+  if (storedDataString) {
+    try {
+      const storedData = JSON.parse(storedDataString);
+   
+      if (storedData && storedData.tokens && storedData.tokens.access) {
+        accessToken = storedData.tokens.access;
+      }
+    } catch (error) {
+      console.error("Failed to parse session data from sessionStorage:", error);
+    }
+  }
+
+ 
+
 
   const [stats, setStats] = useState(EMPTY_STATS);
   const [loading, setLoading] = useState(true);

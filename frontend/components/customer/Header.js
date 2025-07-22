@@ -24,12 +24,35 @@ const api = axios.create({
   },
 });
 
-const Header = ({ onOpenLocationSelector, selectedLocationName }) => { 
+const Header = ({ onOpenLocationSelector, selectedLocationName }) => {
   const [isCatalogOpen, setIsCatalogOpen] = useState(false);
   const headerContainerRef = useRef(null);
   const { data: session, status } = useSession();
   const user = session?.user;
-  const accessToken = session?.accessToken;
+
+ let accessToken = session?.accessToken;
+
+  
+  const storedDataString = sessionStorage.getItem('session');
+  if (storedDataString) {
+    try {
+      const storedData = JSON.parse(storedDataString);
+   
+      if (storedData && storedData.tokens && storedData.tokens.access) {
+        accessToken = storedData.tokens.access;
+      }
+    } catch (error) {
+      console.error("Failed to parse session data from sessionStorage:", error);
+    }
+  }
+
+ 
+  if (!accessToken) {
+    alert('Authentication error. Your session may have expired. Please log in again.');
+    setIsLoading(false);
+    return;
+  }
+
 
   const handlePrelineLoad = useCallback(() => {
     if (window.HSStaticMethods) {
@@ -44,7 +67,7 @@ const Header = ({ onOpenLocationSelector, selectedLocationName }) => {
       window.HSStaticMethods.autoInit();
       console.log("Preline autoInit called from useEffect.");
     }
-  }, []); 
+  }, []);
 
 
   return (
@@ -52,7 +75,7 @@ const Header = ({ onOpenLocationSelector, selectedLocationName }) => {
       <Script
         src="https://cdn.jsdelivr.net/npm/preline@latest/dist/preline.js"
         strategy="afterInteractive"
-        onLoad={handlePrelineLoad} 
+        onLoad={handlePrelineLoad}
       />
       <link rel="canonical" href="https://preline.co/" />
       <link rel="shortcut icon" href="../favicon.ico" />
@@ -83,7 +106,7 @@ const Header = ({ onOpenLocationSelector, selectedLocationName }) => {
                   onClick={onOpenLocationSelector}
                 >
                   <img className="shrink-0 size-3.5 rounded-full" src="in.png" alt="English" />
-                  {selectedLocationName || user?.customer_profile?.event_location || 'Select Location'} 
+                  {selectedLocationName || user?.customer_profile?.event_location || 'Select Location'}
                 </button>
               </li>
 

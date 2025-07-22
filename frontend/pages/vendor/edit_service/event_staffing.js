@@ -484,7 +484,30 @@ const handleEquipmentBlur = (id, value) => {
     console.log("Submitting data for Event Staffing:", formData);
 
     try {
-      const accessToken = session?.accessToken;
+      
+       let accessToken = session?.accessToken;
+
+  
+  const storedDataString = sessionStorage.getItem('session');
+  if (storedDataString) {
+    try {
+      const storedData = JSON.parse(storedDataString);
+   
+      if (storedData && storedData.tokens && storedData.tokens.access) {
+        accessToken = storedData.tokens.access;
+      }
+    } catch (error) {
+      console.error("Failed to parse session data from sessionStorage:", error);
+    }
+  }
+
+ 
+  if (!accessToken) {
+    alert('Authentication error. Your session may have expired. Please log in again.');
+    setIsLoading(false);
+    return;
+  }
+
       const config = {
         headers: {
           'Content-Type': 'application/json',

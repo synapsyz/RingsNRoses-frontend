@@ -27,7 +27,7 @@ const CustomerUserProfile = () => {
 if (session && session?.user_type !== 'customer') {
   return (
     <AccessDeniedModal
-      isOpen={true}
+      isOpen={false}
       userType={session.user_type}
       allowedUserType="customer"
     />

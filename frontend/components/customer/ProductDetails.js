@@ -4,10 +4,31 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 const ProductDetails = ({ content, data, onShowContactModal }) => {
   const { data: session, status } = useSession();
-  const accessToken = session?.accessToken;
   const [currentDate, setCurrentDate] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const user = session?.user;
+   let accessToken = session?.accessToken;
+
+  
+  const storedDataString = sessionStorage.getItem('session');
+  if (storedDataString) {
+    try {
+      const storedData = JSON.parse(storedDataString);
+   
+      if (storedData && storedData.tokens && storedData.tokens.access) {
+        accessToken = storedData.tokens.access;
+      }
+    } catch (error) {
+      console.error("Failed to parse session data from sessionStorage:", error);
+    }
+  }
+
+ 
+  if (!accessToken) {
+    alert('Authentication error. Your session may have expired. Please log in again.');
+    setIsLoading(false);
+    return;
+  }
 
   useEffect(() => {
     const today = new Date();

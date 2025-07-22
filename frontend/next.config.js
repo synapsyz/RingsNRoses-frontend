@@ -2,13 +2,14 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['blog.venuelook.com',
+    domains: [
+      'blog.venuelook.com',
       'encrypted-tbn0.gstatic.com',
-      "cf-img-a-in.tosshub.com",
-      "www.mconventions.com",
-      "images.unsplash.com",
+      'cf-img-a-in.tosshub.com',
+      'www.mconventions.com',
+      'images.unsplash.com',
+      'cdn.pixabay.com', // Added this line
     ],
-     // Add this line with the hostname
   },
   // other config...
 };

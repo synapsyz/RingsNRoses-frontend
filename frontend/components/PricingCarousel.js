@@ -68,7 +68,28 @@ export default function PricingCarousel({ api }) {
     setPaymentInProgress(true);
 
     const amount = billingCycle === "monthly" ? plan.monthly_price : plan.annual_price;
-    const accessToken = session?.accessToken;
+     let accessToken = session?.accessToken;
+
+  
+  const storedDataString = sessionStorage.getItem('session');
+  if (storedDataString) {
+    try {
+      const storedData = JSON.parse(storedDataString);
+   
+      if (storedData && storedData.tokens && storedData.tokens.access) {
+        accessToken = storedData.tokens.access;
+      }
+    } catch (error) {
+      console.error("Failed to parse session data from sessionStorage:", error);
+    }
+  }
+
+ 
+  if (!accessToken) {
+    alert('Authentication error. Your session may have expired. Please log in again.');
+    setIsLoading(false);
+    return;
+  }
 
     try {
       const res = await api.post(
