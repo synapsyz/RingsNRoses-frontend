@@ -26,8 +26,9 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
   const accessToken = session?.accessToken;
   const [currentDate, setCurrentDate] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false); // State for modal visibility
   const user = session?.user;
-
+  const recipient_id = data?.supabase_vendor_notification_id;
   useEffect(() => {
     const today = new Date();
     const year = today.getFullYear();
@@ -86,18 +87,51 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
   };
 
   const handleRequestPricingClick = async () => {
-    // Attempt to increment the quote_request stat
+    // Attempt to increment the quote_request stat first
     const success = await incrementVendorStat('quote_request');
     
     if (success) {
         // Only if stat incremented successfully, or if it's not critical, you can proceed
-        // with pricing request specific logic here.
-        console.log("Proceeding with request pricing logic...");
-        // This is where you'd typically send the actual quote request
-        // based on selectedDate and other form data.
-        alert(`Requesting pricing for date: ${selectedDate}. Check console for stat update.`);
+        setIsPricingModalOpen(true); // Open the modal
     } else {
-        alert("Failed to send pricing request due to an error. Please try again.");
+        alert("Failed to initiate pricing request due to an error. Please try again.");
+    }
+  };
+
+  const handleSendPricingRequest = async () => {
+    if (!accessToken) {
+      console.warn("User not authenticated. Cannot send pricing request.");
+      alert("Please log in to send a pricing request.");
+      return;
+    }
+    if (!data?.id || !data?.vendor) {
+        console.error("Venue or Vendor ID not available to send pricing request.");
+        alert("An error occurred. Missing venue or vendor information.");
+        return;
+    }
+
+    // Prepare the message content for the SendMessageView API
+    const messageContent = `I am interested in ${data.name} for the date ${selectedDate}. Please provide pricing details. My name is ${user?.first_name || 'User'} ${user?.last_name || ''}.`;
+
+    try {
+        const response = await api.post(
+            `/send-message/`, // Your send-message API endpoint
+            {
+                recipient_id: recipient_id, // Assuming data.vendor_id is the user ID of the vendor
+                content: messageContent,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            }
+        );
+        console.log("Pricing request sent:", response.data);
+        alert("Your pricing request has been sent!");
+        setIsPricingModalOpen(false); // Close the modal on success
+    } catch (error) {
+        console.error("Failed to send pricing request message:", error.response?.data || error.message);
+        alert("Failed to send pricing request. Please try again.");
     }
   };
 
@@ -293,12 +327,12 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
                 <button
                   type="button"
                   className="w-3/4 py-3 px-4 inline-flex justify-center items-center gap-x-1 text-sm font-medium rounded-full border border-transparent bg-[#E91E63] text-white hover:bg-[#C2185B] disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-[#C2185B] dark:bg-[#E91E63] dark:hover:bg-[#C2185B] dark:focus:bg-[#C2185B]"
-                  onClick={handleRequestPricingClick} // Added onClick handler
+                  onClick={handleRequestPricingClick}
                 >
                   Request Pricing
                 </button>
                 {/* Call Button */}
-                <CallButton onCallClick={handleCallButtonClick} /> {/* Integrated CallButton */}
+                <CallButton onCallClick={handleCallButtonClick} />
               </div>
             </div>
             <div className="p-5 divide-y divide-gray-200 dark:divide-neutral-700">
@@ -352,6 +386,37 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
           </div>
         </div>
       </div>
+
+      {/* Pricing Request Modal */}
+      {isPricingModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm mx-auto p-6 dark:bg-neutral-800">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              Request Pricing
+            </h3>
+            <p className="text-gray-700 dark:text-gray-300 mb-6">
+              You are requesting pricing for **{data?.name}** for the date: **{selectedDate}**.
+              A message will be sent to the vendor.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                className="py-2 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-full border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-800"
+                onClick={() => setIsPricingModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="py-2 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-full border border-transparent bg-[#E91E63] text-white hover:bg-[#C2185B] disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-[#C2185B] dark:bg-[#E91E63] dark:hover:bg-[#C2185B] dark:focus:bg-[#C2185B]"
+                onClick={handleSendPricingRequest}
+              >
+                Send Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
