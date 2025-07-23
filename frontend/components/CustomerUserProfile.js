@@ -21,18 +21,19 @@ const api = axios.create({
 const CustomerUserProfile = () => {
     const { data: session, status } = useSession();
     const user = session?.user;
+    console.log(user)
     const accessToken = session?.accessToken;
 
 
-if (session && session?.user_type !== 'customer') {
-  return (
-    <AccessDeniedModal
-      isOpen={true}
-      userType={session.user_type}
-      allowedUserType="customer"
-    />
-  );
-}
+// if (session && user.user_type !== 'customer') {
+//   return (
+//     <AccessDeniedModal
+//       isOpen={true}
+//       userType={session.user_type}
+//       allowedUserType="customer"
+//     />
+//   );
+// }
 
     const handleLogoutClick = async () => {
       console.log("Logout process started...");
@@ -170,7 +171,7 @@ if (session && session?.user_type !== 'customer') {
                           >
                             <img 
                               className="shrink-0 size-10 rounded-full" 
-                              src={session.user.profile_picture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} 
+                              src={user.profile_picture || "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"} 
                               alt="Avatar"
                               onError={(e) => {
                                 e.target.onerror = null; 
@@ -180,10 +181,10 @@ if (session && session?.user_type !== 'customer') {
                             
                             <div className="grow">
                               <span className="block font-medium text-sm text-gray-800 dark:text-neutral-200">
-                                {session.user.name}
+                                {user.name}
                               </span>
                               <p className="text-xs text-gray-500 dark:text-neutral-500">
-                                {session.user.email}
+                                {user.email}
                               </p>
                             </div>
                           </a>

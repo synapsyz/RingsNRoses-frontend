@@ -12,41 +12,85 @@ import DashboardStats from '@/components/vendor/DashboardStats';
 import OrdersChart from '@/components/vendor/OrdersChart';
 import SummaryCharts from '@/components/vendor/SummaryCharts';
 import Footer from '@/components/vendor/Footer';
+import VendorSetupForm from '@/components/VendorSetupForm';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const user = session?.user;
   const [showAccessModal, setShowAccessModal] = useState(false);
+  const [showVendorForm, setShowVendorForm] = useState(false);
 
+
+
+  // useEffect(() => {
+  //   if (status === 'loading') {
+  //     return;
+  //   }
+
+  //   if (!session) {
+  //     signIn();
+  //     return;
+  //   }
+
+  //   if (session && session.user_type !== 'vendor') {
+  //     setShowAccessModal(true);
+  //   }
+  // }, [session, status]);
+
+
+ const handleVendorFormSuccess = (updatedProfileData) => {
+    // When the form submission is successful, the `onSuccess` callback provides the updated data.
+    // We should update our local user state to reflect this change immediately without a page reload.
+    const updatedUser = {
+      ...user,
+      vendor_profile: {
+        ...user.vendor_profile,
+        ...updatedProfileData,
+      }
+    };
+    setUser(updatedUser);
+    setShowVendorForm(false);
+  };
+
+  
+  // 2. Check if the vendor setup form needs to be displayed.
   useEffect(() => {
-    if (status === 'loading') {
-      return;
+    // This effect runs whenever the `user` state changes.
+    // We wait until the user object is loaded before checking its properties.
+    if (user) {
+      console.log(user.vendor_profile);
+      // Based on your backend model, we check the vendor_profile.
+      // If the profile itself or the subcategory on the profile is missing, we need to show the form.
+      if (!user.vendor_profile || !user.vendor_profile.subcategory) {
+        setShowVendorForm(true);
+      }
     }
+  }, [user]);
 
-    if (!session) {
-      signIn();
-      return;
-    }
 
-    if (session && session.user_type !== 'vendor') {
-      setShowAccessModal(true);
-    }
-  }, [session, status]);
 
-  // If `showAccessModal` is true, render the access denied modal.
-  if (showAccessModal) {
-    return (
-      <AccessDeniedModal
-        isOpen={showAccessModal}
-        userType={session?.user_type || 'unknown'}
-        allowedUserType="vendor"
-      />
-    );
-  }
+
+  
+
+  // // If `showAccessModal` is true, render the access denied modal.
+  // if (showAccessModal) {
+  //   return (
+  //     <AccessDeniedModal
+  //       isOpen={false}
+  //       userType={session?.user_type || 'unknown'}
+  //       allowedUserType="vendor"
+  //     />
+  //   );
+  // }
   
   // If all checks pass, render the vendor dashboard.
-  if (session && session.user_type === 'vendor') {
+
     return (
       <div>
+      <VendorSetupForm 
+        isOpen={showVendorForm}
+        onSuccess={handleVendorFormSuccess}
+      />
         <CustomHead />
         <Header />
         <SecondaryNav />
@@ -61,7 +105,3 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  // Fallback case
-  return null;
-}
