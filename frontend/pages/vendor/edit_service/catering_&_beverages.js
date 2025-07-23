@@ -330,9 +330,9 @@ console.log(serviceId);
     if (!aboutContent.trim()) {
       newErrors.aboutContent = 'Description (About) is required.';
     }
-    if (!location.trim() || !selectedLocationData) {
+   {/* if (!location.trim() || !selectedLocationData) {
       newErrors.location = 'Service Area Location is required.';
-    }
+    }*/}
     if (!address.trim()) {
       newErrors.address = 'Business Address is required.';
     }

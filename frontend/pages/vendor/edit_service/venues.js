@@ -15,6 +15,7 @@ import MediaManager from "@/components/MediaManager";
 import SuccessPopup from "@/components/SuccessPopup";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import ActionButtons from "@/components/ActionButtons";
+import FullPageStatus from '@/components/FullPageStatus';
 import FormInput from "@/components/FormInput";
 import TiptapEditor from "@/components/TiptapEditor";
 import CheckboxGroup from "@/components/CheckboxGroup";
@@ -69,6 +70,10 @@ export default function EditService() {
 
   const [isActionCardVisible, setIsActionCardVisible] = useState(true);
   const [isActionCardMinimized, setIsActionCardMinimized] = useState(false);
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
 
   const thumbnailUploaderRef = useRef(null);
   const [faqs, setFaqs] = useState([]);
@@ -369,6 +374,7 @@ export default function EditService() {
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormMessage({ type: "", text: "" }); // Clear previous messages
@@ -582,6 +588,7 @@ export default function EditService() {
     console.log("Submitting updated data:", formData);
 
     try {
+      setIsLoading(true); // 🔵 Show loader
       const accessToken = session?.accessToken;
       const config = {
         headers: {
@@ -589,9 +596,9 @@ export default function EditService() {
           Authorization: `Bearer ${accessToken}`,
         },
       };
-
+    
       const action = venueId ? "update" : "create";
-
+    
       if (action === "update") {
         const response = await api.put(`/venues/${venueId}/`, formData, config);
         console.log("Venue updated successfully:", response.data);
@@ -608,10 +615,18 @@ export default function EditService() {
           text: "Venue created successfully!",
         });
       }
+    
+      // ✅ Show success state
+      setIsLoading(false);
+      setIsSuccess(true);
+      await new Promise((res) => setTimeout(res, 2000)); // success animation delay
+      setIsSuccess(false);
     } catch (error) {
+      setIsLoading(false); // ❌ Hide loader on error
+    
       const action = venueId ? "update" : "create";
       console.error(`Error trying to ${action} venue:`, error);
-
+    
       if (error.response) {
         console.error("Error data:", error.response.data);
         setFormMessage({
@@ -628,7 +643,7 @@ export default function EditService() {
       }
       setIsActionCardVisible(true);
     }
-  };
+  };    
 
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true);
@@ -1347,7 +1362,7 @@ export default function EditService() {
                   {formMessage.text}
                 </div>
               )}
-
+      <FullPageStatus loading={isLoading} success={isSuccess} />
               {isActionCardVisible && (
                 <ActionButtons
                   isMinimized={isActionCardMinimized}
@@ -1365,7 +1380,6 @@ export default function EditService() {
           </div>
         </main>
       </div>
-
       <ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
