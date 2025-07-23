@@ -17,7 +17,7 @@ import Footer from '@/components/Footer'; // Adjust the import path as needed
 import CustomerUserProfile from '@/components/CustomerUserProfile';
 
 
-let isNgrok = process.env.NEXT_PUBLIC_AP1P_ENV === 'development' ? false : true;
+let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === 'development'
     ? process.env.NEXT_PUBLIC_API_LOCALHOST
