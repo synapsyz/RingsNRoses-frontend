@@ -613,7 +613,7 @@ export default function Signup() {
                         {/* End Title */}
 
                         {/* Button Group */}
-                       <GoogleLoginButton userType="vendor" />
+                        <GoogleLoginButton userType="vendor" />
                         {/* End Button Group */}
 
                         <div className="flex items-center text-xs text-gray-400 uppercase before:flex-1 before:border-t before:border-gray-200 before:me-6 after:flex-1 after:border-t after:border-gray-200 after:ms-6 dark:text-neutral-500 dark:before:border-neutral-700 dark:after:border-neutral-700">Or</div>
@@ -1025,7 +1025,7 @@ export default function Signup() {
                     <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
                         <a href="/vendor/signup" className="hover:underline">Register your business</a>
                         <a href="#" className="hover:underline">Contact us</a>
-                        <a href="#" className="hover:underline">Terms & privacy</a>
+                        <a href="/vendor-terms-and-conditions" target="_blank" rel="noopener noreferrer" className="hover:underline">Terms&Condition</a>
                         <a href="#" className="hover:underline">Your Privacy Choices</a>
                         <a href="#" className="hover:underline">About us</a>
                     </div>
