@@ -91,18 +91,21 @@ const ThumbnailUploader = forwardRef(function ThumbnailUploader({ preview, onFil
     };
 
     return (
-        <div>
-            <label className="block mb-2 text-sm font-medium text-stone-800 dark:text-neutral-200">
-                Thumbnail
-            </label>
-            <div className="flex flex-wrap items-center gap-3 sm:gap-5">
-                <span className="flex justify-center items-center size-20 border-2 border-dotted border-stone-300 text-stone-400 rounded-full overflow-hidden">
-                    {preview ? (
-                        <img src={preview} alt="Thumbnail preview" className="w-full h-full object-cover" />
-                    ) : (
-                        <svg className="shrink-0 size-7" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg>
-                    )}
-                </span>
+        <div className="flex flex-wrap items-center gap-3 sm:gap-5 relative">
+  <div className="relative">
+    <span className="flex justify-center items-center size-20 border-2 border-dotted border-stone-300 text-stone-400 rounded-full overflow-hidden">
+  {preview ? (
+    <img src={preview} alt="Thumbnail preview" className="w-full h-full object-cover" />
+  ) : (
+    <img
+      src="https://i.postimg.cc/0zvxFLFq/Cover-Photo.png"
+      alt="Cover Photo"
+      className="w-full h-full object-cover"
+    />
+  )}
+</span>
+  </div>
+  
                 <div className="grow">
                     <div className="flex items-center gap-x-2">
                         <label htmlFor="thumbnail-input" className="cursor-pointer py-2 px-3 inline-flex items-center gap-x-2 text-xs font-medium rounded-lg border border-transparent bg-green-600 text-white hover:bg-green-700">
@@ -115,7 +118,6 @@ const ThumbnailUploader = forwardRef(function ThumbnailUploader({ preview, onFil
                     </div>
                 </div>
             </div>
-        </div>
     );
 });
 
