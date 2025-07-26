@@ -278,7 +278,7 @@ const ProductDetails = ({ content, data, onShowContactModal }) => {
               <span className="block font-semibold truncate">
                 Early Booking Discount
               </span>
-              <span className="block">-₹9999</span>
+              <span className="block">-₹ 9999</span>
             </span>
           </label>
         </div>

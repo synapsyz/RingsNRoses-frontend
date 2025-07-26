@@ -294,14 +294,14 @@ export default function Login() {
 
         <footer className="w-full py-4 px-6 fixed bottom-3 mt-8"> {/* Added background to footer */}
           <div className="mt-10 flex flex-col items-center text-center text-sm text-gray-500 dark:text-neutral-400 lg:gap-1"> {/* Added pb-4 for some padding */}
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+<div className="flex flex-wrap justify-end ml-96 gap-x-4 gap-y-1">
               <a href="/vendor/signup" className="hover:underline">Register your business</a>
               <a href="#" className="hover:underline">Contact us</a>
               <a href="#" className="hover:underline">Terms & privacy</a>
               <a href="#" className="hover:underline">Your Privacy Choices</a>
               <a href="#" className="hover:underline">About us</a>
             </div>
-            <div className="flex items-center gap-x-2 mt-2">
+            <div className="w-full flex justify-end items-center gap-x-2 mt-4 pr-64">
               <p className="dark:text-gray-400">© 2025 RingsNRoses</p> {/* Ensure copyright text changes color */}
               <button
                 type="button"
