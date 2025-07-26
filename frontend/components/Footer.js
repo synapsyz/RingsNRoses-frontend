@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 const Footer = () => {
   return (
@@ -18,9 +19,36 @@ const Footer = () => {
           <div>
             <h4 className="mb-3 font-medium text-sm text-gray-800 dark:text-neutral-200">Customer service</h4>
             <ul className="grid space-y-2">
-              <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Privacy policy</a></li>
-              <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Refund policy</a></li>
-              <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">Cookie Policy</a></li>
+              <li>
+                <a
+                  className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200"
+                  href="/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Privacy policy
+                </a>
+              </li>
+              <li>
+                <a
+                  className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200"
+                  href="/refund-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Refund policy
+                </a>
+              </li>
+              <li>
+                <a
+                  className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200"
+                  href="/cookie-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Cookie Policy
+                </a>
+              </li>
               <li><a className="text-sm text-gray-500 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-400 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#"></a></li>
             </ul>
           </div>
@@ -146,8 +174,13 @@ const Footer = () => {
               Terms and Conditions
             </a>
           </li>
-          <li className="inline-flex items-center relative text-xs text-gray-500 pe-3.5 last:pe-0 last:after:hidden after:absolute after:top-1/2 after:end-0 after:inline-block after:size-[3px] after:bg-gray-400 after:rounded-full after:-translate-y-1/2 dark:text-neutral-500 dark:after:bg-neutral-600">
-            <a className="text-xs text-gray-500 underline underline-offset-2 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-500 dark:hover:text-neutral-200 dark:focus:text-neutral-200" href="#">
+          <li>
+            <a
+              className="text-xs text-gray-500 underline underline-offset-2 hover:text-gray-800 focus:outline-hidden focus:text-gray-800 dark:text-neutral-500 dark:hover:text-neutral-200 dark:focus:text-neutral-200"
+              href="/privacy-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Privacy & Policy
             </a>
           </li>
