@@ -15,6 +15,7 @@ import Logo from '@/components/Logo';
 import CategoryGrid from '@/components/CategoryGrid'; // Adjust the path as needed
 import Footer from '@/components/Footer'; // Adjust the import path as needed
 import CustomerUserProfile from '@/components/CustomerUserProfile';
+import ServicesHired from '@/components/customer/services_hired/ServicesHired';
 
 
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -417,16 +418,6 @@ const [selectedCategoryId, setSelectedCategoryId] = useState(1);
       setSubcategoriesError(null);
     }
   }, [hoveredCategoryId, clickedCategoryId, mobileSelectedCategoryId, isMobile, subcategoriesCache]);
-
-
-
-
-
-
-
-
-
-
   useEffect(() => {
 
     const fetchfavoriteData = async () => {
@@ -927,16 +918,7 @@ useEffect(() => {
 
     </div>
   </div>
-
-
-  <div className="group p-4 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition dark:bg-neutral-900 dark:border-neutral-700 md:col-span-1">
-    <div className="flex flex-col gap-2">
-      <img src="https://cdn-icons-png.flaticon.com/128/2252/2252184.png" alt="Customer Loyalty" width="50" height="50"></img>
-      <h2 className="text-xl text-gray-600 dark:text-neutral-400">Services hired</h2>
-      <p className="text-xl font-semibold text-gray-800 dark:text-white">5 of 18</p>
-    </div>
-  </div>
-
+  <ServicesHired/>
   <div className="group p-4 bg-white border border-gray-200 rounded-xl hover:shadow-lg transition dark:bg-neutral-900 dark:border-neutral-700 md:col-span-1">
     <div className="flex flex-col gap-2">
       <img src="https://cdn-icons-png.flaticon.com/128/9817/9817200.png" alt="Budget and Finance" width="50" height="50"></img>
@@ -946,7 +928,6 @@ useEffect(() => {
   </div>
 </div>
 </>
-
 )}
 
 {/* <!-- End Stats Grid --> */}
