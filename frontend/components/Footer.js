@@ -96,7 +96,6 @@ const Footer = () => {
             <div className="space-y-10">
               <div>
                 <h4 className="font-medium text-sm text-gray-800 dark:text-neutral-200">Stay connected</h4>
-                {/* Social Brands */}
                 <div className="mt-2 -mx-2 flex flex-wrap items-center gap-1">
                   <a className="flex flex-col justify-center items-center size-9 rounded-full text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
                     <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -107,10 +106,10 @@ const Footer = () => {
                     <span className="sr-only">Instagram</span>
                   </a>
                   <a className="flex flex-col justify-center items-center size-9 rounded-full text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
-                    <svg className="shrink-0 size-4" width="48" height="50" viewBox="0 0 48 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M28.5665 20.7714L46.4356 0H42.2012L26.6855 18.0355L14.2931 0H0L18.7397 27.2728L0 49.0548H4.23464L20.6196 30.0087L33.7069 49.0548H48L28.5655 20.7714H28.5665ZM22.7666 27.5131L5.76044 3.18778H12.2646L42.2032 46.012H35.699L22.7666 27.5142V27.5131Z" fill="currentColor" />
+                    <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z" />
                     </svg>
-                    <span className="sr-only">X (Twitter)</span>
+                    <span className="sr-only">Facebook</span>
                   </a>
                   <a className="flex flex-col justify-center items-center size-9 rounded-full text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
                     <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -119,8 +118,13 @@ const Footer = () => {
                     </svg>
                     <span className="sr-only">YouTube</span>
                   </a>
+                    <a className="flex flex-col justify-center items-center size-9 rounded-full text-sm text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-100 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" href="#">
+                    <svg className="shrink-0 size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="none" stroke="currentColor" strokeWidth="32">
+                      <path d="M100.28 448H7.4V148.9h92.88zm-46.44-340c-29.19 0-52.84-23.65-52.84-52.84S24.65 2.32 53.84 2.32 106.68 25.97 106.68 55.16 82.95 108 53.84 108zm394.18 340h-92.4V302.4c0-34.7-12.5-58.4-43.68-58.4-23.82 0-38 16-44.28 31.4-2.28 5.5-2.86 13.2-2.86 20.9V448h-92.6s1.24-262.5 0-289.1h92.6v40.9c-.19.3-.48.7-.66 1h.66v-1c12.3-19 34.36-46.2 83.52-46.2 60.94 0 106.68 39.8 106.68 125.3z"/>
+                    </svg>
+                    <span className="sr-only">LinkedIn</span>
+                  </a>
                 </div>
-                {/* End Social Brands */}
               </div>
             </div>
           </div>
