@@ -48,6 +48,8 @@ export default function EditService() {
   const [initialGalleryVeg, setInitialGalleryVeg] = useState([]);
   const [updatedExistingMediaVeg, setUpdatedExistingMediaVeg] = useState([]);
   const [newGalleryFilesVeg, setNewGalleryFilesVeg] = useState([]);
+    const [startingPrice, setStartingPrice] = useState('');
+    const [advancePayment, setAdvancePayment] = useState('');
 
   const [initialGalleryNonVeg, setInitialGalleryNonVeg] = useState([]);
   const [updatedExistingMediaNonVeg, setUpdatedExistingMediaNonVeg] = useState(
@@ -209,6 +211,8 @@ export default function EditService() {
         setGuestCapacity(venueData.guest_capacity || "");
         setEventSpaces(venueData.event_spaces || "");
         setTotalAreaSqft(venueData.total_area_sqft || "");
+        setStartingPrice(venueData.starting_price || "");
+        setAdvancePayment(venueData.advance_payment_required || "");
         setAdvanceBookingNotice(venueData.advance_booking_notice || "");
         setAdvancePaymentRequired(venueData.advance_payment_required || "");
         setCancellationPolicy(venueData.cancellation_policy || "");
@@ -403,12 +407,15 @@ export default function EditService() {
     if (!address.trim()) {
       newErrors.address = "Business Address is required.";
     }
-    // if (selectedFoodPackages.has('veg') && !perPlatePriceVeg) {
-    //   newErrors.perPlatePriceVeg = 'Per Plate Price (Veg) is required.';
-    // }
-    // if (selectedFoodPackages.has('non-veg') && !perPlatePriceNonVeg) {
-    //   newErrors.perPlatePriceNonVeg = 'Per Plate Price (Non-Veg) is required.';
-    // }
+    if (!startingPrice.trim()) {
+      newErrors.startingPrice = 'Starting Price is required.';
+    }
+    if (selectedFoodPackages.has('veg') && !perPlatePriceVeg) {
+      newErrors.perPlatePriceVeg = 'Per Plate Price (Veg) is required.';
+    }
+    if (selectedFoodPackages.has('non-veg') && !perPlatePriceNonVeg) {
+      newErrors.perPlatePriceNonVeg = 'Per Plate Price (Non-Veg) is required.';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -532,10 +539,10 @@ export default function EditService() {
       services_offered: Array.from(selectedServices),
       location: selectedLocationData?.locationId || locationId,
       about: about,
-      starting_price: parseFloat(perPlatePrice),
+      starting_price: startingPrice,
       contact_number: contactNumber,
       cancellation_policy: cancellationPolicy,
-      advance_payment_required: parseFloat(advancePaymentRequired),
+      advance_payment_required: parseFloat(advancePayment),
       event_types: Array.from(selectedEventTypes),
       per_plate_price: parseFloat(perPlatePrice),
       guest_capacity: parseInt(guestCapacity),
@@ -814,6 +821,7 @@ export default function EditService() {
                           type="number"
                           value={yearsOfExperience}
                           onChange={(e) => setYearsOfExperience(e.target.value)}
+                          required
                           error={errors.yearsOfExperience}
                         />
                       </div>
@@ -1075,7 +1083,17 @@ export default function EditService() {
                   </div>
                 </div>
 
+
                 <div className="lg:col-span-2">
+                  <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
+                      <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
+                        <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Pricing</h2>
+                      </div>
+                      <div className="p-5 space-y-4">
+                        <FormInput id="startingPrice" label="Starting Price" type="number" placeholder="Enter starting price" value={startingPrice} onChange={(e) => setStartingPrice(e.target.value)} required error={errors.startingPrice}/> {/* ADD THIS LINE */}
+                        <FormInput id="Advancepayment" label="Advance/Deposit Payment" type="number" placeholder="Enter in %" value={advancePayment} onChange={(e) => setAdvancePayment(e.target.value)} />
+                      </div>
+                    </div>
                   <div className="lg:sticky lg:top-5 space-y-4">
                     {/* Pricing Card */}
                     {/* <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
