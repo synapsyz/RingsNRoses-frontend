@@ -406,10 +406,10 @@ export default function AddProduct() {
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!techSupportServiceId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. Techsupportservices ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
@@ -424,19 +424,19 @@ export default function AddProduct() {
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/techsupportservices/${techSupportServiceId}/`, config);
+      setFormMessage({ type: "success", text: "Techsupportservices deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete techsupportservices:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete techsupportservices."
           }`,
         });
       } else {

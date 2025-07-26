@@ -13,6 +13,7 @@ import ThumbnailUploader from '@/components/ThumbnailUploader';
 import ActionButtons from "@/components/ActionButtons";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import FormInput from '@/components/FormInput';
+import ConfirmationModal from "@/components/ConfirmationModal";
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
@@ -299,7 +300,6 @@ export default function AddAccessory() { // Renamed component
     }
     setIsActionCardVisible(false);
 
-
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
@@ -414,6 +414,7 @@ export default function AddAccessory() { // Renamed component
       setIsActionCardVisible(true);
     }
   };
+  
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true);
   };
@@ -422,16 +423,16 @@ export default function AddAccessory() { // Renamed component
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!accessoryId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. Accessoriesjewelry ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+    setFormMessage({ type: "info", text: "Deleting accessoriesjewelry, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
@@ -440,19 +441,19 @@ export default function AddAccessory() { // Renamed component
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/accessoriesjewelry/${accessoryId}/`, config);
+      setFormMessage({ type: "success", text: "Accessoriesjewelry deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete accessoriesjewelry:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete accessoriesjewelry."
           }`,
         });
       } else {
@@ -464,6 +465,7 @@ export default function AddAccessory() { // Renamed component
       setIsActionCardVisible(true);
     }
   };
+
 
   return (
     <>
@@ -664,8 +666,8 @@ export default function AddAccessory() { // Renamed component
                     {formMessage.text}
                   </div>
                 )}
-              </div>
-              {isActionCardVisible && (
+                </div>
+             {isActionCardVisible && (
                 <ActionButtons
                   isMinimized={isActionCardMinimized}
                   onDeleteClick={handleDeleteClick}
@@ -682,7 +684,7 @@ export default function AddAccessory() { // Renamed component
           </div>
         </main>
       </div>
-      <ConfirmationModal
+<ConfirmationModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleConfirmDelete}
@@ -691,7 +693,6 @@ export default function AddAccessory() { // Renamed component
         Are you sure you want to delete this service? This action is
         irreversible.
       </ConfirmationModal>
-
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />

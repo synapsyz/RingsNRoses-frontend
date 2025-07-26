@@ -397,16 +397,16 @@ const handleGalleryUpdate = (existingMedia, newFiles) => {
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!entertainmentId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. Entertainment ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+    setFormMessage({ type: "info", text: "Deleting entertainment, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
@@ -415,19 +415,19 @@ const handleGalleryUpdate = (existingMedia, newFiles) => {
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/entertainment/${entertainmentId}/`, config);
+      setFormMessage({ type: "success", text: "Entertainment deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete entertainment:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete entertainment."
           }`,
         });
       } else {

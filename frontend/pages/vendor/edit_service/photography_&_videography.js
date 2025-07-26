@@ -543,16 +543,16 @@ export default function AddProduct() {
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!photographyId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. Photography ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+    setFormMessage({ type: "info", text: "Deleting photography, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
@@ -561,19 +561,19 @@ export default function AddProduct() {
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/photography/${photographyId}/`, config);
+      setFormMessage({ type: "success", text: "Photography deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete photography:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete photography."
           }`,
         });
       } else {

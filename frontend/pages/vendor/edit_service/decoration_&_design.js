@@ -516,16 +516,16 @@ const addPackage = () => {
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!decorationDesignId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. decorationDesign ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+    setFormMessage({ type: "info", text: "Deleting decorationDesign, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
@@ -534,19 +534,19 @@ const addPackage = () => {
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/decorationdesign/${decorationDesignId}/`, config);
+      setFormMessage({ type: "success", text: "Decorationdesign deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete decorationdesign:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete decorationdesign."
           }`,
         });
       } else {

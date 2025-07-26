@@ -545,16 +545,16 @@ export default function AddProduct() {
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!specialEffectsAndPropsId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. Specialeffectsprops ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+    setFormMessage({ type: "info", text: "Deleting specialeffectsprops, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
@@ -563,19 +563,19 @@ export default function AddProduct() {
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/specialeffectsprops/${specialEffectsAndPropsId}/`, config);
+      setFormMessage({ type: "success", text: "Specialeffectsprops deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete specialeffectsprops:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete specialeffectsprops."
           }`,
         });
       } else {

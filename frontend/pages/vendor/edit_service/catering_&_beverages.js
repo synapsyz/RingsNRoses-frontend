@@ -13,6 +13,7 @@ import ThumbnailUploader from '@/components/ThumbnailUploader';
 import ActionButtons from "@/components/ActionButtons";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import FormInput from '@/components/FormInput';
+import ConfirmationModal from '@/components/ConfirmationModal';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
@@ -549,16 +550,16 @@ console.log(serviceId);
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!cateringId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. catering ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+    setFormMessage({ type: "info", text: "Deleting catering, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
@@ -567,19 +568,19 @@ console.log(serviceId);
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/catering/${cateringId}/`, config);
+      setFormMessage({ type: "success", text: "catering deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete catering:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete catering."
           }`,
         });
       } else {

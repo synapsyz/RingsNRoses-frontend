@@ -405,16 +405,16 @@ export default function AddMiscellaneousSupportService() {
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!miscellaneousSupportServiceId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. Miscsupportservices ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+    setFormMessage({ type: "info", text: "Deleting miscsupportservices, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
@@ -423,19 +423,19 @@ export default function AddMiscellaneousSupportService() {
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/miscsupportservices/${miscellaneousSupportServiceId}/`, config);
+      setFormMessage({ type: "success", text: "Miscsupportservices deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete miscsupportservices:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete miscsupportservices."
           }`,
         });
       } else {

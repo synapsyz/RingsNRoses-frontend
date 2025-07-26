@@ -12,9 +12,9 @@ import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
 import SecondaryNav from '@/components/vendor/SecondaryNav';
 import ThumbnailUploader from '@/components/ThumbnailUploader';
-import ActionButtons from '@/components/ActionButtons';
-import ConfirmationModal from "@/components/ConfirmationModal";
 import FormInput from '@/components/FormInput';
+import ActionButtons from "@/components/ActionButtons";
+import ConfirmationModal from "@/components/ConfirmationModal";
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
@@ -402,6 +402,7 @@ const handleEquipmentBlur = (id, value) => {
     }
     setIsActionCardVisible(false);
 
+
     let finalThumbnailKey = thumbnailKey;
 
     if (thumbnailFile) {
@@ -528,21 +529,21 @@ const handleEquipmentBlur = (id, value) => {
   const handleDeleteClick = () => {
     setIsDeleteModalOpen(true);
   };
-  
+
   const handleConfirmDelete = async () => {
     setIsDeleteModalOpen(false);
     setIsActionCardVisible(false);
 
-    if (!venueId) {
+    if (!accommodationTravelId) {
       setFormMessage({
         type: "error",
-        text: "Cannot delete. Venue ID is missing.",
+        text: "Cannot delete. accommodationTravel ID is missing.",
       });
       setIsActionCardVisible(true);
       return;
     }
 
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
+    setFormMessage({ type: "info", text: "Deleting accommodationTravel, please wait..." });
 
     try {
       const accessToken = session?.accessToken;
@@ -551,19 +552,19 @@ const handleEquipmentBlur = (id, value) => {
           Authorization: `Bearer ${accessToken}`,
         },
       };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
+      await api.delete(`/accommodationtravel/${accommodationTravelId}/`, config);
+      setFormMessage({ type: "success", text: "AccommodationTravel deleted successfully!" });
       0;
       setTimeout(() => {
         router.push("/vendor/service/preview");
       }, 2000);
     } catch (error) {
-      console.error("Error trying to delete venue:", error);
+      console.error("Error trying to delete accommodationTravel:", error);
       if (error.response) {
         setFormMessage({
           type: "error",
           text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
+            error.response.data.detail || "Failed to delete accommodationTravel."
           }`,
         });
       } else {
@@ -801,7 +802,7 @@ const handleEquipmentBlur = (id, value) => {
                   </div>
                 )}
                 </div>
-                {isActionCardVisible && (
+             {isActionCardVisible && (
                 <ActionButtons
                   isMinimized={isActionCardMinimized}
                   onDeleteClick={handleDeleteClick}
@@ -819,14 +820,14 @@ const handleEquipmentBlur = (id, value) => {
         </main>
       </div>
       <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Service"
-      >
-        Are you sure you want to delete this service? This action is
-        irreversible.
-      </ConfirmationModal>
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onConfirm={handleConfirmDelete}
+              title="Delete Service"
+            >
+              Are you sure you want to delete this service? This action is
+              irreversible.
+            </ConfirmationModal>
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
