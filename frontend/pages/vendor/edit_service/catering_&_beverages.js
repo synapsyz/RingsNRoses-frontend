@@ -13,7 +13,6 @@ import ThumbnailUploader from '@/components/ThumbnailUploader';
 import ActionButtons from "@/components/ActionButtons";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import FormInput from '@/components/FormInput';
-import ConfirmationModal from '@/components/ConfirmationModal';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
