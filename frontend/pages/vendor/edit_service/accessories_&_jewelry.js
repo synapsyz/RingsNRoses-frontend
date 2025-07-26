@@ -13,7 +13,6 @@ import ThumbnailUploader from '@/components/ThumbnailUploader';
 import ActionButtons from "@/components/ActionButtons";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import FormInput from '@/components/FormInput';
-import ConfirmationModal from "@/components/ConfirmationModal";
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
 import CheckboxGroup from '@/components/CheckboxGroup';
@@ -480,9 +479,6 @@ export default function AddAccessory() { // Renamed component
               <div className="grid grid-cols-1 lg:grid-cols-6 gap-5">
                 <div className="lg:col-span-4 space-y-4">
                   <div className="flex flex-col bg-white border border-stone-200 overflow-hidden rounded-xl shadow-2xs dark:bg-neutral-800 dark:border-neutral-700">
-                    <div className="py-3 px-5 flex justify-between items-center gap-x-5 border-b border-stone-200 dark:border-neutral-700">
-                      <h2 className="inline-block font-semibold text-stone-800 dark:text-neutral-200">Accessory Info</h2> {/* Changed heading */}
-                    </div>
                     <div className="p-5 space-y-4">
                       <ThumbnailUploader ref={thumbnailUploaderRef} preview={thumbnailUrl} onFileChange={handleFileChange} onDelete={handleDeleteThumbnail} />
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-5">
