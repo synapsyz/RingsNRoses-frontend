@@ -1365,6 +1365,7 @@ export default function EditService() {
                   {formMessage.text}
                 </div>
               )}
+
               {isActionCardVisible && (
                 <ActionButtons
                   isMinimized={isActionCardMinimized}

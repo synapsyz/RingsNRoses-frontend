@@ -10,8 +10,6 @@ import CustomHead from '@/components/vendor/Head';
 import Header from '@/components/vendor/Header';
 import SecondaryNav from '@/components/vendor/SecondaryNav';
 import ThumbnailUploader from '@/components/ThumbnailUploader';
-import ActionButtons from "@/components/ActionButtons";
-import ConfirmationModal from "@/components/ConfirmationModal";
 import FormInput from '@/components/FormInput';
 import TiptapEditor from '@/components/TiptapEditor';
 import MediaManager from '@/components/MediaManager';
@@ -44,11 +42,6 @@ export default function AddMiscellaneousSupportService() {
   const [initialGallery, setInitialGallery] = useState([]);
   const [updatedExistingMedia, setUpdatedExistingMedia] = useState([]);
   const [newGalleryFiles, setNewGalleryFiles] = useState([]);
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-
-  const [isActionCardVisible, setIsActionCardVisible] = useState(true);
-  const [isActionCardMinimized, setIsActionCardMinimized] = useState(false);
   
   // Refs for MediaManager and ThumbnailUploader
   const mediaManagerRef = useRef(null);
@@ -293,7 +286,6 @@ export default function AddMiscellaneousSupportService() {
       }
       return; // Stop the submission
     }
-    setIsActionCardVisible(false);
 
     let finalThumbnailKey = thumbnailKey;
 
@@ -301,7 +293,6 @@ export default function AddMiscellaneousSupportService() {
       const uploadResult = await thumbnailUploaderRef.current.upload();
       if (!uploadResult.success) {
         setFormMessage({ type: 'error', text: `Thumbnail upload failed: ${uploadResult.message}` });
-        setIsActionCardVisible(true);
         return;
       }
       finalThumbnailKey = uploadResult.key;
@@ -394,57 +385,6 @@ export default function AddMiscellaneousSupportService() {
         console.error("Error message:", error.message);
         setFormMessage({ type: 'error', text: `Error: ${error.message}` });
       }
-      setIsActionCardVisible(true);
-    }
-  };
-  const handleDeleteClick = () => {
-    setIsDeleteModalOpen(true);
-  };
-  
-  const handleConfirmDelete = async () => {
-    setIsDeleteModalOpen(false);
-    setIsActionCardVisible(false);
-
-    if (!venueId) {
-      setFormMessage({
-        type: "error",
-        text: "Cannot delete. Venue ID is missing.",
-      });
-      setIsActionCardVisible(true);
-      return;
-    }
-
-    setFormMessage({ type: "info", text: "Deleting venue, please wait..." });
-
-    try {
-      const accessToken = session?.accessToken;
-      const config = {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      };
-      await api.delete(`/venues/${venueId}/`, config);
-      setFormMessage({ type: "success", text: "Venue deleted successfully!" });
-      0;
-      setTimeout(() => {
-        router.push("/vendor/service/preview");
-      }, 2000);
-    } catch (error) {
-      console.error("Error trying to delete venue:", error);
-      if (error.response) {
-        setFormMessage({
-          type: "error",
-          text: `Error: ${
-            error.response.data.detail || "Failed to delete venue."
-          }`,
-        });
-      } else {
-        setFormMessage({
-          type: "error",
-          text: "Error: No response from server.",
-        });
-      }
-      setIsActionCardVisible(true);
     }
   };
 
@@ -665,33 +605,37 @@ export default function AddMiscellaneousSupportService() {
                   </div>
                 )}
                 
+                <div className="fixed bottom-0 start-1/2 -translate-x-1/2 p-6 z-50 w-full max-w-md mx-auto hs-removing:translate-y-5 hs-removing:opacity-0 transition duration-300">
+                  <div className="py-2 ps-5 pe-2 bg-stone-800 rounded-full shadow-md dark:bg-neutral-950">
+                    <div className="flex justify-between items-center gap-x-3">
+                      <button type="button" className="text-red-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-red-500">
+                        Delete
+                      </button>
+                      <div className="inline-flex items-center gap-x-2">
+                        <button type="button" className="text-stone-300 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-neutral-400">
+                          Cancel
+                        </button>
+                        <div className="w-px h-4 bg-stone-700 dark:bg-neutral-700"></div>
+                        <button type="submit" onClick={handleSubmit} className="text-green-400 decoration-2 font-medium text-sm hover:underline focus:outline-hidden focus:underline dark:text-green-500">
+                          Save changes
+                        </button>
+                        <button type="button" className="size-8 inline-flex justify-center items-center gap-x-2 rounded-full text-stone-400 hover:bg-stone-700 focus:outline-hidden focus:bg-stone-700 disabled:opacity-50 disabled:pointer-events-none dark:text-neutral-400 dark:hover:bg-neutral-800 dark:focus:bg-neutral-800" aria-label="Close">
+                          <span className="sr-only">Close</span>
+                          <svg className="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                {isActionCardVisible && (
-                <ActionButtons
-                  isMinimized={isActionCardMinimized}
-                  onDeleteClick={handleDeleteClick}
-                  onSaveClick={handleSubmit}
-                  onMinimizeClick={() => setIsActionCardMinimized(true)}
-                  onRestoreClick={() => setIsActionCardMinimized(false)}
-                  onCancelClick={() => {
-                    setIsActionCardVisible(false);
-                    router.back();
-                  }}
-                />
-              )}
+              </div>
             </div>
           </div>
         </main>
       </div>
-      <ConfirmationModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Delete Service"
-      >
-        Are you sure you want to delete this service? This action is
-        irreversible.
-      </ConfirmationModal>
+      
       <Script src="https://preline.co/assets/vendor/preline/dist/index.js?v=3.1.0" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/vendor/clipboard/dist/clipboard.min.js" strategy="lazyOnload" />
       <Script src="https://preline.co/assets/js/hs-copy-clipboard-helper.js" strategy="lazyOnload" />
