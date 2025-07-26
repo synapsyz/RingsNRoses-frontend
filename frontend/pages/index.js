@@ -15,6 +15,7 @@ import Logo from '@/components/Logo';
 import CategoryGrid from '@/components/CategoryGrid'; // Adjust the path as needed
 import Footer from '@/components/Footer'; // Adjust the import path as needed
 import CustomerUserProfile from '@/components/CustomerUserProfile';
+import FloatingAIChatButton from '@/components/FloatingAIChatButton'; // 1. Import the button component
 
 
 let isNgrok = process.env.NEXT_PUBLIC_APP_ENV === 'development' ? false : true;
@@ -715,6 +716,7 @@ useEffect(() => {
         
       
 <div>
+  
   <Script
         src="https://cdn.jsdelivr.net/npm/preline@latest/dist/preline.js"
         strategy="afterInteractive"
@@ -745,6 +747,8 @@ useEffect(() => {
 
         {/* Theme Script */}
         
+                        <FloatingAIChatButton /> {/* 2. Render the button here */}
+
 
       <div className="dark:bg-neutral-900">
         <header className="flex flex-col lg:flex-nowrap z-50 bg-white dark:bg-neutral-900"></header>
@@ -1393,6 +1397,7 @@ useEffect(() => {
                   </a>
                 </div>
                 {/* <!-- End Badge Group --> */}
+
 
                 <div className="mt-1">
                   {/* <!-- Reviews --> */}
