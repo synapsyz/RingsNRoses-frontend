@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react'; // Import signIn
+import { useRouter } from 'next/router'; // Import useRouter
+
 const isNgrok = process.env.NEXT_PUBLIC_APP_ENV === "development" ? false : true;
 const getApiUrl = () => {
   return process.env.NEXT_PUBLIC_APP_ENV === "development"
@@ -11,7 +13,7 @@ const api_url = getApiUrl();
 const api = axios.create(
   {
     baseURL: api_url + "/api/v1",
-    headers: { 
+    headers: {
       ...(isNgrok && { "ngrok-skip-browser-warning": "true" }),
     },
   }
@@ -23,18 +25,28 @@ const FavoriteButton = ({
   objectId,
   fav_id,
 }) => {
-  const { data: session, status, update } = useSession();
+  const { data: session, status } = useSession();
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isLoading, setIsLoading] = useState(false);
   const [animate, setAnimate] = useState(false);
   const [favId, setFavId] = useState(fav_id);
   const accessToken = session?.accessToken;
+  const router = useRouter(); // Initialize useRouter
 
   useEffect(() => {
     setIsFavorite(initialFavorite);
   }, [initialFavorite]);
 
   const handleFavoriteToggle = async () => {
+    // Check for session status first
+    if (status !== "authenticated") {
+      alert("Please log in to use the favorite button."); // Simple popup
+      setTimeout(() => {
+        router.push('/login'); // Redirect to login page
+      }, 1000); // 3-second delay
+      return;
+    }
+
     if (isLoading || !objectId) return;
 
     setIsLoading(true);
@@ -68,7 +80,7 @@ const FavoriteButton = ({
         console.log("Item favorited successfully!");
       } else {
         await api.delete(
-          `/favorites/${favId}/`, 
+          `/favorites/${favId}/`,
           config,
         );
         console.log("Item unfavorited successfully!");

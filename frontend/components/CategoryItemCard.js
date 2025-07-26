@@ -21,7 +21,7 @@ const CategoryItemCard = ({ item  }) => {
                       
                           <FavoriteButton
             initialFavorite={item.favorite_details?.is_favorite} // Ensure this is coming from favorite_details
-            contentType={item.favorite_details?.content_type}    // Ensure this is coming from favorite_details
+            contentType={item.favorite_details?.content_type || item.content_type}    // Ensure this is coming from favorite_details
             objectId={item.id}
             fav_id={item?.favorite_details?.id} 
           />
